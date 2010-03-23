@@ -7,7 +7,6 @@ import br.edu.ufcg.lsd.gridsim.output.DefaultOutput;
 public class FinishedJobEvent extends TimedEvent {
 
     private Job job;
-        public static int s = 0;
         public static int o = 0;
 
     public FinishedJobEvent(int time, Job job) {
@@ -19,11 +18,7 @@ public class FinishedJobEvent extends TimedEvent {
     public void doAction() {
         this.job.finishJob(time);
         DefaultOutput.getInstance().finishJob(time, GlobalScheduler.getInstance(), job);
-        if (job.getSource().equals("OG")) {
-            o++;
-        } else {
-            s++;
-        }
+        o++;
         GlobalScheduler.getInstance().finishJob(job, time);
     }
 
