@@ -4,27 +4,22 @@ import br.edu.ufcg.lsd.gridsim.events.StartJobEvent;
 import br.edu.ufcg.lsd.gridsim.events.TimedEvent;
 
 public class Job implements Comparable<Job> {
-
-	public static final String SOURCE_GLITE = "GL";
-	public static final String SOURCE_OG = "OG";
 	
     private int preemptions;
-        private int jobId;
+    private int jobId;
     private int submitTime;
     private int runTime;
     private int nProc;
     private int startTime;
     private int wastedTime;
     private int finishJob;
-    private String type;
     
     private TimedEvent finishJobEvent;
 	private String site;
-	private String source;
 	private Peer peer;
 	private StartJobEvent startJobEvent;
 
-    public Job(int jobId, int submitTime, int runTime, int nProc, String user, String site, String type, String source) {
+    public Job(int jobId, int submitTime, int runTime, int nProc, String site) {
         this.preemptions = 0;
         this.jobId = jobId;
         this.submitTime = submitTime;
@@ -33,9 +28,7 @@ public class Job implements Comparable<Job> {
         this.startTime = -1;
         this.wastedTime = 0;
         this.finishJob = 0;
-        this.type = type;
         this.site = site;
-        this.source = source;
     }
 
     public int getJobId() {
@@ -107,16 +100,8 @@ public class Job implements Comparable<Job> {
         this.finishJob = time;
     }
 
-	public String getType() {
-		return this.type;
-	}
-
 	public String getOrigSite() {
 		return this.site;
-	}
-
-	public String getSource() {
-		return source;
 	}
 
 	public Peer getPeer() {

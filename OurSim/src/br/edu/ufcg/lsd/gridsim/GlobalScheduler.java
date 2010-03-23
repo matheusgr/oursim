@@ -1,6 +1,5 @@
 package br.edu.ufcg.lsd.gridsim;
 
-import java.util.Iterator;
 import java.util.TreeSet;
 
 import br.edu.ufcg.lsd.gridsim.events.FinishedJobEvent;
@@ -33,10 +32,7 @@ public class GlobalScheduler {
 		if (submittedJobs.isEmpty()) { // Nothing to schedule
 			return;
 		}
-		String source = submittedJobs.last().getSource();
-		if (source.equals(Job.SOURCE_OG)) {
-			og.schedule();	
-		}
+		og.schedule();	
 	}
 
 	public void finishJob(Job job, int currentTime) {

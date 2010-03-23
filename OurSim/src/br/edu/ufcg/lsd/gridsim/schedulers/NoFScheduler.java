@@ -27,21 +27,8 @@ public class NoFScheduler {
 		
 		for (int i = 0; i < originalSize; i++) {
 			final Job pqJob = it.next();
-			if (pqJob.getJobId() == 618647) {
-				System.err.println("SCHEDULLING!!!!!! " + pqJob.getRunTime());
-			}
-			// Never run MPI Jobs
-			if (!pqJob.getType().equals("BOT") && !pqJob.getType().equals("SEQ")) {
-				continue;
-			}
-			if (!Configuration.getInstance().useOGAsCluster() && !Configuration.getInstance().useGateway()
-					&& pqJob.getSource().equals(Job.SOURCE_GLITE)) {
-				continue;
-			}
 			String origSite = pqJob.getOrigSite();
-			if (Configuration.getInstance().useOGAsCluster()) {
-				origSite = "FAKE";
-			}
+
 			final Peer consumer = peersMap.get(origSite);
 
 			// Getting best balance first
@@ -57,9 +44,6 @@ public class NoFScheduler {
 			Set<Peer> consumers = new HashSet<Peer>();
 			for (Job j : jobs) {
 				origSite = j.getOrigSite();
-				if (Configuration.getInstance().useOGAsCluster()) {
-					origSite = "FAKE";
-				}
 				consumers.add(peersMap.get(origSite));
 			}
 			HashSet<Peer> newConsumers = new HashSet<Peer>(consumers);
@@ -74,14 +58,15 @@ public class NoFScheduler {
 		            if (Configuration.getInstance().checkpointEnabled()) {
 		                wastedTime -= pqJob.getWastedTime();
 		            }
-		            if (wastedTime <= timeQueue.currentTime()) {
-		            	System.err.println(wastedTime);
-		            	System.err.println(pqJob);
-		            	System.err.println(pqJob.getWastedTime());
-		            	System.err.println(timeQueue.currentTime());
-		            	System.err.println(pqJob.getPreemptions());
-		            	assert false;
-		            }
+		            assert wastedTime <= timeQueue.currentTime();
+//		            if (wastedTime <= timeQueue.currentTime()) {
+//		            	System.err.println(wastedTime);
+//		            	System.err.println(pqJob);
+//		            	System.err.println(pqJob.getWastedTime());
+//		            	System.err.println(timeQueue.currentTime());
+//		            	System.err.println(pqJob.getPreemptions());
+//		            	assert false;
+//		            }
 		            FinishedJobEvent finishedJobEvent = new FinishedJobEvent(
 		                    wastedTime, pqJob);
 		            timeQueue.addEvent(finishedJobEvent);

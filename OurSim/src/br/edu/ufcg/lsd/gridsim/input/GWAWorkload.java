@@ -110,9 +110,9 @@ public class GWAWorkload implements Workload {
             // JobID = 1, SubmitTime = 2, RunTime = 3, NProc = 4, UserID = 5, OrigSiteID = 6, Type = 7
             // Types: SEQ, BOT, MPI, MPI_BOT 
             
-            currentJob = new Job(rs.getInt(1), rs.getInt(2) - simulationStartTime,
-                    rs.getInt(3), rs.getInt(4), rs
-                            .getString(5), getSiteName(rs.getString(6)), rs.getString(7), source);
+//            currentJob = new Job(rs.getInt(1), rs.getInt(2) - simulationStartTime,
+//                    rs.getInt(3), rs.getInt(4), rs
+//                            .getString(5), getSiteName(rs.getString(6)), rs.getString(7), source);
         }
         return currentJob;
     }

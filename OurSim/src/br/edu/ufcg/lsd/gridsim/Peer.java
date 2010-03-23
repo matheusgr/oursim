@@ -9,8 +9,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import br.edu.ufcg.lsd.gridsim.output.DefaultOutput;
-
 public class Peer {
 
     protected int resources;
@@ -70,11 +68,6 @@ public class Peer {
         	return; // Don't compute own balance 
         }
 
-        if (Configuration.getInstance().useOGAsCluster() && !getJobOrigSite(job).equals("FAKE")) {
-            setBalance(peer, -job.getRunTime());
-            peer.setBalance(this, job.getRunTime());
-        }
-
         if (Configuration.getInstance().checkpointEnabled() || !preempted) {
             setBalance(peer, -job.getRunTime());
             peer.setBalance(this, job.getRunTime());
@@ -83,11 +76,7 @@ public class Peer {
     }
 
     private String getJobOrigSite(Job job) {
-        if (Configuration.getInstance().useOGAsCluster()) {
-            return "FAKE";
-        } else {
-            return job.getOrigSite();
-        }
+        return job.getOrigSite();
     }
 
     public boolean addOportunisticJob(Job job, final Peer consumer, HashSet<Peer> newConsumers, int time) {

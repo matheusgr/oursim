@@ -64,10 +64,10 @@ public class DatabaseOutput implements InterfaceOutput {
             stat.setInt(4, job.getRunTime());
             stat.setInt(5, job.getNProc());
             stat.setString(6, job.getOrigSite());
-            stat.setString(7, job.getType());
+//            stat.setString(7, job.getType());
             stat.setInt(8, job.getWastedTime());
             stat.setDouble(9, utilization);
-            stat.setString(10, job.getSource());
+//            stat.setString(10, job.getSource());
             stat.addBatch();
             if (count == 1024) {
                 stat.executeBatch();

@@ -27,7 +27,7 @@ public class PrintOutput implements InterfaceOutput {
     @Override
     public void finishJob(int time, GlobalScheduler grid, Job job) {
         System.out.println("F:" + time + ":" + ":" + job.getJobId()
-                + ":" + job.getSubmitTime() + ":" + job.getRunTime() + ":" + (time - job.getSubmitTime()) + ":" + job.getPreemptions() + ":" + job.getSource());
+                + ":" + job.getSubmitTime() + ":" + job.getRunTime() + ":" + (time - job.getSubmitTime()) + ":" + job.getPreemptions());
     }
     
     /* (non-Javadoc)
@@ -35,8 +35,7 @@ public class PrintOutput implements InterfaceOutput {
 	 */
     @Override
     public void submitJob(int time, GlobalScheduler grid, Job job) {
-        System.out.println("U:" + time + ":" + job.getJobId()
-                + ":" + job.getSource());
+        System.out.println("U:" + time + ":" + job.getJobId());
     }
 
 	@Override
