@@ -31,15 +31,16 @@ public class NoFScheduler {
 
 			final Peer consumer = peersMap.get(origSite);
 
-			// Getting best balance first
-			Collections.sort(peers, new Comparator<Peer>() {
-				@Override
-				public int compare(Peer o1, Peer o2) {
-					return o2.getBalance(consumer)
-							- o1.getBalance(consumer);
-				}
-
-			});
+//			// Getting best balance first
+//			Collections.sort(peers, new Comparator<Peer>() {
+//				@Override
+//				public int compare(Peer o1, Peer o2) {
+//					return o2.getBalance(consumer)
+//							- o1.getBalance(consumer);
+//				}
+//
+//			});
+			Collections.shuffle(peers);
 
 			Set<Peer> consumers = new HashSet<Peer>();
 			for (Job j : jobs) {
