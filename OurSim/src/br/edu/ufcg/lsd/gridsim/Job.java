@@ -18,6 +18,7 @@ public class Job implements Comparable<Job> {
 	private String site;
 	private Peer peer;
 	private StartJobEvent startJobEvent;
+	static int globalPreemptions = 0;
 
     public Job(int jobId, int submitTime, int runTime, int nProc, String site) {
         this.preemptions = 0;
@@ -82,6 +83,7 @@ public class Job implements Comparable<Job> {
 	public void preemptJob(int time) {
 		assert this.startTime != -1;
         this.preemptions += 1;
+        this.globalPreemptions += 1;
 		this.wastedTime += (time - this.startTime);
 		//assert (this.wastedTime == this.runTime);
 		this.startTime = -1;

@@ -91,7 +91,7 @@ public class Simulation {
             }
         }
         System.out.println("# Total Jobs ~ O: " + FinishedJobEvent.o);
-
+        System.out.println("# Preemptions: " + Job.globalPreemptions);
     }
 
     private static SchedulerOurGrid prepareOG(HashSet<String> peersNames, int peerNodeSize,
