@@ -21,7 +21,7 @@ public class Worload extends Sim_entity {
 		for (int i = 0; i < 10; i++) {
 			// Send the processor a job
 			// port, delay, tag, data
-			sim_schedule(out, 0.0, 10, new Job(i, 0,0,0,"1"));
+			sim_schedule(out, 0.0, 10, new Job(i, 0,0,"1"));
 			//sim_schedule(out, 0.0, 0);
 			// Pause
 			sim_trace(1, "Processed event");

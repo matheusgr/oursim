@@ -1,12 +1,10 @@
 package br.edu.ufcg.lsd.gridsim.schedulers;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 
 import br.edu.ufcg.lsd.gridsim.Configuration;
@@ -21,6 +19,8 @@ public class NoFScheduler {
 	public void schedule(TimeQueue timeQueue,
 			List<Peer> peers, TreeSet<Job> jobs, HashMap<String, Peer> peersMap) {
 
+		HashMap<Peer, HashSet<Peer>> triedPeers = new HashMap<Peer, HashSet<Peer>>(peersMap.size());
+		
 		Iterator<Job> it = jobs.iterator();
 
 		int originalSize = jobs.size();
@@ -42,15 +42,12 @@ public class NoFScheduler {
 //			});
 			Collections.shuffle(peers);
 
-			Set<Peer> consumers = new HashSet<Peer>();
-			for (Job j : jobs) {
-				origSite = j.getOrigSite();
-				consumers.add(peersMap.get(origSite));
-			}
-			HashSet<Peer> newConsumers = new HashSet<Peer>(consumers);
-			
 			for (Peer provider : peers) {
-				boolean runJob = provider.addOportunisticJob(pqJob, consumer, newConsumers, timeQueue.currentTime());
+				HashSet<Peer> providersTried = triedPeers.get(consumer);
+				if (providersTried != null && providersTried.contains(provider)) {
+					continue;
+				}
+				boolean runJob = provider.addOportunisticJob(pqJob, consumer, timeQueue.currentTime());
 				if (runJob) {
 		            DefaultOutput.getInstance().startJob(timeQueue.currentTime(), "OG", pqJob);
 		            pqJob.setStartTime(timeQueue.currentTime());
@@ -74,6 +71,12 @@ public class NoFScheduler {
 		            pqJob.setFinishedJobEvent(finishedJobEvent);
 					it.remove();
 					break;
+				} else {
+					if (providersTried == null) {
+						providersTried = new HashSet<Peer>(peers.size());
+						triedPeers.put(consumer, providersTried);
+					}
+					providersTried.add(provider);
 				}
 			}
 		}

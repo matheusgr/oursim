@@ -49,8 +49,8 @@ public class Simulation {
         int execTime = 100;
 		int execTimeVar = 50;
 		int submissionInterval = 1;
-		int numJobs = 500;
-		int numberOfPeers = 10;
+		int numJobs = 100000;
+		int numberOfPeers = 100;
 		peerNodeSize = 10;
 		
 		HashSet<String> peers = new HashSet<String>();
