@@ -17,17 +17,17 @@ public class Peer {
     protected HashSet<Job> runningJobs;
     protected HashSet<Job> runningLocalJobs;
     protected HashMap<Peer, Integer> balances;
-    protected HashMap<Peer, Integer> consumingPeers;
+    protected HashMap<Peer, Integer> remoteConsumingPeers;
     protected HashMap<String, Peer> peersMap;
-
+    
     public Peer(int size, String clusterId) {
         this.clusterId = clusterId;
         this.resources = size;
         this.avaliableResources = size;
         this.runningJobs = new HashSet<Job>();
         this.runningLocalJobs = new HashSet<Job>();
-        this.balances = new HashMap<Peer, Integer>();
-        this.consumingPeers = new HashMap<Peer, Integer>();
+        this.balances = new HashMap<Peer, Integer>(); 
+        this.remoteConsumingPeers = new HashMap<Peer, Integer>();
     }
 
     public void setPeersMap(HashMap<String, Peer> peersMap) {
@@ -46,7 +46,9 @@ public class Peer {
 
     public void finishOportunisticJob(Job job, boolean preempted) {
 
-        if (this == peersMap.get(getJobOrigSite(job))) {
+        Peer peer = peersMap.get(getJobOrigSite(job));
+        
+		if (this == peer) {
             boolean removed = this.runningLocalJobs.remove(job);
             assert removed;
         } else {
@@ -55,17 +57,16 @@ public class Peer {
         }
 
         this.avaliableResources++;
-
-        Peer peer = peersMap.get(getJobOrigSite(job));
-        int value = this.consumingPeers.get(peer) - 1;
-        if (value == 0) {
-            this.consumingPeers.remove(peer);
-        } else {
-            this.consumingPeers.put(peer, value);
-        }
         
         if (peer == this) {
         	return; // Don't compute own balance 
+        } else {
+            int value = this.remoteConsumingPeers.get(peer) - 1;
+            if (value == 0) {
+                this.remoteConsumingPeers.remove(peer);
+            } else {
+                this.remoteConsumingPeers.put(peer, value);
+            }
         }
 
         if (Configuration.getInstance().checkpointEnabled() || !preempted) {
@@ -79,7 +80,7 @@ public class Peer {
         return job.getOrigSite();
     }
 
-    public boolean addOportunisticJob(Job job, final Peer consumer, HashSet<Peer> newConsumers, int time) {
+    public boolean addOportunisticJob(Job job, final Peer consumer, int time) {
 
         // There is available resources.
         if (avaliableResources > 0) {
@@ -87,15 +88,15 @@ public class Peer {
             return true;
         }
 
-        // Consumer is local and peer is full of local jobs
-        if (consumer == this && runningLocalJobs.size() == this.resources) {
+        // Peer is full of local jobs
+        if (runningLocalJobs.size() == this.resources) {
             return false;
         }
 
         // This job may need preemption
         HashMap<Peer, Integer> allowedResources = calculateAllowedResources(consumer, time);
 
-        int usedResources = consumingPeers.containsKey(consumer) ? consumingPeers.get(consumer) : 0;
+        int usedResources = remoteConsumingPeers.containsKey(consumer) ? remoteConsumingPeers.get(consumer) : 0;
 
         if (consumer == this || allowedResources.get(consumer) > usedResources) {
             preemptOneJob(allowedResources, time);
@@ -106,7 +107,7 @@ public class Peer {
     }
 
     protected HashMap<Peer, Integer> calculateAllowedResources(Peer newConsumer, int currentTime) {
-        Set<Peer> consumers = consumingPeers.keySet();
+        //Set<Peer> consumers = consumingPeers.keySet();
 
         // Only use resources that are not local
         int resourcesToShare = this.getRemoteShareSize(currentTime);
@@ -118,39 +119,61 @@ public class Peer {
 
         int totalBalance = 0;
 
-        HashSet<Peer> consumersSet = new HashSet<Peer>(consumers);
-        consumersSet.add(newConsumer);
-        consumersSet.remove(this);
-
         HashMap<Peer, Integer> allowedResources = new HashMap<Peer, Integer>();
 
-        for (Peer p : consumersSet) {
+        for (Peer p : remoteConsumingPeers.keySet()) {
             totalBalance += getBalance(p);
         }
 
-        ArrayList<Peer> consumersList = new ArrayList<Peer>(consumersSet);
+        totalBalance += remoteConsumingPeers.containsKey(newConsumer) ? 0 : getBalance(newConsumer);
 
         int resourcesLeft = resourcesToShare;
+        
+        int pSize = remoteConsumingPeers.size();
+        
+        pSize += remoteConsumingPeers.containsKey(newConsumer) ? 0 : 1;
 
         // Set minimum resources allowed for each peer
-        for (Peer p : consumersList) {
+        for (Peer p : remoteConsumingPeers.keySet()) {
             int resourcesForPeer = 0;
             double share;
             if (totalBalance == 0) {
-                share = (1.0d / consumersList.size());
+                share = (1.0d / pSize);
             } else {
                 share = ((double) getBalance(p)) / totalBalance;
             }
-            resourcesForPeer = (int) Math.floor(share * resourcesToShare);
+            resourcesForPeer = (int) (share * resourcesToShare);
             allowedResources.put(p, resourcesForPeer);
             resourcesLeft -= resourcesForPeer;
         }
-
-        if (resourcesLeft == 0) {
+        
+        if (!remoteConsumingPeers.containsKey(newConsumer)) {
+        	int resourcesForPeer = 0;
+        	double share;
+        	if (totalBalance == 0) {
+                share = (1.0d / pSize);
+            } else {
+                share = ((double) getBalance(newConsumer)) / totalBalance;
+            }
+            resourcesForPeer = (int) (share * resourcesToShare);
+            allowedResources.put(newConsumer, resourcesForPeer);
+            resourcesLeft -= resourcesForPeer;
+        }
+        
+        int resourcesInUse = remoteConsumingPeers.containsKey(newConsumer) ? remoteConsumingPeers.get(newConsumer) : 0;
+        
+        if (newConsumer != this && resourcesInUse <= allowedResources.get(newConsumer)) {
             return allowedResources;
         }
 
         final Peer actual = this;
+        
+        ArrayList<Peer> consumersList = new ArrayList<Peer>(remoteConsumingPeers.size() + 1);
+        consumersList.addAll(remoteConsumingPeers.keySet());
+        if (!remoteConsumingPeers.containsKey(newConsumer)) {
+        	consumersList.add(newConsumer);
+        }
+        
         Collections.shuffle(consumersList);
         Collections.sort(consumersList, new Comparator<Peer>() {
 
@@ -161,8 +184,8 @@ public class Peer {
                 if (balanceDiff != 0) {
                     return balanceDiff > 0 ? -3 : 3;
                 }
-                int p1Consumer = consumingPeers.containsKey(o1) ? consumingPeers.get(o1) : 0;
-                int p2Consumer = consumingPeers.containsKey(o2) ? consumingPeers.get(o2) : 0;
+                int p1Consumer = remoteConsumingPeers.containsKey(o1) ? remoteConsumingPeers.get(o1) : 0;
+                int p2Consumer = remoteConsumingPeers.containsKey(o2) ? remoteConsumingPeers.get(o2) : 0;
                 int usingDiff = p1Consumer - p2Consumer;
                 // Consuming size second
                 if (usingDiff != 0) {
@@ -171,25 +194,19 @@ public class Peer {
 
                 assert (p2Consumer != 0 && p1Consumer != 0);
 
-                // Recently jobs last
-                List<Job> jobs = new ArrayList<Job>();
+                int older = Integer.MAX_VALUE;
+                Peer p = o1;
+                
                 for (Job j : runningJobs) {
-                    if (peersMap.get(getJobOrigSite(j)) == o1) {
-                        jobs.add(j);
-                    }
-                    if (peersMap.get(getJobOrigSite(j)) == o2) {
-                        jobs.add(j);
-                    }
+                	if (peersMap.get(getJobOrigSite(j)) == o1 && j.getStartTime() < older) {
+                		p = o1;
+                		older = j.getStartTime();
+                	} else if (peersMap.get(getJobOrigSite(j)) == o2 && j.getStartTime() < older) {
+                		p = o2;
+                		older = j.getStartTime();
+                	}
                 }
-
-                Collections.sort(jobs, new Comparator<Job>() {
-
-                    @Override
-                    public int compare(Job o1, Job o2) {
-                        return o1.getStartTime() - o2.getStartTime();
-                    }
-                });
-                return peersMap.get(getJobOrigSite(jobs.get(0))) == o1 ? -1 : 1;
+                return p == o1 ? -1 : 1;
             }
         });
 
@@ -210,14 +227,11 @@ public class Peer {
     protected void preemptOneJob(HashMap<Peer, Integer> allowedResources, int time) {
         Peer choosen = null;
 
-        LinkedList<Peer> peerList = new LinkedList<Peer>(consumingPeers.keySet());
+        LinkedList<Peer> peerList = new LinkedList<Peer>(remoteConsumingPeers.keySet());
         Collections.shuffle(peerList);
 
         for (Peer p : peerList) {
-            if (p == this) {
-                continue;
-            }
-            int usedResources = consumingPeers.get(p);
+            int usedResources = remoteConsumingPeers.get(p);
             if (usedResources > allowedResources.get(p)) {
                 choosen = p;
                 break;
@@ -259,20 +273,28 @@ public class Peer {
 
     private void startJob(Job job) {
         avaliableResources--;
-        if (peersMap.get(getJobOrigSite(job)) == this) {
+        Peer peer = peersMap.get(getJobOrigSite(job));
+		if (peer == this) {
             runningLocalJobs.add(job);
         } else {
             runningJobs.add(job);
         }
+		
+		if (peer == this) {
+			return;
+		}
+		
         int consumedResources = 0;
-        Peer peer = peersMap.get(getJobOrigSite(job));
-        if (this.consumingPeers.containsKey(peer)) {
-            consumedResources = this.consumingPeers.get(peer);
+        if (this.remoteConsumingPeers.containsKey(peer)) {
+            consumedResources = this.remoteConsumingPeers.get(peer);
         }
-        this.consumingPeers.put(peer, consumedResources + 1);
+        this.remoteConsumingPeers.put(peer, consumedResources + 1);
     }
 
     protected void setBalance(Peer peer, int time) {
+    	if (peer == this) {
+    		return;
+    	}
         int curBalance = 0;
         if (this.balances.containsKey(peer)) {
             curBalance = this.balances.get(peer);

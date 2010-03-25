@@ -18,7 +18,6 @@ public class GWAWorkload implements Workload {
 	private int timeStart = -1;
 	private int timeEnd = -1;
 	private String source;
-	private int simulationStartTime;
 
     public GWAWorkload(String stringFile, String source) throws SQLException {
 
@@ -44,7 +43,6 @@ public class GWAWorkload implements Workload {
     	assert end > start;
     	timeStart = start;
     	timeEnd = end;
-    	this.simulationStartTime = simulationStartTime;
     }
     
     public void start() throws SQLException {
@@ -79,11 +77,11 @@ public class GWAWorkload implements Workload {
         if (typesInclusive == null) {
         	typeQuery = "";
         } else {
-        	typeQuery = " AND (";
+        	StringBuffer sb = new StringBuffer(" AND (");
         	for (int i = 0; i < typesInclusive.length - 1; i++) {
-        		typeQuery += " Type = \"" + typesInclusive[i] + "\" OR ";
+        		sb.append(" Type = \"" + typesInclusive[i] + "\" OR ");
 			}
-        	typeQuery += " Type = \"" + typesInclusive[typesInclusive.length - 1] + "\")";
+        	typeQuery = sb.toString() + " Type = \"" + typesInclusive[typesInclusive.length - 1] + "\")";
         }
         
         rs = stat.executeQuery("SELECT OrigSiteID FROM Jobs WHERE " + getTimeSQLCondition() +
