@@ -55,7 +55,6 @@ public class GlobalScheduler {
 	return instance;
     }
 
-    @Deprecated
     public void queueFinishJob(Job job) {
 	int wastedTime = job.getStartTime() + job.getRunTime();
 	if (Configuration.getInstance().checkpointEnabled()) {

@@ -42,7 +42,7 @@ public class NoFScheduler {
 	    // }
 	    //
 	    // });
-	    Collections.shuffle(peers);
+	    Collections.shuffle(peers,Configuration.r);
 
 	    for (Peer provider : peers) {
 		HashSet<Peer> providersTried = triedPeers.get(consumer);

@@ -47,7 +47,7 @@ public class PrintOutput implements InterfaceOutput {
 
     @Override
     public void startJob(int time, String source, Job job) {
-	System.out.println("S:" + time + ":" + job.getJobId() + ":" + source);
+	System.out.println("S:" + time + ":" + job.getJobId() );
     }
 
 }
