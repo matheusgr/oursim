@@ -8,62 +8,62 @@ import br.edu.ufcg.lsd.gridsim.events.TimeQueue;
 
 public class GlobalScheduler {
 
-	private static GlobalScheduler instance;
-	private TimeQueue q;
-	private SchedulerOurGrid og;
-	private TreeSet<Job> submittedJobs;
+    private static GlobalScheduler instance;
+    private TimeQueue q;
+    private SchedulerOurGrid og;
+    private TreeSet<Job> submittedJobs;
 
-	public GlobalScheduler(TimeQueue q, SchedulerOurGrid og, TreeSet<Job> submittedJobs) {
-		this.q = q;
-		this.og = og;
-		this.submittedJobs = submittedJobs;
-	}
-	
-	public void schedule(Job job) {
-		q.addEvent(new SubmitJobEvent(q.currentTime(), job));
-	}
+    public GlobalScheduler(TimeQueue q, SchedulerOurGrid og, TreeSet<Job> submittedJobs) {
+	this.q = q;
+	this.og = og;
+	this.submittedJobs = submittedJobs;
+    }
 
-	public void addJob(Job job) {
-		this.submittedJobs.add(job);
-		this.scheduleNow();
-	}
+    public void schedule(Job job) {
+	q.addEvent(new SubmitJobEvent(q.currentTime(), job));
+    }
 
-	public void scheduleNow() {
-		if (submittedJobs.isEmpty()) { // Nothing to schedule
-			return;
-		}
-		og.schedule();	
-	}
+    public void addJob(Job job) {
+	this.submittedJobs.add(job);
+	this.scheduleNow();
+    }
 
-	public void finishJob(Job job, int currentTime) {
-		if (job.getPeer() != null) {
-			og.finishJob(job);
-			return;
-		}
-		assert false;
+    public void scheduleNow() {
+	if (submittedJobs.isEmpty()) { // Nothing to schedule
+	    return;
 	}
+	og.schedule();
+    }
 
-	public Double getUtilization() {
-		return 0.0;
+    public void finishJob(Job job, int currentTime) {
+	if (job.getPeer() != null) {
+	    og.finishJob(job);
+	    return;
 	}
+	assert false;
+    }
 
-	public static void prepareGlobalScheduler(TimeQueue q, SchedulerOurGrid og, TreeSet<Job> submittedJobs) {
-		instance = new GlobalScheduler(q, og, submittedJobs);
-	}
-	
-	public static GlobalScheduler getInstance() {
-		return instance;
-	}
+    public Double getUtilization() {
+	return 0.0;
+    }
 
-	public void queueFinishJob(Job job) {
-        int wastedTime = job.getStartTime() + job.getRunTime();
-        if (Configuration.getInstance().checkpointEnabled()) {
-            wastedTime -= job.getWastedTime();
-        }
-        FinishedJobEvent finishedJobEvent = new FinishedJobEvent(
-                wastedTime, job);
-        job.setFinishedJobEvent(finishedJobEvent);
-        job.finishJob(wastedTime);
-        q.addEvent(finishedJobEvent);
+    public static void prepareGlobalScheduler(TimeQueue q, SchedulerOurGrid og, TreeSet<Job> submittedJobs) {
+	instance = new GlobalScheduler(q, og, submittedJobs);
+    }
+
+    public static GlobalScheduler getInstance() {
+	return instance;
+    }
+
+    @Deprecated
+    public void queueFinishJob(Job job) {
+	int wastedTime = job.getStartTime() + job.getRunTime();
+	if (Configuration.getInstance().checkpointEnabled()) {
+	    wastedTime -= job.getWastedTime();
 	}
+	FinishedJobEvent finishedJobEvent = new FinishedJobEvent(wastedTime, job);
+	job.setFinishedJobEvent(finishedJobEvent);
+	job.finishJob(wastedTime);
+	q.addEvent(finishedJobEvent);
+    }
 }
