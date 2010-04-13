@@ -8,11 +8,6 @@ import oursim.entities.Peer;
 
 public interface SharingPolicy {
 
-    /**
-     * @param provider
-     * @param consumer
-     * @param runTime
-     */
     public abstract void setBalance(Peer provider, Peer consumer, long runTime);
 
     public abstract long getBalance(Peer provider, Peer consumer);
@@ -28,6 +23,8 @@ public interface SharingPolicy {
      * @return
      */
     public abstract HashMap<Peer, Integer> calculateAllowedResources(Peer provider, Peer newConsumer, final HashMap<Peer, Integer> remoteConsumingPeers,
-	    final HashSet<Job> runningJobs, HashSet<Job> runningLocalJobs, int currentTime);
+	    final HashSet<Job> runningJobs, HashSet<Job> runningLocalJobs);
+
+    public abstract void addPeer(Peer peer);
 
 }

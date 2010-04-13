@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 
 public class Peer {
 
@@ -21,9 +22,12 @@ public class Peer {
     protected HashMap<Peer, Integer> remoteConsumingPeers;
 
     protected HashMap<String, Peer> peersMap;
+    
+    private String clusterId;
 
     public Peer(int size, String clusterId) {
 
+	this.clusterId = clusterId;
 	this.resources = size;
 	this.availableResources = size;
 
@@ -38,7 +42,6 @@ public class Peer {
 	this.peersMap = peersMap;
     }
 
-    @Deprecated
     public int getBalance(Peer consumingPeer) {
 	int balance = 0;
 	if (Configuration.getInstance().useNoF()) {
@@ -49,9 +52,8 @@ public class Peer {
 	return balance;
     }
 
-    @Deprecated
     public void finishOportunisticJob(Job job, boolean preempted) {
-
+	    
 	Peer peer = peersMap.get(getJobOrigSite(job));
 
 	if (this == peer) {
@@ -84,12 +86,10 @@ public class Peer {
 
     }
 
-    @Deprecated
     private String getJobOrigSite(Job job) {
 	return job.getOrigSite();
     }
 
-    @Deprecated
     public boolean addOportunisticJob(Job job, final Peer consumer, int time) {
 
 	// There is available resources.
@@ -118,7 +118,6 @@ public class Peer {
 	return false;
     }
 
-    @Deprecated
     protected HashMap<Peer, Integer> calculateAllowedResources(Peer newConsumer, int currentTime) {
 	// Set<Peer> consumers = consumingPeers.keySet();
 
@@ -191,7 +190,7 @@ public class Peer {
 	    consumersList.add(newConsumer);
 	}
 
-	Collections.shuffle(consumersList);
+	Collections.shuffle(consumersList,Configuration.r);
 	Collections.sort(consumersList, new Comparator<Peer>() {
 
 	    @Override
@@ -241,12 +240,11 @@ public class Peer {
 	return allowedResources;
     }
 
-    @Deprecated
     protected void preemptOneJob(HashMap<Peer, Integer> allowedResources, int time) {
 	Peer choosen = null;
 
 	LinkedList<Peer> peerList = new LinkedList<Peer>(remoteConsumingPeers.keySet());
-	Collections.shuffle(peerList);
+	Collections.shuffle(peerList,Configuration.r);
 
 	// pega o que estiver usando mais do que merece
 	for (Peer p : peerList) {
@@ -291,7 +289,6 @@ public class Peer {
 	rescheduleJob(j);
     }
 
-    @Deprecated
     private void startJob(Job job) {
 	availableResources--;
 	Peer peer = peersMap.get(getJobOrigSite(job));
@@ -312,7 +309,6 @@ public class Peer {
 	this.remoteConsumingPeers.put(peer, consumedResources + 1);
     }
 
-    @Deprecated
     protected void setBalance(Peer peer, int time) {
 	if (peer == this) {
 	    return;
@@ -333,14 +329,18 @@ public class Peer {
 	return ((double) (resources - availableResources)) / resources;
     }
 
-    @Deprecated
     protected int getRemoteShareSize(int currentTime) {
 	return this.resources - this.runningLocalJobs.size();
     }
 
-    @Deprecated
     private void rescheduleJob(Job j) {
 	GlobalScheduler.getInstance().schedule(j);
     }
 
+    @Override
+    public String toString() {
+        return clusterId;
+    }
+
+    
 }

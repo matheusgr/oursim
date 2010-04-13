@@ -9,14 +9,16 @@ import java.util.Map;
 
 import oursim.entities.Job;
 import oursim.entities.Peer;
+import br.edu.ufcg.lsd.gridsim.Configuration;
 
-public class NoFSharingPolicy implements SharingPolicy{
+public class NoFSharingPolicy implements SharingPolicy {
 
-    protected Map<Peer, HashMap<Peer, Long>> allBalances;
+    private Map<Peer, HashMap<Peer, Long>> allBalances;
 
-    /* (non-Javadoc)
-     * @see oursim.policy.SharingPolic#setBalance(oursim.entities.Peer, oursim.entities.Peer, long)
-     */
+    public NoFSharingPolicy() {
+	allBalances = new HashMap<Peer, HashMap<Peer, Long>>();
+    }
+
     public void setBalance(Peer provider, Peer consumer, long runTime) {
 	HashMap<Peer, Long> balances = allBalances.get(provider);
 	if (consumer == provider) {
@@ -34,26 +36,22 @@ public class NoFSharingPolicy implements SharingPolicy{
 	}
     }
 
-    /* (non-Javadoc)
-     * @see oursim.policy.SharingPolic#getBalance(oursim.entities.Peer, oursim.entities.Peer)
-     */
     public long getBalance(Peer provider, Peer consumer) {
+	assert allBalances.containsKey(provider);
 	HashMap<Peer, Long> balances = allBalances.get(provider);
 	return getBalance(consumer, balances);
     }
 
-    /* (non-Javadoc)
-     * @see oursim.policy.SharingPolic#calculateAllowedResources(oursim.entities.Peer, oursim.entities.Peer, java.util.HashMap, java.util.HashSet, java.util.HashSet, int)
-     */
     public HashMap<Peer, Integer> calculateAllowedResources(Peer provider, Peer newConsumer, final HashMap<Peer, Integer> remoteConsumingPeers,
-	    final HashSet<Job> runningJobs, HashSet<Job> runningLocalJobs, int currentTime) {
+	    final HashSet<Job> runningJobs, HashSet<Job> runningLocalJobs) {
+	assert allBalances.containsKey(provider);
 	HashMap<Peer, Long> balances = allBalances.get(provider);
 
 	// Set<Peer> consumers = consumingPeers.keySet();
 
 	// Only use resources that are busy by local jobs
 	// o total de recursos menos o que está sendo doado.
-	int resourcesToShare = getRemoteShareSize(provider.getAmountOfResources(), runningLocalJobs, currentTime);
+	long resourcesToShare = getRemoteShareSize(provider.getAmountOfResources(), runningLocalJobs);
 
 	// If its local, remove one resource from remote
 	if (newConsumer == provider) {
@@ -72,7 +70,7 @@ public class NoFSharingPolicy implements SharingPolicy{
 	// pois se não for novo já está na contagem anterior
 	totalBalance += remoteConsumingPeers.containsKey(newConsumer) ? 0 : getBalance(newConsumer, balances);
 
-	int resourcesLeft = resourcesToShare;
+	long resourcesLeft = resourcesToShare;
 
 	int pSize = remoteConsumingPeers.size();
 
@@ -120,7 +118,7 @@ public class NoFSharingPolicy implements SharingPolicy{
 	    consumersList.add(newConsumer);
 	}
 
-	Collections.shuffle(consumersList);
+	Collections.shuffle(consumersList, Configuration.r);
 	Collections.sort(consumersList, new Comparator<Peer>() {
 
 	    @Override
@@ -170,12 +168,17 @@ public class NoFSharingPolicy implements SharingPolicy{
 	return allowedResources;
     }
 
-    private int getRemoteShareSize(int resources, HashSet<Job> runningLocalJobs, int currentTime) {
+    private long getRemoteShareSize(int resources, HashSet<Job> runningLocalJobs) {
 	return resources - runningLocalJobs.size();
     }
 
     private long getBalance(Peer consumer, HashMap<Peer, Long> balances) {
 	return balances.containsKey(consumer) ? balances.get(consumer) : 0;
     }
-    
+
+    @Override
+    public void addPeer(Peer peer) {
+	this.allBalances.put(peer, new HashMap<Peer, Long>());
+    }
+
 }

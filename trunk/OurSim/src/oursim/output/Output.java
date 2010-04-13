@@ -1,13 +1,13 @@
 package oursim.output;
 
-import br.edu.ufcg.lsd.gridsim.Job;
+import oursim.entities.Job;
 
 public interface Output {
 
-    public abstract void finishJob(Job job);
+    public abstract void finishJob(long time, Job job);
 
-    public abstract void submitJob(Job job);
+    public abstract void submitJob(long time, Job job);
 
-    public abstract void startJob(Job job);
+    public abstract void startJob(long time, Job job);
 
 }

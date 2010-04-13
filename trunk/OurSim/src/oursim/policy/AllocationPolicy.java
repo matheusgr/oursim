@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
+import br.edu.ufcg.lsd.gridsim.Configuration;
+
 import oursim.entities.Job;
 import oursim.entities.Peer;
 
@@ -16,15 +18,32 @@ public class AllocationPolicy {
     private int availableResources;
     private Peer peer;
 
-    private SharingPolicy sharingPolicy; 
+    private SharingPolicy sharingPolicy;
 
     private HashSet<Job> runningJobs;
     private HashSet<Job> runningLocalJobs;
 
     // a quantidade de recursos que o peer remoto está consumindo neste site
     protected HashMap<Peer, Integer> remoteConsumingPeers;
-    
-    public boolean addOportunisticJob(Job job, final Peer consumer, int time) {
+
+    public AllocationPolicy(Peer peer, SharingPolicy sharingPolicy) {
+
+	this.peer = peer;
+	
+	this.availableResources = peer.getAmountOfResources();
+
+	this.runningJobs = new HashSet<Job>();
+	this.runningLocalJobs = new HashSet<Job>();
+	
+	this.remoteConsumingPeers = new HashMap<Peer, Integer>();
+
+	this.sharingPolicy = sharingPolicy;
+	
+	this.sharingPolicy.addPeer(peer);
+
+    }
+
+    public boolean addJob(Job job, final Peer consumer, long time) {
 
 	// There is available resources.
 	if (availableResources > 0) {
@@ -38,7 +57,7 @@ public class AllocationPolicy {
 	}
 
 	// This job may need preemption
-	HashMap<Peer, Integer> allowedResources = sharingPolicy.calculateAllowedResources(peer,consumer,remoteConsumingPeers,runningJobs,runningLocalJobs, time);
+	HashMap<Peer, Integer> allowedResources = sharingPolicy.calculateAllowedResources(peer, consumer, remoteConsumingPeers, runningJobs, runningLocalJobs);
 
 	int usedResources = remoteConsumingPeers.containsKey(consumer) ? remoteConsumingPeers.get(consumer) : 0;
 
@@ -51,8 +70,8 @@ public class AllocationPolicy {
 	}
 	return false;
     }
-    
-    public void finishOportunisticJob(Job job, boolean preempted) {
+
+    public void finishJob(Job job, boolean preempted) {
 
 	Peer sourcePeer = job.getSourcePeer();
 
@@ -86,11 +105,12 @@ public class AllocationPolicy {
 
     }
 
-    protected void preemptOneJob(HashMap<Peer, Integer> allowedResources, int time) {
+    protected void preemptOneJob(HashMap<Peer, Integer> allowedResources, long time) {
+	
 	Peer choosen = null;
 
 	LinkedList<Peer> peerList = new LinkedList<Peer>(remoteConsumingPeers.keySet());
-	Collections.shuffle(peerList);
+	Collections.shuffle(peerList, Configuration.r);
 
 	// pega o que estiver usando mais do que merece
 	for (Peer p : peerList) {
@@ -116,21 +136,23 @@ public class AllocationPolicy {
 
 	    @Override
 	    public int compare(Job o1, Job o2) {
-		//TODO cast promíscuo
+		// TODO cast promíscuo
 		return (int) (o2.getStartTime() - o1.getStartTime());
 	    }
 	});
 	Job j = jobs.get(0);
-	j.preempt(time);
-	finishOportunisticJob(j, true);
 	j.setTargetPeer(null);
+	finishJob(j, true);
+	j.preempt(time);
 	rescheduleJob(j);
     }
 
     private void rescheduleJob(Job j) {
-	throw new UnsupportedOperationException("Operaçao ainda não implementada.");
+	// GlobalScheduler.getInstance().schedule(j);
+	// TODO: Gerar um evento de preempção de job
+//	throw new UnsupportedOperationException("Operaçao ainda não implementada.");
     }
-    
+
     private void startJob(Job job) {
 	availableResources--;
 	Peer sourcePeer = job.getSourcePeer();
@@ -150,5 +172,9 @@ public class AllocationPolicy {
 	}
 	this.remoteConsumingPeers.put(sourcePeer, consumedResources + 1);
     }
-    
+
+    public int getAvailableResources() {
+	return availableResources;
+    }
+
 }

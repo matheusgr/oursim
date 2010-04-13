@@ -1,8 +1,11 @@
 package br.edu.ufcg.lsd.gridsim;
 
+import java.util.Random;
+
 public class Configuration {
 
     private static Configuration instance;
+    public static Random r = new Random(9354269l);
 
     public static synchronized Configuration getInstance() {
 	if (instance == null) {

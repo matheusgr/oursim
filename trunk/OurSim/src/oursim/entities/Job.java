@@ -1,22 +1,27 @@
 package oursim.entities;
 
+import oursim.events.SubmitJobEvent;
 import oursim.events.TimedEvent;
 
-public class Job {
+public class Job implements Comparable<Job> {
 
-    private long id;
+    private final long id;
 
-    private long submissionTime;
+    private final long submissionTime;
     private long startTime;
+    private long finishTime;
     private long runTimeDuration;
     private int wastedTime;
 
-    private Peer sourcePeer;
+    private final Peer sourcePeer;
     private Peer targetPeer;
 
-    private int preemptions;
-    static int globalPreemptions = 0;
+    private int numberOfpreemptions;
+    public static int numberOfPreemptionsForAllJobs = 0;
+
     private TimedEvent finishJobEvent;
+
+    private SubmitJobEvent submitJobEvent;
 
     public Job(long id, int submissionTime, int runTimeDuration, Peer sourcePeer) {
 
@@ -36,7 +41,7 @@ public class Job {
     }
 
     public void finishJob(long time) {
-	throw new UnsupportedOperationException("Operaçao ainda não implementada.");
+	this.finishTime = time;
     }
 
     public long getRunTimeDuration() {
@@ -59,17 +64,60 @@ public class Job {
 	this.targetPeer = targetPeer;
     }
 
-    public void preempt(int time) {
+    public void preempt(long time) {
 	assert this.startTime != -1;
-	this.preemptions += 1;
-	globalPreemptions += 1;
+	this.numberOfpreemptions += 1;
+	numberOfPreemptionsForAllJobs += 1;
 	this.wastedTime += (time - this.startTime);
 	this.startTime = -1;
 	this.finishJobEvent.cancel();
+	this.submitJobEvent.resubmit();
     }
-
+    
+    public void setSubmitJobEvent(SubmitJobEvent submitJobEvent) {
+	this.submitJobEvent = submitJobEvent;
+    }
+    
     public void setFinishedJobEvent(TimedEvent finishJobEvent) {
 	this.finishJobEvent = finishJobEvent;
+    }
+
+    public void setStartTime(long startTime) {
+	this.startTime = startTime;
+    }
+
+    public int getWastedTime() {
+	return wastedTime;
+    }
+
+    public long getWaitedTime() {
+	return this.finishTime - (this.submissionTime + this.runTimeDuration);
+    }
+
+    public long getFinishTime() {
+	return finishTime;
+    }
+
+    public int getNumberOfpreemptions() {
+        return numberOfpreemptions;
+    }
+
+    @Override
+    public int compareTo(Job o) {
+	long diffTime = this.submissionTime - o.getSubmissionTime();
+	if (diffTime == 0) {
+	    if (id > o.getId()) {
+		return 2;
+	    } else if (id == o.getId()) {
+		return this.hashCode() == o.hashCode() ? 0 : (this.hashCode() > o.hashCode() ? 1 : -1);
+	    } else {
+		return -2;
+	    }
+	} else if (diffTime > 0) {
+	    return 5;
+	} else {
+	    return -5;
+	}
     }
 
 }

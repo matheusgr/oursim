@@ -5,20 +5,25 @@ import br.edu.ufcg.lsd.gridsim.events.TimedEvent;
 
 public class Job implements Comparable<Job> {
 
-    private int preemptions;
     private int jobId;
-    private int submitTime;
-    private int runTime;
-    private int nProc;
-    private int startTime;
-    private int wastedTime;
-    private int finishJob;
 
-    private TimedEvent finishJobEvent;
+    private int submitTime;
+    private int startTime;
+    private int runTime;
+    private int wastedTime;
+
     private String site;
     private Peer peer;
-    private StartJobEvent startJobEvent;
+    
+    private int preemptions;
     static int globalPreemptions = 0;
+
+    private int nProc;
+    private int finishJob;
+
+    private StartJobEvent startJobEvent;
+    private TimedEvent finishJobEvent;
+
 
     public Job(int jobId, int submitTime, int runTime, String site) {
 	this.preemptions = 0;

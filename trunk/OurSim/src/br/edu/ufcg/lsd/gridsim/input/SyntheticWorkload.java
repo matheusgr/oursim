@@ -2,10 +2,12 @@ package br.edu.ufcg.lsd.gridsim.input;
 
 import java.util.ArrayList;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Random;
 
+import br.edu.ufcg.lsd.gridsim.Configuration;
 import br.edu.ufcg.lsd.gridsim.Job;
 
 public class SyntheticWorkload implements Workload {
@@ -15,21 +17,19 @@ public class SyntheticWorkload implements Workload {
     public SyntheticWorkload(int runTime, int runTimeVar, int submissionInterval, int numJobs, HashSet<String> peers) {
 	
 	int submissionTime = 0;
-	Random r = new Random();
 	ArrayList<String> peersL = new ArrayList<String>(peers);
 	
 	for (int jobId = 0; jobId < numJobs; jobId++) {
 	    
-	    submissionTime += r.nextInt(submissionInterval);
+	    submissionTime += Configuration.r.nextInt(submissionInterval);
 	    
-	    double magic = Math.abs(r.nextGaussian());
+	    double magic = Math.abs(Configuration.r.nextGaussian());
 	    magic *= peersL.size() / 3.0;
 	    magic = magic > peersL.size() ? peersL.size() - 1 : magic;
 	    
 	    int randomPeer = (int) (magic);
-	    int runTimeDuration = runTime + r.nextInt(runTimeVar);
+	    int runTimeDuration = runTime + Configuration.r.nextInt(runTimeVar);
 	    String sourcePeer = peersL.get(randomPeer);
-	    
 	    jobs.add(new Job(jobId, submissionTime, runTimeDuration, sourcePeer));
 	    
 	}
