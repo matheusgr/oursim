@@ -1,24 +1,20 @@
-package br.edu.ufcg.lsd.gridsim.events;
-
-import br.edu.ufcg.lsd.gridsim.Job;
+package oursim.events;
 
 public abstract class TimedEvent implements Comparable<TimedEvent> {
 
-    protected int time;
+    protected long time;
     private boolean cancel;
-    private int id;
-    private Job job;
+    private long id;
 
-    public TimedEvent(int time, int id, Job job) {
+    public TimedEvent(long time, long id) {
 	this.time = time;
 	this.cancel = false;
 	this.id = id;
-	this.job = job;
     }
 
     @Override
     public int compareTo(TimedEvent o) {
-	int diffTime = this.time - o.time;
+	long diffTime = this.time - o.time;
 	if (diffTime == 0) {
 	    if (this.id >= o.id) {
 		return 1;
@@ -48,12 +44,7 @@ public abstract class TimedEvent implements Comparable<TimedEvent> {
 	return this.cancel;
     }
 
-    @Override
-    public String toString() {
-	return "TimedEvent [job=" + job.getWastedTime() + ",type=" + this.getClass() + ", cancel=" + cancel + ", id=" + id + ", time=" + time + "]";
-    }
-
-    public int getTime() {
+    public long getTime() {
 	return this.time;
     }
 

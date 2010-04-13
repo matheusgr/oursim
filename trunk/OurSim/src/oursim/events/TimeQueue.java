@@ -1,11 +1,11 @@
-package br.edu.ufcg.lsd.gridsim.events;
+package oursim.events;
 
 import java.util.PriorityQueue;
 
 public class TimeQueue {
 
     private PriorityQueue<TimedEvent> pq;
-    private int time = -1;
+    private long time = -1;
 
     public TimeQueue() {
 	pq = new PriorityQueue<TimedEvent>();
@@ -33,7 +33,7 @@ public class TimeQueue {
 	return pq.poll();
     }
 
-    public int currentTime() {
+    public long currentTime() {
 	return this.time;
     }
 

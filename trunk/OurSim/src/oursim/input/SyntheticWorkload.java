@@ -1,22 +1,22 @@
-package br.edu.ufcg.lsd.gridsim.input;
+package oursim.input;
 
 import java.util.ArrayList;
-
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Random;
 
-import br.edu.ufcg.lsd.gridsim.Job;
+import oursim.entities.Job;
+import oursim.entities.Peer;
 
 public class SyntheticWorkload implements Workload {
 
     LinkedList<Job> jobs = new LinkedList<Job>();
 
-    public SyntheticWorkload(int runTime, int runTimeVar, int submissionInterval, int numJobs, HashSet<String> peers) {
+    public SyntheticWorkload(int runTime, int runTimeVar, int submissionInterval, int numJobs, HashSet<Peer> peers) {
 	
 	int submissionTime = 0;
 	Random r = new Random();
-	ArrayList<String> peersL = new ArrayList<String>(peers);
+	ArrayList<Peer> peersL = new ArrayList<Peer>(peers);
 	
 	for (int jobId = 0; jobId < numJobs; jobId++) {
 	    
@@ -28,7 +28,7 @@ public class SyntheticWorkload implements Workload {
 	    
 	    int randomPeer = (int) (magic);
 	    int runTimeDuration = runTime + r.nextInt(runTimeVar);
-	    String sourcePeer = peersL.get(randomPeer);
+	    Peer sourcePeer = peersL.get(randomPeer);
 	    
 	    jobs.add(new Job(jobId, submissionTime, runTimeDuration, sourcePeer));
 	    

@@ -4,7 +4,7 @@ import br.edu.ufcg.lsd.gridsim.events.StartJobEvent;
 import br.edu.ufcg.lsd.gridsim.events.TimedEvent;
 
 public class Job implements Comparable<Job> {
-	
+
     private int preemptions;
     private int jobId;
     private int submitTime;
@@ -13,127 +13,124 @@ public class Job implements Comparable<Job> {
     private int startTime;
     private int wastedTime;
     private int finishJob;
-    
+
     private TimedEvent finishJobEvent;
-	private String site;
-	private Peer peer;
-	private StartJobEvent startJobEvent;
-	static int globalPreemptions = 0;
+    private String site;
+    private Peer peer;
+    private StartJobEvent startJobEvent;
+    static int globalPreemptions = 0;
 
     public Job(int jobId, int submitTime, int runTime, String site) {
-        this.preemptions = 0;
-        this.jobId = jobId;
-        this.submitTime = submitTime;
-        this.runTime = runTime;
-        this.nProc = 1;
-        this.startTime = -1;
-        this.wastedTime = 0;
-        this.finishJob = 0;
-        this.site = site;
+	this.preemptions = 0;
+	this.jobId = jobId;
+	this.submitTime = submitTime;
+	this.runTime = runTime;
+	this.nProc = 1;
+	this.startTime = -1;
+	this.wastedTime = 0;
+	this.finishJob = 0;
+	this.site = site;
     }
 
     public int getJobId() {
-        return jobId;
+	return jobId;
     }
 
     public int getSubmitTime() {
-        return submitTime;
+	return submitTime;
     }
 
     public int getRunTime() {
-        return runTime;
+	return runTime;
     }
 
     public int getNProc() {
-        return nProc;
+	return nProc;
     }
 
     public void setStartTime(int startTime) {
-        assert startTime >= submitTime :
-            "ST: " + startTime + " - SUB: " + submitTime + " - JobID: " + this.jobId;
-        this.startTime = startTime;
+	assert startTime >= submitTime : "ST: " + startTime + " - SUB: " + submitTime + " - JobID: " + this.jobId;
+	this.startTime = startTime;
     }
 
     public int getStartTime() {
-        return startTime;
+	return startTime;
     }
 
     public int getWaitedTime() {
-        return this.finishJob - (this.submitTime + this.getRunTime());
+	return this.finishJob - (this.submitTime + this.getRunTime());
     }
 
     @Override
     public int compareTo(Job o) {
-        int diffTime = this.submitTime - o.submitTime;
-        if (diffTime == 0) {
-            if (jobId > o.jobId) {
-                return 2;
-            } else if (jobId == o.jobId){
-            	return this.hashCode() == o.hashCode() ? 0 : (this.hashCode() > o.hashCode() ? 1 : -1);
-            } else {
-                return -2;
-            }
-        } else if (diffTime > 0) {
-            return 5;
-        } else {
-            return -5;
-        }
+	int diffTime = this.submitTime - o.submitTime;
+	if (diffTime == 0) {
+	    if (jobId > o.jobId) {
+		return 2;
+	    } else if (jobId == o.jobId) {
+		return this.hashCode() == o.hashCode() ? 0 : (this.hashCode() > o.hashCode() ? 1 : -1);
+	    } else {
+		return -2;
+	    }
+	} else if (diffTime > 0) {
+	    return 5;
+	} else {
+	    return -5;
+	}
     }
 
-	public void preemptJob(int time) {
-		assert this.startTime != -1;
-        this.preemptions += 1;
-        globalPreemptions += 1;
-		this.wastedTime += (time - this.startTime);
-		//assert (this.wastedTime == this.runTime);
-		this.startTime = -1;
-        this.finishJobEvent.cancel();
+    public void preemptJob(int time) {
+	assert this.startTime != -1;
+	this.preemptions += 1;
+	globalPreemptions += 1;
+	this.wastedTime += (time - this.startTime);
+	// assert (this.wastedTime == this.runTime);
+	this.startTime = -1;
+	this.finishJobEvent.cancel();
     }
 
     public void setFinishedJobEvent(TimedEvent finishJobEvent) {
-        this.finishJobEvent = finishJobEvent;
+	this.finishJobEvent = finishJobEvent;
     }
 
     public int getWastedTime() {
-        return this.wastedTime;
+	return this.wastedTime;
     }
 
     public void finishJob(int time) {
-        this.finishJob = time;
+	this.finishJob = time;
     }
 
-	public String getOrigSite() {
-		return this.site;
-	}
+    public String getOrigSite() {
+	return this.site;
+    }
 
-	public Peer getPeer() {
-		return this.peer;
-	}
-	
-	public void setPeer(Peer peer) {
-		assert peer == null || this.peer == null;
-		this.peer = peer;
-	}
+    public Peer getPeer() {
+	return this.peer;
+    }
 
-	@Override
-	public String toString() {
-		return "Job [jobId=" + jobId + ", nProc=" + nProc + ", runTime="
-				+ runTime + ", startTime=" + startTime + ", submitTime="
-				+ submitTime + "]";
-	}
+    public void setPeer(Peer peer) {
+	assert peer == null || this.peer == null;
+	this.peer = peer;
+    }
 
-	public void setStartJobEvent(StartJobEvent startJobEvent) {
-		this.startJobEvent = startJobEvent;
-	}
+    @Override
+    public String toString() {
+	return "Job [jobId=" + jobId + ", nProc=" + nProc + ", runTime=" + runTime + ", startTime=" + startTime + ", submitTime=" + submitTime + "]";
+    }
 
-	public void cancelStart() {
-		if (this.startJobEvent != null) {
-			startJobEvent.cancel();
-		}
-	}
+    public void setStartJobEvent(StartJobEvent startJobEvent) {
+	this.startJobEvent = startJobEvent;
+    }
 
-	public int getPreemptions() {
-		return preemptions;
+    public void cancelStart() {
+	if (this.startJobEvent != null) {
+	    startJobEvent.cancel();
 	}
-	
+    }
+
+    public int getPreemptions() {
+	return preemptions;
+    }
+
 }
