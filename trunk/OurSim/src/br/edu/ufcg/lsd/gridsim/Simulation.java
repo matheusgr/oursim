@@ -1,9 +1,10 @@
 package br.edu.ufcg.lsd.gridsim;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.List;
 import java.util.TreeSet;
 
+import oursim.Parameters;
 import br.edu.ufcg.lsd.gridsim.events.FinishedJobEvent;
 import br.edu.ufcg.lsd.gridsim.events.SubmitJobEvent;
 import br.edu.ufcg.lsd.gridsim.events.TimeQueue;
@@ -59,14 +60,25 @@ public class Simulation {
 	int numJobs = 100;//quantidade total de jobs do workload
 	int numberOfPeers = 2;//Vai ser usado para atribuir a origem dos jobs
 	peerNodeSize = 4;
+
+	int c=0;
 	
-	HashSet<String> peers = new HashSet<String>();
+	execTime = Integer.parseInt(Parameters.args[c++]);
+	execTimeVar = Integer.parseInt(Parameters.args[c++]);
+	submissionInterval = Integer.parseInt(Parameters.args[c++]);
+	numJobs = Integer.parseInt(Parameters.args[c++]);
+	numberOfPeers = Integer.parseInt(Parameters.args[c++]);
+	peerNodeSize = Integer.parseInt(Parameters.args[c++]);
+	
+	ArrayList<String> peers = new ArrayList<String>();
 	for (int i = 0; i < numberOfPeers; i++) {
 	    peers.add("P" + i);
 	}
 
 	Workload workload = new SyntheticWorkload(execTime, execTimeVar, submissionInterval, numJobs, peers);
 
+	workload.close();
+	
 	System.out.println("# Peers   : " + peers.size());
 	TimeQueue tq = new TimeQueue();
 	TreeSet<Job> submittedJobs = new TreeSet<Job>();
@@ -99,7 +111,7 @@ public class Simulation {
 	System.out.println("# Preemptions: " + Job.globalPreemptions);
     }
 
-    private static SchedulerOurGrid prepareOG(HashSet<String> peersNames, int peerNodeSize, TimeQueue tq, TreeSet<Job> submittedJobs) {
+    private static SchedulerOurGrid prepareOG(List<String> peersNames, int peerNodeSize, TimeQueue tq, TreeSet<Job> submittedJobs) {
 	ArrayList<Peer> peers = new ArrayList<Peer>(peersNames.size());
 
 	for (String name : peersNames) {

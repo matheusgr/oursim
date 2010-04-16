@@ -20,7 +20,7 @@ public class OurSim {
 
 	ArrayList<Peer> peers = new ArrayList<Peer>(numPeers);
 
-	NoFSharingPolicy sharingPolicy = new NoFSharingPolicy();
+	NoFSharingPolicy sharingPolicy = NoFSharingPolicy.getInstance();
 	
 	for (int i = 0; i < numPeers; i++) {
 	    peers.add(new Peer("P" + i, numNodesByPeer, sharingPolicy));
@@ -48,7 +48,14 @@ public class OurSim {
 
 	// intervalo de submissão entre jobs subsequentes
 	int submissionInterval = 1;
-
+	
+	int i=0;
+	
+	execTime = Integer.parseInt(Parameters.args[i++]);
+	execTimeVariance = Integer.parseInt(Parameters.args[i++]);
+	submissionInterval = Integer.parseInt(Parameters.args[i++]);
+	numJobs = Integer.parseInt(Parameters.args[i++]);
+	
 	Workload workload = new SyntheticWorkload(execTime, execTimeVariance, submissionInterval, numJobs, peers);
 
 	return workload;
@@ -80,17 +87,24 @@ public class OurSim {
 	    }
 	}
 	
-	System.out.println("# Total Jobs ~ O: " + FinishJobEvent.o);
+	System.out.println("# Total Jobs ~ O: " + FinishJobEvent.amountOfFinishedJobs);
 	System.out.println("# Preemptions: " + Job.numberOfPreemptionsForAllJobs);
 
     }
 
     public static void main(String[] args) {
 
-	List<Peer> peers = prepareGrid(2, 4);
+	int i=4;
+	
+	int numOfPeers = Integer.parseInt(Parameters.args[i++]);
+	int numOfNodesByPeer = Integer.parseInt(Parameters.args[i++]);
+
+	List<Peer> peers = prepareGrid(numOfPeers, numOfNodesByPeer);
 
 	Workload workload = prepareWorkload(peers);
 
+	workload.close();
+	
 	run(workload, peers);
 
     }

@@ -1,15 +1,41 @@
 package oursim.events;
 
+import oursim.entities.Job;
+import oursim.policy.SchedulerPolicy;
+
 public abstract class TimedEvent implements Comparable<TimedEvent> {
 
-    protected long time;
-    private boolean cancel;
     private long id;
+    private boolean cancel;
+
+    protected long time;
+    protected SchedulerPolicy scheduler;
+    protected Job job;
 
     public TimedEvent(long time, long id) {
 	this.time = time;
 	this.cancel = false;
 	this.id = id;
+    }
+
+    protected abstract void doAction();
+
+    public void cancel() {
+	this.cancel = true;
+    }
+
+    public final void action() {
+	if (!cancel) {
+	    doAction();
+	}
+    }
+
+    public boolean isCancelled() {
+	return this.cancel;
+    }
+
+    public long getTime() {
+	return this.time;
     }
 
     @Override
@@ -26,26 +52,6 @@ public abstract class TimedEvent implements Comparable<TimedEvent> {
 	} else {
 	    return -2;
 	}
-    }
-
-    public void cancel() {
-	this.cancel = true;
-    }
-
-    public abstract void doAction();
-
-    public void action() {
-	if (!cancel) {
-	    doAction();
-	}
-    }
-
-    public boolean isCancelled() {
-	return this.cancel;
-    }
-
-    public long getTime() {
-	return this.time;
     }
 
 }

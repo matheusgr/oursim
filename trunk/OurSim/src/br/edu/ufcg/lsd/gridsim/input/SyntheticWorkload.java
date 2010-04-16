@@ -1,11 +1,10 @@
 package br.edu.ufcg.lsd.gridsim.input;
 
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.ArrayList;
-
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Random;
+import java.util.List;
 
 import br.edu.ufcg.lsd.gridsim.Configuration;
 import br.edu.ufcg.lsd.gridsim.Job;
@@ -14,22 +13,21 @@ public class SyntheticWorkload implements Workload {
 
     LinkedList<Job> jobs = new LinkedList<Job>();
 
-    public SyntheticWorkload(int runTime, int runTimeVar, int submissionInterval, int numJobs, HashSet<String> peers) {
+    public SyntheticWorkload(int runTime, int runTimeVar, int submissionInterval, int numJobs, List<String> peers) {
 	
 	int submissionTime = 0;
-	ArrayList<String> peersL = new ArrayList<String>(peers);
 	
 	for (int jobId = 0; jobId < numJobs; jobId++) {
 	    
 	    submissionTime += Configuration.r.nextInt(submissionInterval);
 	    
 	    double magic = Math.abs(Configuration.r.nextGaussian());
-	    magic *= peersL.size() / 3.0;
-	    magic = magic > peersL.size() ? peersL.size() - 1 : magic;
+	    magic *= peers.size() / 3.0;
+	    magic = magic > peers.size() ? peers.size() - 1 : magic;
 	    
 	    int randomPeer = (int) (magic);
 	    int runTimeDuration = runTime + Configuration.r.nextInt(runTimeVar);
-	    String sourcePeer = peersL.get(randomPeer);
+	    String sourcePeer = peers.get(randomPeer);
 	    jobs.add(new Job(jobId, submissionTime, runTimeDuration, sourcePeer));
 	    
 	}
@@ -38,7 +36,14 @@ public class SyntheticWorkload implements Workload {
 
     @Override
     public void close() {
-	// Nothing to do
+	try {
+	    PrintStream out = new PrintStream("workload_simulation.txt");
+	    for (Job job : jobs) {
+		out.printf("%s %s %s %s\n",job.getJobId(), job.getOrigSite(), job.getRunTime(), job.getSubmitTime());
+	    }
+	} catch (FileNotFoundException e) {
+	    e.printStackTrace();
+	}
     }
 
     @Override

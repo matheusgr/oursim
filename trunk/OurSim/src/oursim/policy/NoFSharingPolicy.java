@@ -7,16 +7,22 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import oursim.Parameters;
 import oursim.entities.Job;
 import oursim.entities.Peer;
-import br.edu.ufcg.lsd.gridsim.Configuration;
 
 public class NoFSharingPolicy implements SharingPolicy {
 
     private Map<Peer, HashMap<Peer, Long>> allBalances;
 
-    public NoFSharingPolicy() {
+    private static NoFSharingPolicy instance = null;
+
+    private NoFSharingPolicy() {
 	allBalances = new HashMap<Peer, HashMap<Peer, Long>>();
+    }
+
+    public static NoFSharingPolicy getInstance() {
+	return (instance == null) ? new NoFSharingPolicy() : instance;
     }
 
     public void setBalance(Peer provider, Peer consumer, long runTime) {
@@ -42,7 +48,7 @@ public class NoFSharingPolicy implements SharingPolicy {
 	return getBalance(consumer, balances);
     }
 
-    public HashMap<Peer, Integer> calculateAllowedResources(Peer provider, Peer newConsumer, final HashMap<Peer, Integer> remoteConsumingPeers,
+    public HashMap<Peer, Integer> calculateAllowedResources(Peer provider, Peer consumer, final HashMap<Peer, Integer> remoteConsumingPeers,
 	    final HashSet<Job> runningJobs, HashSet<Job> runningLocalJobs) {
 	assert allBalances.containsKey(provider);
 	HashMap<Peer, Long> balances = allBalances.get(provider);
@@ -54,7 +60,7 @@ public class NoFSharingPolicy implements SharingPolicy {
 	long resourcesToShare = getRemoteShareSize(provider.getAmountOfResources(), runningLocalJobs);
 
 	// If its local, remove one resource from remote
-	if (newConsumer == provider) {
+	if (consumer == provider) {
 	    resourcesToShare -= 1;
 	}
 
@@ -68,13 +74,13 @@ public class NoFSharingPolicy implements SharingPolicy {
 	}
 
 	// pois se não for novo já está na contagem anterior
-	totalBalance += remoteConsumingPeers.containsKey(newConsumer) ? 0 : getBalance(newConsumer, balances);
+	totalBalance += remoteConsumingPeers.containsKey(consumer) ? 0 : getBalance(consumer, balances);
 
 	long resourcesLeft = resourcesToShare;
 
 	int pSize = remoteConsumingPeers.size();
 
-	pSize += remoteConsumingPeers.containsKey(newConsumer) ? 0 : 1;
+	pSize += remoteConsumingPeers.containsKey(consumer) ? 0 : 1;
 
 	// Set minimum resources allowed for each peer
 	for (Peer p : remoteConsumingPeers.keySet()) {
@@ -90,23 +96,23 @@ public class NoFSharingPolicy implements SharingPolicy {
 	    resourcesLeft -= resourcesForPeer;
 	}
 
-	if (!remoteConsumingPeers.containsKey(newConsumer)) {
+	if (!remoteConsumingPeers.containsKey(consumer)) {
 	    int resourcesForPeer = 0;
 	    double share;
 	    if (totalBalance == 0) {
 		share = (1.0d / pSize);
 	    } else {
-		share = ((double) getBalance(newConsumer, balances)) / totalBalance;
+		share = ((double) getBalance(consumer, balances)) / totalBalance;
 	    }
 	    resourcesForPeer = (int) (share * resourcesToShare);
-	    allowedResources.put(newConsumer, resourcesForPeer);
+	    allowedResources.put(consumer, resourcesForPeer);
 	    resourcesLeft -= resourcesForPeer;
 	}
 
 	// recursos que o peer em questão já está utilizando
-	int resourcesInUse = remoteConsumingPeers.containsKey(newConsumer) ? remoteConsumingPeers.get(newConsumer) : 0;
+	int resourcesInUse = remoteConsumingPeers.containsKey(consumer) ? remoteConsumingPeers.get(consumer) : 0;
 
-	if (newConsumer != provider && resourcesInUse <= allowedResources.get(newConsumer)) {
+	if (consumer != provider && resourcesInUse <= allowedResources.get(consumer)) {
 	    return allowedResources;
 	}
 
@@ -114,11 +120,11 @@ public class NoFSharingPolicy implements SharingPolicy {
 
 	ArrayList<Peer> consumersList = new ArrayList<Peer>(remoteConsumingPeers.size() + 1);
 	consumersList.addAll(remoteConsumingPeers.keySet());
-	if (!remoteConsumingPeers.containsKey(newConsumer)) {
-	    consumersList.add(newConsumer);
+	if (!remoteConsumingPeers.containsKey(consumer)) {
+	    consumersList.add(consumer);
 	}
 
-	Collections.shuffle(consumersList, Configuration.r);
+	Collections.shuffle(consumersList, Parameters.RANDOM);
 	Collections.sort(consumersList, new Comparator<Peer>() {
 
 	    @Override

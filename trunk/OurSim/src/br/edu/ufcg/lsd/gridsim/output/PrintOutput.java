@@ -1,5 +1,7 @@
 package br.edu.ufcg.lsd.gridsim.output;
 
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.sql.SQLException;
 
 import br.edu.ufcg.lsd.gridsim.GlobalScheduler;
@@ -8,11 +10,17 @@ import br.edu.ufcg.lsd.gridsim.Job;
 public class PrintOutput implements InterfaceOutput {
 
     private static InterfaceOutput instance;
+    
+    private PrintStream out;
 
-    public PrintOutput() {
-
+    private PrintOutput() {
+	try {
+	    this.out = new PrintStream("trace_simulation.txt");
+	} catch (FileNotFoundException e) {
+	    e.printStackTrace();
+	}
     }
-
+    
     public synchronized static InterfaceOutput getInstance(String fileName) throws SQLException {
 	if (instance == null) {
 	    instance = new PrintOutput();
@@ -29,7 +37,7 @@ public class PrintOutput implements InterfaceOutput {
      */
     @Override
     public void finishJob(int time, GlobalScheduler grid, Job job) {
-	System.out.println("F:" + time + ":" + ":" + job.getJobId() + ":" + job.getSubmitTime() + ":" + job.getRunTime() + ":" + (time - job.getSubmitTime())
+	this.out.println("F:" + time + ":" + ":" + job.getJobId() + ":" + job.getSubmitTime() + ":" + job.getRunTime() + ":" + (time - job.getSubmitTime())
 		+ ":" + job.getPreemptions());
     }
 
@@ -42,12 +50,12 @@ public class PrintOutput implements InterfaceOutput {
      */
     @Override
     public void submitJob(int time, GlobalScheduler grid, Job job) {
-	System.out.println("U:" + time + ":" + job.getJobId());
+	this.out.println("U:" + time + ":" + job.getJobId());
     }
 
     @Override
     public void startJob(int time, String source, Job job) {
-	System.out.println("S:" + time + ":" + job.getJobId() );
+	this.out.println("S:" + time + ":" + job.getJobId() );
     }
 
 }

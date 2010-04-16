@@ -11,7 +11,7 @@ import oursim.entities.Peer;
 import oursim.events.FinishJobEvent;
 import oursim.events.SubmitJobEvent;
 import oursim.events.TimeQueue;
-import oursim.output.DefaultOutput;
+import oursim.output.PrintOutput;
 
 public class OurGridScheduler implements SchedulerPolicy {
 
@@ -82,7 +82,7 @@ public class OurGridScheduler implements SchedulerPolicy {
 	    Peer consumer = job.getSourcePeer();
 
 	    requestPolicy.request(peers);
-	    
+
 	    for (Peer provider : peers) {
 		HashSet<Peer> providersTried = triedPeers.get(consumer);
 		if (providersTried != null && providersTried.contains(provider)) {
@@ -90,7 +90,8 @@ public class OurGridScheduler implements SchedulerPolicy {
 		}
 		boolean runJob = provider.addJob(job, consumer, timeQueue.currentTime());
 		if (runJob) {
-		    DefaultOutput.getInstance().startJob(timeQueue.currentTime(), job);
+		    //TODO Gerenciar este output em um evento de StartJob
+		    PrintOutput.getInstance().startJob(timeQueue.currentTime(), job);
 		    job.setStartTime(timeQueue.currentTime());
 		    job.setTargetPeer(provider);
 		    long finishTime = job.getStartTime() + job.getRunTimeDuration();
