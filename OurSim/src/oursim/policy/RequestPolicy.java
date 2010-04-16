@@ -3,8 +3,7 @@ package oursim.policy;
 import java.util.Collections;
 import java.util.List;
 
-import br.edu.ufcg.lsd.gridsim.Configuration;
-
+import oursim.Parameters;
 import oursim.entities.Peer;
 
 public class RequestPolicy {
@@ -19,7 +18,7 @@ public class RequestPolicy {
 	// }
 	//
 	// });
-	Collections.shuffle(peers,Configuration.r);
+	Collections.shuffle(peers,Parameters.RANDOM);
     }
 
 }

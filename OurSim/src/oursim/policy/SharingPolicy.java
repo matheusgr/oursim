@@ -14,7 +14,7 @@ public interface SharingPolicy {
 
     /**
      * @param provider
-     * @param newConsumer
+     * @param consumer
      * @param balances
      * @param remoteConsumingPeers
      *                a quantidade de recursos que o peer remoto está consumindo
@@ -22,7 +22,7 @@ public interface SharingPolicy {
      * @param currentTime
      * @return
      */
-    public abstract HashMap<Peer, Integer> calculateAllowedResources(Peer provider, Peer newConsumer, final HashMap<Peer, Integer> remoteConsumingPeers,
+    public abstract HashMap<Peer, Integer> calculateAllowedResources(Peer provider, Peer consumer, final HashMap<Peer, Integer> remoteConsumingPeers,
 	    final HashSet<Job> runningJobs, HashSet<Job> runningLocalJobs);
 
     public abstract void addPeer(Peer peer);

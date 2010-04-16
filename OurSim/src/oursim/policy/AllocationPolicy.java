@@ -7,8 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
-import br.edu.ufcg.lsd.gridsim.Configuration;
-
+import oursim.Parameters;
 import oursim.entities.Job;
 import oursim.entities.Peer;
 
@@ -110,7 +109,7 @@ public class AllocationPolicy {
 	Peer choosen = null;
 
 	LinkedList<Peer> peerList = new LinkedList<Peer>(remoteConsumingPeers.keySet());
-	Collections.shuffle(peerList, Configuration.r);
+	Collections.shuffle(peerList, Parameters.RANDOM);
 
 	// pega o que estiver usando mais do que merece
 	for (Peer p : peerList) {
