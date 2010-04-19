@@ -8,10 +8,11 @@ public class FinishJobEvent extends TimedEvent {
 
     public static int amountOfFinishedJobs = 0;
 
-    public FinishJobEvent(long time, Job job, SchedulerPolicy scheduler) {
+    FinishJobEvent(long time, Job job, SchedulerPolicy scheduler) {
 	super(time, -job.getId());
 	this.job = job;
 	this.scheduler = scheduler;
+	this.job.setFinishedJobEvent(this);
     }
 
     @Override
