@@ -28,16 +28,16 @@ public class AllocationPolicy {
     public AllocationPolicy(Peer peer, SharingPolicy sharingPolicy) {
 
 	this.peer = peer;
-	
+
 	this.availableResources = peer.getAmountOfResources();
 
 	this.runningJobs = new HashSet<Job>();
 	this.runningLocalJobs = new HashSet<Job>();
-	
+
 	this.remoteConsumingPeers = new HashMap<Peer, Integer>();
 
 	this.sharingPolicy = sharingPolicy;
-	
+
 	this.sharingPolicy.addPeer(peer);
 
     }
@@ -77,35 +77,32 @@ public class AllocationPolicy {
 	if (sourcePeer == peer) {
 	    boolean removed = this.runningLocalJobs.remove(job);
 	    assert removed;
+	    // Don't compute own balance
 	} else {
 	    boolean removed = this.runningJobs.remove(job);
 	    assert removed;
-	}
 
-	this.availableResources++;
-
-	if (sourcePeer == peer) {
-	    return; // Don't compute own balance
-	} else {
 	    int value = this.remoteConsumingPeers.get(sourcePeer) - 1;
 	    if (value == 0) {
 		this.remoteConsumingPeers.remove(sourcePeer);
 	    } else {
 		this.remoteConsumingPeers.put(sourcePeer, value);
 	    }
+	    //compute balance
+	    if (!preempted) {
+		sharingPolicy.setBalance(peer, sourcePeer, -job.getRunTimeDuration());
+		// Não aparenta ser um comportamento autônomo. Está setando o
+		// balance do peer origem.
+		sharingPolicy.setBalance(sourcePeer, peer, job.getRunTimeDuration());
+	    }
 	}
 
-	if (!preempted) {
-	    sharingPolicy.setBalance(peer, sourcePeer, -job.getRunTimeDuration());
-	    // Não aparenta ser um comportamento autônomo. Está setando o
-	    // balance do peer origem.
-	    sharingPolicy.setBalance(sourcePeer, peer, job.getRunTimeDuration());
-	}
+	this.availableResources++;
 
     }
 
     protected void preemptOneJob(HashMap<Peer, Integer> allowedResources, long time) {
-	
+
 	Peer choosen = null;
 
 	LinkedList<Peer> peerList = new LinkedList<Peer>(remoteConsumingPeers.keySet());
@@ -149,7 +146,8 @@ public class AllocationPolicy {
     private void rescheduleJob(Job j) {
 	// GlobalScheduler.getInstance().schedule(j);
 	// TODO: Gerar um evento de preempção de job
-//	throw new UnsupportedOperationException("Operaçao ainda não implementada.");
+	// throw new UnsupportedOperationException("Operaçao ainda não
+	// implementada.");
     }
 
     private void startJob(Job job) {
