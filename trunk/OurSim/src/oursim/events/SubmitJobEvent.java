@@ -6,7 +6,7 @@ import oursim.policy.SchedulerPolicy;
 
 public class SubmitJobEvent extends TimedEvent {
 
-    public SubmitJobEvent(long time, Job job, SchedulerPolicy scheduler) {
+    SubmitJobEvent(long time, Job job, SchedulerPolicy scheduler) {
 	super(time, job.getId());
 	this.job = job;
 	this.scheduler = scheduler;
@@ -21,7 +21,7 @@ public class SubmitJobEvent extends TimedEvent {
 
     public void resubmit() {
 	PrintOutput.getInstance().submitJob(time, job);
-	this.scheduler.schedule(job);
+	this.scheduler.rescheduleJob(job);
     }
     
 }

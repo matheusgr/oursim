@@ -2,17 +2,35 @@ package oursim.events;
 
 import java.util.PriorityQueue;
 
-public class TimeQueue {
+import oursim.entities.Job;
+import oursim.policy.SchedulerPolicy;
+
+public class EventQueue {
 
     private PriorityQueue<TimedEvent> pq;
     private long time = -1;
 
-    public TimeQueue() {
+    public EventQueue() {
 	pq = new PriorityQueue<TimedEvent>();
     }
 
     public void addEvent(TimedEvent event) {
+	assert event.getTime() >= time;
 	pq.add(event);
+    }
+
+    public void addFinishJobEvent(long finishTime, Job job, SchedulerPolicy sp) {
+	assert finishTime > this.currentTime();
+	this.addEvent(new FinishJobEvent(finishTime, job, sp));
+    }
+
+    public void addStartedJobEvent(Job job, SchedulerPolicy sp) {
+	this.addEvent(new StartedJobEvent(job, sp));
+	this.addFinishJobEvent(job.getEstimatedFinishTime(), job, sp);
+    }
+
+    public void addSubmitJobEvent(long submitTime, Job job, SchedulerPolicy sp) {
+	this.addEvent(new SubmitJobEvent(submitTime, job, sp));
     }
 
     public void removeEvent(TimedEvent event) {
