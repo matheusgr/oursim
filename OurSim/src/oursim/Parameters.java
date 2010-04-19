@@ -14,7 +14,7 @@ public class Parameters {
     // peerNodeSize = 10;
 
     // execTime execTimeVar subInterval numJobs numberOfPeers peerSize
-    private static String argsString = "        100         50 	          5   10000            10       10";
+    private static String argsString = "        100         50 	          5   100000            10       10";
 
     public static String[] args = argsString.trim().split("\\s+");
 
