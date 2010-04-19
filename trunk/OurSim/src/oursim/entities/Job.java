@@ -71,6 +71,7 @@ public class Job implements Comparable<Job> {
 	this.wastedTime += (time - this.startTime);
 	this.startTime = -1;
 	this.finishJobEvent.cancel();
+	this.finishJobEvent = null;
 	this.submitJobEvent.resubmit();
     }
     
@@ -79,6 +80,7 @@ public class Job implements Comparable<Job> {
     }
     
     public void setFinishedJobEvent(TimedEvent finishJobEvent) {
+	assert this.finishJobEvent == null;
 	this.finishJobEvent = finishJobEvent;
     }
 
@@ -94,6 +96,10 @@ public class Job implements Comparable<Job> {
 	return this.finishTime - (this.submissionTime + this.runTimeDuration);
     }
 
+    public long getEstimatedFinishTime() {
+	return finishTime = this.getStartTime() + this.getRunTimeDuration();
+    }    
+    
     public long getFinishTime() {
 	return finishTime;
     }
