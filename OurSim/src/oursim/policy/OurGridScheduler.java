@@ -68,7 +68,7 @@ public class OurGridScheduler implements JobSchedulerPolicy {
 	    Peer consumer = job.getSourcePeer();
 
 	    // efeito colateral: reordena os peers
-	    resourceRequestPolicy.request(peers);
+	    resourceRequestPolicy.request(consumer, peers);
 
 	    for (Peer provider : peers) {
 
