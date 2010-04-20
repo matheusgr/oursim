@@ -2,7 +2,7 @@ package oursim.policy;
 
 import oursim.entities.Job;
 
-public interface SchedulerPolicy {
+public interface JobSchedulerPolicy {
 
     /**
      * Performs a rescheduling of the job. This job already has been schedulled

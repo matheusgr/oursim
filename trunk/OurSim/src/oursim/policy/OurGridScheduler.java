@@ -10,7 +10,7 @@ import oursim.entities.Job;
 import oursim.entities.Peer;
 import oursim.events.EventQueue;
 
-public class OurGridScheduler implements SchedulerPolicy {
+public class OurGridScheduler implements JobSchedulerPolicy {
 
     private EventQueue eventQueue;
 
@@ -19,7 +19,7 @@ public class OurGridScheduler implements SchedulerPolicy {
     private List<Peer> peers;
     private HashMap<String, Peer> peersMap;
 
-    private RequestPolicy requestPolicy;
+    private ResourceRequestPolicy resourceRequestPolicy;
 
     public OurGridScheduler(EventQueue eventQueue, List<Peer> peers) {
 	this(eventQueue, peers, new TreeSet<Job>());
@@ -35,16 +35,8 @@ public class OurGridScheduler implements SchedulerPolicy {
 	    peersMap.put(p.getName(), p);
 	}
 
-	this.requestPolicy = new RequestPolicy();
+	this.resourceRequestPolicy = new ResourceRequestPolicy();
 
-    }
-
-    public double getUtilization() {
-	double result = 0;
-	for (Peer p : peers) {
-	    result += p.getUtilization();
-	}
-	return result;
     }
 
     @Override
@@ -76,18 +68,18 @@ public class OurGridScheduler implements SchedulerPolicy {
 	    Peer consumer = job.getSourcePeer();
 
 	    // efeito colateral: reordena os peers
-	    requestPolicy.request(peers);
+	    resourceRequestPolicy.request(peers);
 
 	    for (Peer provider : peers) {
-		
+
 		HashSet<Peer> providersTried = triedPeers.get(consumer);
-		
+
 		if (providersTried != null && providersTried.contains(provider)) {
 		    continue;
 		}
-		
+
 		boolean isJobRunning = provider.addJob(job, consumer, eventQueue.currentTime());
-		
+
 		if (isJobRunning) {
 		    updateJobState(job, provider, eventQueue.currentTime());
 		    it.remove();
@@ -99,7 +91,7 @@ public class OurGridScheduler implements SchedulerPolicy {
 		    }
 		    providersTried.add(provider);
 		}
-		
+
 	    }
 	}
 

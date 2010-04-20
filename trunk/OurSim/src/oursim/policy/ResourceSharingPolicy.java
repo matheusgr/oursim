@@ -6,7 +6,7 @@ import java.util.HashSet;
 import oursim.entities.Job;
 import oursim.entities.Peer;
 
-public interface SharingPolicy {
+public interface ResourceSharingPolicy {
 
     public abstract void setBalance(Peer provider, Peer consumer, long runTime);
 
@@ -23,7 +23,7 @@ public interface SharingPolicy {
      * @return
      */
     public abstract HashMap<Peer, Integer> calculateAllowedResources(Peer provider, Peer consumer, final HashMap<Peer, Integer> remoteConsumingPeers,
-	    final HashSet<Job> runningJobs, HashSet<Job> runningLocalJobs);
+	    final HashSet<Job> runningJobs);
 
     public abstract void addPeer(Peer peer);
 
