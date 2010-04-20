@@ -61,14 +61,12 @@ public class Simulation {
 	int numberOfPeers = 2;//Vai ser usado para atribuir a origem dos jobs
 	peerNodeSize = 4;
 
-	int c=0;
-	
-	execTime = Integer.parseInt(Parameters.args[c++]);
-	execTimeVar = Integer.parseInt(Parameters.args[c++]);
-	submissionInterval = Integer.parseInt(Parameters.args[c++]);
-	numJobs = Integer.parseInt(Parameters.args[c++]);
-	numberOfPeers = Integer.parseInt(Parameters.args[c++]);
-	peerNodeSize = Integer.parseInt(Parameters.args[c++]);
+	execTime = Parameters.EXEC_TIME;
+	execTimeVar = Parameters.EXEC_TIME_VAR;
+	submissionInterval = Parameters.SUBMISSION_INTERVAL;
+	numJobs = Parameters.NUM_JOBS;
+	numberOfPeers = Parameters.NUM_PEERS;
+	peerNodeSize = Parameters.PEER_SIZE;
 	
 	ArrayList<String> peers = new ArrayList<String>();
 	for (int i = 0; i < numberOfPeers; i++) {
