@@ -2,11 +2,11 @@ package oursim.events;
 
 import oursim.entities.Job;
 import oursim.output.PrintOutput;
-import oursim.policy.SchedulerPolicy;
+import oursim.policy.JobSchedulerPolicy;
 
 public class SubmitJobEvent extends TimedEvent {
 
-    SubmitJobEvent(long time, Job job, SchedulerPolicy scheduler) {
+    SubmitJobEvent(long time, Job job, JobSchedulerPolicy scheduler) {
 	super(time, job.getId());
 	this.job = job;
 	this.scheduler = scheduler;
