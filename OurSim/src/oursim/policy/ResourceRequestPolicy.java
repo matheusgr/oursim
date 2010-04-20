@@ -6,7 +6,7 @@ import java.util.List;
 import oursim.Parameters;
 import oursim.entities.Peer;
 
-public class RequestPolicy {
+public class ResourceRequestPolicy {
 
     public void request(List<Peer> peers) {
 	// // Getting best balance first

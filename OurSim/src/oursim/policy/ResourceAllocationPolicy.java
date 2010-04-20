@@ -12,12 +12,12 @@ import oursim.entities.Job;
 import oursim.entities.Peer;
 
 //TODO coisa relacionada ao Peer
-public class AllocationPolicy {
+public class ResourceAllocationPolicy {
 
     private int availableResources;
     private Peer peer;
 
-    private SharingPolicy sharingPolicy;
+    private ResourceSharingPolicy resourceSharingPolicy;
 
     private HashSet<Job> runningJobs;
     private HashSet<Job> runningLocalJobs;
@@ -25,7 +25,7 @@ public class AllocationPolicy {
     // a quantidade de recursos que o peer remoto está consumindo neste site
     protected HashMap<Peer, Integer> remoteConsumingPeers;
 
-    public AllocationPolicy(Peer peer, SharingPolicy sharingPolicy) {
+    public ResourceAllocationPolicy(Peer peer, ResourceSharingPolicy resourceSharingPolicy) {
 
 	this.peer = peer;
 
@@ -36,38 +36,47 @@ public class AllocationPolicy {
 
 	this.remoteConsumingPeers = new HashMap<Peer, Integer>();
 
-	this.sharingPolicy = sharingPolicy;
+	this.resourceSharingPolicy = resourceSharingPolicy;
 
-	this.sharingPolicy.addPeer(peer);
+	this.resourceSharingPolicy.addPeer(peer);
 
     }
 
-    public boolean addJob(Job job, final Peer consumer, long time) {
+    public boolean allocateJob(Job job, final Peer consumer, long time) {
 
 	// There is available resources.
 	if (availableResources > 0) {
 	    startJob(job);
 	    return true;
-	}
+	} else if (runningLocalJobs.size() == peer.getAmountOfResources()) {
+	    // Peer is full of local jobs
+	    return false;
+	} else {
 
-	// Peer is full of local jobs
-	if (runningLocalJobs.size() == peer.getAmountOfResources()) {
+	    // This job may need preemption
+	    HashMap<Peer, Integer> allowedResources = resourceSharingPolicy.calculateAllowedResources(peer, consumer, remoteConsumingPeers, runningJobs);
+
+	    int usedResources = remoteConsumingPeers.containsKey(consumer) ? remoteConsumingPeers.get(consumer) : 0;
+
+	    if (consumer == peer || allowedResources.get(consumer) > usedResources) {
+		// Warning: Será que não pode ser preemptado um job do próprio
+		// cara? (Não, não pode!)
+		preemptOneJob(allowedResources, time);
+		startJob(job);
+		return true;
+	    }
 	    return false;
 	}
+    }
 
-	// This job may need preemption
-	HashMap<Peer, Integer> allowedResources = sharingPolicy.calculateAllowedResources(peer, consumer, remoteConsumingPeers, runningJobs, runningLocalJobs);
-
-	int usedResources = remoteConsumingPeers.containsKey(consumer) ? remoteConsumingPeers.get(consumer) : 0;
-
-	if (consumer == peer || allowedResources.get(consumer) > usedResources) {
-	    // Warning: Será que não pode ser preemptado um job do próprio cara?
-	    // (Não, não pode!)
-	    preemptOneJob(allowedResources, time);
-	    startJob(job);
-	    return true;
-	}
-	return false;
+    /**
+     * Only use resources that are busy by local jobs o total de recursos menos
+     * o que está sendo doado.
+     * 
+     * @return
+     */
+    public long getAmountOfResourcesToShare() {
+	return peer.getAmountOfResources() - runningLocalJobs.size();
     }
 
     public void finishJob(Job job, boolean preempted) {
@@ -88,12 +97,12 @@ public class AllocationPolicy {
 	    } else {
 		this.remoteConsumingPeers.put(sourcePeer, value);
 	    }
-	    //compute balance
+	    // compute balance
 	    if (!preempted) {
-		sharingPolicy.setBalance(peer, sourcePeer, -job.getRunTimeDuration());
+		resourceSharingPolicy.setBalance(peer, sourcePeer, -job.getRunTimeDuration());
 		// Não aparenta ser um comportamento autônomo. Está setando o
 		// balance do peer origem.
-		sharingPolicy.setBalance(sourcePeer, peer, job.getRunTimeDuration());
+		resourceSharingPolicy.setBalance(sourcePeer, peer, job.getRunTimeDuration());
 	    }
 	}
 

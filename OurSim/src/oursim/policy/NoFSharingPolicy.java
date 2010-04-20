@@ -11,7 +11,7 @@ import oursim.Parameters;
 import oursim.entities.Job;
 import oursim.entities.Peer;
 
-public class NoFSharingPolicy implements SharingPolicy {
+public class NoFSharingPolicy implements ResourceSharingPolicy {
 
     private Map<Peer, HashMap<Peer, Long>> allBalances;
 
@@ -25,6 +25,12 @@ public class NoFSharingPolicy implements SharingPolicy {
 	return (instance == null) ? new NoFSharingPolicy() : instance;
     }
 
+    @Override
+    public void addPeer(Peer peer) {
+	this.allBalances.put(peer, new HashMap<Peer, Long>());
+    }    
+    
+    @Override
     public void setBalance(Peer provider, Peer consumer, long runTime) {
 	HashMap<Peer, Long> balances = allBalances.get(provider);
 	if (consumer == provider) {
@@ -42,23 +48,24 @@ public class NoFSharingPolicy implements SharingPolicy {
 	}
     }
 
+    @Override
     public long getBalance(Peer provider, Peer consumer) {
 	assert allBalances.containsKey(provider);
 	HashMap<Peer, Long> balances = allBalances.get(provider);
 	return getBalance(consumer, balances);
     }
 
+    private long getBalance(Peer consumer, HashMap<Peer, Long> balances) {
+	return balances.containsKey(consumer) ? balances.get(consumer) : 0;
+    }
+
     public HashMap<Peer, Integer> calculateAllowedResources(Peer provider, Peer consumer, final HashMap<Peer, Integer> remoteConsumingPeers,
-	    final HashSet<Job> runningJobs, HashSet<Job> runningLocalJobs) {
+	    final HashSet<Job> runningJobs) {
 	assert allBalances.containsKey(provider);
 	HashMap<Peer, Long> balances = allBalances.get(provider);
 
-	// Set<Peer> consumers = consumingPeers.keySet();
-
-	// Only use resources that are busy by local jobs
-	// o total de recursos menos o que está sendo doado.
-	long resourcesToShare = getRemoteShareSize(provider.getAmountOfResources(), runningLocalJobs);
-
+	long resourcesToShare = provider.getAmountOfResourcesToShare();
+	
 	// If its local, remove one resource from remote
 	if (consumer == provider) {
 	    resourcesToShare -= 1;
@@ -172,19 +179,6 @@ public class NoFSharingPolicy implements SharingPolicy {
 	}
 
 	return allowedResources;
-    }
-
-    private long getRemoteShareSize(int resources, HashSet<Job> runningLocalJobs) {
-	return resources - runningLocalJobs.size();
-    }
-
-    private long getBalance(Peer consumer, HashMap<Peer, Long> balances) {
-	return balances.containsKey(consumer) ? balances.get(consumer) : 0;
-    }
-
-    @Override
-    public void addPeer(Peer peer) {
-	this.allBalances.put(peer, new HashMap<Peer, Long>());
     }
 
 }
