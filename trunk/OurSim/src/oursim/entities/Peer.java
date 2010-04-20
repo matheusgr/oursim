@@ -1,31 +1,35 @@
 package oursim.entities;
 
-import oursim.policy.AllocationPolicy;
-import oursim.policy.SharingPolicy;
+import oursim.policy.ResourceAllocationPolicy;
+import oursim.policy.ResourceSharingPolicy;
 
 public class Peer {
 
     private int amountOfResources;
     private String name;
 
-    private AllocationPolicy allocationPolicy;
+    private ResourceAllocationPolicy resourceAllocationPolicy;
 
-    public Peer(String name, int amountOfResources, SharingPolicy sharingPolicy) {
+    public Peer(String name, int amountOfResources, ResourceSharingPolicy resourceSharingPolicy) {
 	this.name = name;
 	this.amountOfResources = amountOfResources;
-	this.allocationPolicy = new AllocationPolicy(this, sharingPolicy);
+	this.resourceAllocationPolicy = new ResourceAllocationPolicy(this, resourceSharingPolicy);
     }
 
     public double getUtilization() {
-	return ((double) (this.amountOfResources - allocationPolicy.getAvailableResources())) / this.amountOfResources;
+	return ((double) (this.amountOfResources - resourceAllocationPolicy.getAvailableResources())) / this.amountOfResources;
     }
 
     public int getAmountOfResources() {
 	return amountOfResources;
     }
-
+    
+    public long getAmountOfResourcesToShare() {
+	return resourceAllocationPolicy.getAmountOfResourcesToShare();
+    }
+    
     public boolean addJob(Job job, Peer consumer, long currentTime) {
-	return this.allocationPolicy.addJob(job, consumer, currentTime);
+	return this.resourceAllocationPolicy.allocateJob(job, consumer, currentTime);
     }
 
     public String getName() {
@@ -33,7 +37,7 @@ public class Peer {
     }
 
     public void finishJob(Job job, boolean preempted) {
-	allocationPolicy.finishJob(job, preempted);
+	resourceAllocationPolicy.finishJob(job, preempted);
     }
 
 }
