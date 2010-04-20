@@ -9,6 +9,7 @@ public abstract class TimedEvent implements Comparable<TimedEvent> {
     private boolean cancel;
 
     protected long time;
+    
     protected JobSchedulerPolicy scheduler;
     protected Job job;
 

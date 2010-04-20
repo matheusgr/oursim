@@ -1,7 +1,7 @@
 package oursim.events;
 
 import oursim.entities.Job;
-import oursim.output.PrintOutput;
+import oursim.output.OutputManager;
 import oursim.policy.JobSchedulerPolicy;
 
 public class SubmitJobEvent extends TimedEvent {
@@ -15,13 +15,13 @@ public class SubmitJobEvent extends TimedEvent {
 
     @Override
     protected final void doAction() {
-	PrintOutput.getInstance().submitJob(time, job);
+	OutputManager.getInstance().dispatchJobSubmitted(job);
 	this.scheduler.addJob(job);
     }
 
     public void resubmit() {
-	PrintOutput.getInstance().submitJob(time, job);
+	OutputManager.getInstance().dispatchJobSubmitted(job);
 	this.scheduler.rescheduleJob(job);
     }
-    
+
 }

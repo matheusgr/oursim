@@ -19,18 +19,18 @@ public class EventQueue {
 	pq.add(event);
     }
 
-    public void addFinishJobEvent(long finishTime, Job job, JobSchedulerPolicy sp) {
-	assert finishTime > this.currentTime();
-	this.addEvent(new FinishJobEvent(finishTime, job, sp));
-    }
-
+    public void addSubmitJobEvent(long submitTime, Job job, JobSchedulerPolicy sp) {
+	this.addEvent(new SubmitJobEvent(submitTime, job, sp));
+    }    
+    
     public void addStartedJobEvent(Job job, JobSchedulerPolicy sp) {
 	this.addEvent(new StartedJobEvent(job, sp));
 	this.addFinishJobEvent(job.getEstimatedFinishTime(), job, sp);
-    }
-
-    public void addSubmitJobEvent(long submitTime, Job job, JobSchedulerPolicy sp) {
-	this.addEvent(new SubmitJobEvent(submitTime, job, sp));
+    }   
+    
+    public void addFinishJobEvent(long finishTime, Job job, JobSchedulerPolicy sp) {
+	assert finishTime > this.currentTime();
+	this.addEvent(new FinishJobEvent(finishTime, job, sp));
     }
 
     public void removeEvent(TimedEvent event) {
