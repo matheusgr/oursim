@@ -115,6 +115,8 @@ public class ResourceAllocationPolicy {
 	Peer choosen = null;
 
 	LinkedList<Peer> peerList = new LinkedList<Peer>(remoteConsumingPeers.keySet());
+	
+	//TODO: matheus solicitou a retirada deste shuffle
 	Collections.shuffle(peerList, Parameters.RANDOM);
 
 	// pega o que estiver usando mais do que merece
