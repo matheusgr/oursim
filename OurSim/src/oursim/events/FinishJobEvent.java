@@ -1,16 +1,12 @@
 package oursim.events;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import oursim.entities.Job;
-import oursim.output.PrintOutput;
+import oursim.output.OutputManager;
 import oursim.policy.JobSchedulerPolicy;
 
 public class FinishJobEvent extends TimedEvent {
 
     public static int amountOfFinishedJobs = 0;
-    public static List<Job> finishedJobs = new ArrayList<Job>();
 
     FinishJobEvent(long time, Job job, JobSchedulerPolicy scheduler) {
 	super(time, -job.getId());
@@ -21,11 +17,10 @@ public class FinishJobEvent extends TimedEvent {
 
     @Override
     protected final void doAction() {
-	PrintOutput.getInstance().finishJob(time, job);
+	OutputManager.getInstance().dispatchJobFinished(job);
 	this.job.finishJob(time);
 	amountOfFinishedJobs++;
 	this.scheduler.finishJob(job);
-	finishedJobs.add(job);
     }
 
 }

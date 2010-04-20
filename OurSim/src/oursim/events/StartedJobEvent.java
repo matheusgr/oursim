@@ -1,7 +1,7 @@
 package oursim.events;
 
 import oursim.entities.Job;
-import oursim.output.PrintOutput;
+import oursim.output.OutputManager;
 import oursim.policy.JobSchedulerPolicy;
 
 public class StartedJobEvent extends TimedEvent {
@@ -13,7 +13,7 @@ public class StartedJobEvent extends TimedEvent {
 
     @Override
     protected void doAction() {
-	PrintOutput.getInstance().startJob(getTime(), job);
+	OutputManager.getInstance().dispatchJobStarted(job);
     }
 
 }
