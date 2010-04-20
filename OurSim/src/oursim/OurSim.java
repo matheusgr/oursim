@@ -1,5 +1,7 @@
 package oursim;
 
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +15,7 @@ import oursim.input.SyntheticWorkload;
 import oursim.input.Workload;
 import oursim.policy.NoFSharingPolicy;
 import oursim.policy.OurGridScheduler;
-import oursim.policy.SchedulerPolicy;
+import oursim.policy.JobSchedulerPolicy;
 
 public class OurSim {
 
@@ -38,24 +40,12 @@ public class OurSim {
      */
     private static Workload prepareWorkload(List<Peer> peers) {
 
-	// quantidade total de jobs do workload
-	int numJobs = 100;
-
-	// tempo base de execução do job
-	int execTime = 10;
-
-	// variância máxima do tempo base de execução (sempre positiva)
-	int execTimeVariance = 50;
-
-	// intervalo de submissão entre jobs subsequentes
-	int submissionInterval = 1;
-
 	int i = 0;
 
-	execTime = Integer.parseInt(Parameters.args[i++]);
-	execTimeVariance = Integer.parseInt(Parameters.args[i++]);
-	submissionInterval = Integer.parseInt(Parameters.args[i++]);
-	numJobs = Integer.parseInt(Parameters.args[i++]);
+	int execTime = Integer.parseInt(Parameters.args[i++]);
+	int execTimeVariance = Integer.parseInt(Parameters.args[i++]);
+	int submissionInterval = Integer.parseInt(Parameters.args[i++]);
+	int numJobs = Integer.parseInt(Parameters.args[i++]);
 
 	Workload workload = new SyntheticWorkload(execTime, execTimeVariance, submissionInterval, numJobs, peers);
 
@@ -63,7 +53,7 @@ public class OurSim {
 
     }
 
-    private static void scheduleEvents(EventQueue eq, Workload workload, SchedulerPolicy sp) {
+    private static void scheduleEvents(EventQueue eq, Workload workload, JobSchedulerPolicy sp) {
 
 	while (workload.peek() != null) {
 	    Job job = workload.poll();
@@ -73,7 +63,7 @@ public class OurSim {
 
     }
 
-    public static void run(EventQueue eq, SchedulerPolicy sp) {
+    public static void run(EventQueue eq, JobSchedulerPolicy sp) {
 
 	while (eq.peek() != null) {
 	    long time = eq.peek().getTime();
@@ -101,14 +91,24 @@ public class OurSim {
 
 	EventQueue eq = new EventQueue();
 
-	SchedulerPolicy sp = new OurGridScheduler(eq, peers);
+	JobSchedulerPolicy sp = new OurGridScheduler(eq, peers);
 
 	scheduleEvents(eq, workload, sp);
 
 	run(eq, sp);
 
-	System.out.println("# Total Jobs ~ O: " + FinishJobEvent.amountOfFinishedJobs);
-	System.out.println("# Preemptions: " + Job.numberOfPreemptionsForAllJobs);
+	System.out.println("# Total of  finished jobs: " + FinishJobEvent.amountOfFinishedJobs);
+	System.out.println("# Total of preempted jobs: " + Job.numberOfPreemptionsForAllJobs);
+
+	try {
+	    PrintStream out = new PrintStream("finished_jobs.txt");
+	    out.print("id peer runtime submittime makespan \n");
+	    for (Job job : FinishJobEvent.finishedJobs) {
+		out.printf("%s %s %s %s %s\n", job.getId(), job.getSourcePeer().getName(), job.getRunTimeDuration(), job.getSubmissionTime(), job.getFinishTime()-job.getSubmissionTime());
+	    }
+	} catch (FileNotFoundException e) {
+	    e.printStackTrace();
+	}
 
 	stopWatch.stop();
 
