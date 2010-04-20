@@ -1,7 +1,7 @@
 package oursim.events;
 
 import oursim.entities.Job;
-import oursim.policy.SchedulerPolicy;
+import oursim.policy.JobSchedulerPolicy;
 
 public abstract class TimedEvent implements Comparable<TimedEvent> {
 
@@ -9,7 +9,7 @@ public abstract class TimedEvent implements Comparable<TimedEvent> {
     private boolean cancel;
 
     protected long time;
-    protected SchedulerPolicy scheduler;
+    protected JobSchedulerPolicy scheduler;
     protected Job job;
 
     public TimedEvent(long time, long id) {
