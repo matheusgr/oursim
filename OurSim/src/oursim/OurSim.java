@@ -78,8 +78,8 @@ public class OurSim {
 	StopWatch stopWatch = new StopWatch();
 	stopWatch.start();
 
-	OutputManager.getInstance().addListener(new PrintOutput("oursim_trace.txt"));
-	OutputManager.getInstance().addListener(new PrintOutput());
+//	OutputManager.getInstance().addListener(new PrintOutput("oursim_trace.txt"));
+//	OutputManager.getInstance().addListener(new PrintOutput());
 
 	List<Peer> peers = prepareGrid(Parameters.NUM_PEERS, Parameters.PEER_SIZE);
 
