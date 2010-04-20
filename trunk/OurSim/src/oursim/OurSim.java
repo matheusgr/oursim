@@ -1,7 +1,5 @@
 package oursim;
 
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,9 +11,11 @@ import oursim.events.EventQueue;
 import oursim.events.FinishJobEvent;
 import oursim.input.SyntheticWorkload;
 import oursim.input.Workload;
+import oursim.output.OutputManager;
+import oursim.output.PrintOutput;
+import oursim.policy.JobSchedulerPolicy;
 import oursim.policy.NoFSharingPolicy;
 import oursim.policy.OurGridScheduler;
-import oursim.policy.JobSchedulerPolicy;
 
 public class OurSim {
 
@@ -40,12 +40,10 @@ public class OurSim {
      */
     private static Workload prepareWorkload(List<Peer> peers) {
 
-	int i = 0;
-
-	int execTime = Integer.parseInt(Parameters.args[i++]);
-	int execTimeVariance = Integer.parseInt(Parameters.args[i++]);
-	int submissionInterval = Integer.parseInt(Parameters.args[i++]);
-	int numJobs = Integer.parseInt(Parameters.args[i++]);
+	int execTime = Parameters.EXEC_TIME;
+	int execTimeVariance = Parameters.EXEC_TIME_VAR;
+	int submissionInterval = Parameters.SUBMISSION_INTERVAL;
+	int numJobs = Parameters.NUM_JOBS;
 
 	Workload workload = new SyntheticWorkload(execTime, execTimeVariance, submissionInterval, numJobs, peers);
 
@@ -80,12 +78,10 @@ public class OurSim {
 	StopWatch stopWatch = new StopWatch();
 	stopWatch.start();
 
-	int i = 4;
+	OutputManager.getInstance().addListener(new PrintOutput("oursim_trace.txt"));
+	OutputManager.getInstance().addListener(new PrintOutput());
 
-	int numOfPeers = Integer.parseInt(Parameters.args[i++]);
-	int numOfNodesByPeer = Integer.parseInt(Parameters.args[i++]);
-
-	List<Peer> peers = prepareGrid(numOfPeers, numOfNodesByPeer);
+	List<Peer> peers = prepareGrid(Parameters.NUM_PEERS, Parameters.PEER_SIZE);
 
 	Workload workload = prepareWorkload(peers);
 
@@ -100,32 +96,9 @@ public class OurSim {
 	System.out.println("# Total of  finished jobs: " + FinishJobEvent.amountOfFinishedJobs);
 	System.out.println("# Total of preempted jobs: " + Job.numberOfPreemptionsForAllJobs);
 
-	try {
-	    PrintStream out = new PrintStream("finished_jobs.txt");
-	    out.print("id peer runtime submittime makespan \n");
-	    for (Job job : FinishJobEvent.finishedJobs) {
-		out.printf("%s %s %s %s %s\n", job.getId(), job.getSourcePeer().getName(), job.getRunTimeDuration(), job.getSubmissionTime(), job.getFinishTime()-job.getSubmissionTime());
-	    }
-	} catch (FileNotFoundException e) {
-	    e.printStackTrace();
-	}
-
 	stopWatch.stop();
-
 	System.out.println(stopWatch);
 
     }
 
-    /*
-     * # Total Jobs ~ O: 100000 # Preemptions: 2043 0:00:14.353 # Total Jobs ~
-     * O: 100000 # Preemptions: 2057 0:00:14.168 # Total Jobs ~ O: 100000 #
-     * Preemptions: 2181 # Total Jobs ~ O: 10000 # Preemptions: 214 0:00:02.022 #
-     * Total Jobs ~ O: 10000 # Preemptions: 235
-     */
-
-    // TODO: Mas não pode haver um SubmitJobEvent nesse meio?
-    // Não, pois se tivesse ele teria sido ordenado primeiro e já
-    // teria sido pego acima.
-    // O tchan da história está em [ timeQueue.peek().getTime() ==
-    // time ]
 }
