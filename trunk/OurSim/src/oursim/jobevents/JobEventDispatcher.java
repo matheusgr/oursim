@@ -1,22 +1,22 @@
-package oursim.output;
+package oursim.jobevents;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import oursim.entities.Job;
 
-public class OutputManager {
+public class JobEventDispatcher {
 
     protected List<JobEventListener> listeners;
 
-    private static OutputManager instance = null;
+    private static JobEventDispatcher instance = null;
 
-    private OutputManager() {
+    private JobEventDispatcher() {
 	this.listeners = new ArrayList<JobEventListener>();
     }
 
-    public static OutputManager getInstance() {
-	return instance = (instance != null) ? instance : new OutputManager();
+    public static JobEventDispatcher getInstance() {
+	return instance = (instance != null) ? instance : new JobEventDispatcher();
     }
 
     public void addListener(JobEventListener listener) {
@@ -45,6 +45,13 @@ public class OutputManager {
 	JobEvent jobEvent = new JobEvent(job);
 	for (JobEventListener listener : listeners) {
 	    listener.jobStarted(jobEvent);
+	}
+    }
+
+    public void dispatchJobPreempted(Job job) {
+	JobEvent jobEvent = new JobEvent(job);
+	for (JobEventListener listener : listeners) {
+	    listener.jobPreempted(jobEvent);
 	}
     }
 

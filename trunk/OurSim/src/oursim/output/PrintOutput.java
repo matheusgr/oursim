@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
 import oursim.entities.Job;
+import oursim.jobevents.JobEvent;
 
 public class PrintOutput implements Output {
 
@@ -50,6 +51,19 @@ public class PrintOutput implements Output {
 	Job job = (Job) jobEvent.getSource();
 	this.out.println("S:" + job.getStartTime() + ":" + job.getId());
 
+    }
+
+    @Override
+    public void jobPreempted(JobEvent jobEvent) {
+	
+	Job job = (Job) jobEvent.getSource();
+	this.out.println("P:" + job.getStartTime() + ":" + job.getId() +":" + jobEvent.getTime());
+	
+    }
+
+    @Override
+    public void close() {
+	//nothing to do
     }
 
 }

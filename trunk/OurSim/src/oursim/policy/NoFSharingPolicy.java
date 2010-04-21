@@ -31,11 +31,11 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
     }
 
     @Override
-    public void setBalance(Peer provider, Peer consumer, long runTime) {
+    public void updateBalance(Peer provider, Peer consumer, long balance) {
 	assert consumer != provider;
 	HashMap<Peer, Long> balances = allBalances.get(provider);
 
-	long finalBalance = getBalance(consumer, balances) + runTime;
+	long finalBalance = getBalance(consumer, balances) + balance;
 
 	if (finalBalance < 0) {
 	    balances.remove(consumer);
@@ -43,6 +43,12 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 	    balances.put(consumer, finalBalance);
 	}
 
+    }
+
+    @Override
+    public void updateMutualBalance(Peer provider, Peer consumer, long runTimeDuration) {
+	updateBalance(provider, consumer, -runTimeDuration);
+	updateBalance(consumer, provider, runTimeDuration);
     }
 
     @Override
@@ -56,7 +62,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 	return balances.containsKey(consumer) ? balances.get(consumer) : 0;
     }
 
-    public HashMap<Peer, Integer> calculateAllowedResources(final Peer provider, Peer consumer, final HashMap<Peer, Integer> remoteConsumingPeers,
+    public HashMap<Peer, Integer> calculateAllowedResources(final Peer provider, Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
 	    final HashSet<Job> runningJobs) {
 	assert allBalances.containsKey(provider);
 	HashMap<Peer, Long> balances = allBalances.get(provider);
@@ -74,21 +80,21 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 	// quanto cada peer merece neste provedor
 	HashMap<Peer, Integer> allowedResources = new HashMap<Peer, Integer>();
 
-	for (Peer remoteConsumer : remoteConsumingPeers.keySet()) {
+	for (Peer remoteConsumer : resourcesBeingConsumed.keySet()) {
 	    totalBalance += getBalance(remoteConsumer, balances);
 	}
 
 	// pois se não for novo já está na contagem anterior
-	totalBalance += remoteConsumingPeers.containsKey(consumer) ? 0 : getBalance(consumer, balances);
+	totalBalance += resourcesBeingConsumed.containsKey(consumer) ? 0 : getBalance(consumer, balances);
 
 	long resourcesLeft = resourcesToShare;
 
 	// quantidade de peers que já estão consumindo neste provedor
-	int numConsumingPeers = remoteConsumingPeers.size();
-	numConsumingPeers += remoteConsumingPeers.containsKey(consumer) ? 0 : 1;
+	int numConsumingPeers = resourcesBeingConsumed.size();
+	numConsumingPeers += resourcesBeingConsumed.containsKey(consumer) ? 0 : 1;
 
 	// Set minimum resources allowed for each peer
-	for (Peer remoteConsumer : remoteConsumingPeers.keySet()) {
+	for (Peer remoteConsumer : resourcesBeingConsumed.keySet()) {
 	    int resourcesForPeer = 0;
 	    double share;
 	    if (totalBalance == 0) {
@@ -102,7 +108,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 	}
 
 	// para o caso do consumer ser um novato neste provedor
-	if (!remoteConsumingPeers.containsKey(consumer)) {
+	if (!resourcesBeingConsumed.containsKey(consumer)) {
 	    int resourcesForPeer = 0;
 	    double share;
 	    if (totalBalance == 0) {
@@ -116,15 +122,15 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 	}
 
 	// recursos que o peer em questão já está utilizando
-	int resourcesInUse = remoteConsumingPeers.containsKey(consumer) ? remoteConsumingPeers.get(consumer) : 0;
+	int resourcesInUse = resourcesBeingConsumed.containsKey(consumer) ? resourcesBeingConsumed.get(consumer) : 0;
 
 	if (consumer != provider && resourcesInUse <= allowedResources.get(consumer)) {
 	    return allowedResources;
 	}
 
-	ArrayList<Peer> consumersList = new ArrayList<Peer>(remoteConsumingPeers.size() + 1);
-	consumersList.addAll(remoteConsumingPeers.keySet());
-	if (!remoteConsumingPeers.containsKey(consumer)) {
+	ArrayList<Peer> consumersList = new ArrayList<Peer>(resourcesBeingConsumed.size() + 1);
+	consumersList.addAll(resourcesBeingConsumed.keySet());
+	if (!resourcesBeingConsumed.containsKey(consumer)) {
 	    consumersList.add(consumer);
 	}
 
@@ -138,8 +144,8 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 		if (balanceDiff != 0) {
 		    return balanceDiff > 0 ? -3 : 3;
 		}
-		int p1Consumer = remoteConsumingPeers.containsKey(peer1) ? remoteConsumingPeers.get(peer1) : 0;
-		int p2Consumer = remoteConsumingPeers.containsKey(peer2) ? remoteConsumingPeers.get(peer2) : 0;
+		int p1Consumer = resourcesBeingConsumed.containsKey(peer1) ? resourcesBeingConsumed.get(peer1) : 0;
+		int p2Consumer = resourcesBeingConsumed.containsKey(peer2) ? resourcesBeingConsumed.get(peer2) : 0;
 		int usingDiff = p1Consumer - p2Consumer;
 		// Consuming size second
 		if (usingDiff != 0) {

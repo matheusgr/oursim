@@ -1,8 +1,5 @@
 package oursim.entities;
 
-import oursim.events.SubmitJobEvent;
-import oursim.events.TimedEvent;
-
 public class Job implements Comparable<Job> {
 
     private final long id;
@@ -18,10 +15,6 @@ public class Job implements Comparable<Job> {
 
     private int numberOfpreemptions;
     public static int numberOfPreemptionsForAllJobs = 0;
-
-    private TimedEvent finishJobEvent;
-
-    private SubmitJobEvent submitJobEvent;
 
     public Job(long id, int submissionTime, int runTimeDuration, Peer sourcePeer) {
 
@@ -66,22 +59,11 @@ public class Job implements Comparable<Job> {
 
     public void preempt(long time) {
 	assert this.startTime != -1;
-	this.numberOfpreemptions += 1;
-	numberOfPreemptionsForAllJobs += 1;
+	this.numberOfpreemptions++;
+	numberOfPreemptionsForAllJobs++;
 	this.wastedTime += (time - this.startTime);
 	this.startTime = -1;
-	this.finishJobEvent.cancel();
-	this.finishJobEvent = null;
-	this.submitJobEvent.resubmit();
-    }
-    
-    public void setSubmitJobEvent(SubmitJobEvent submitJobEvent) {
-	this.submitJobEvent = submitJobEvent;
-    }
-    
-    public void setFinishedJobEvent(TimedEvent finishJobEvent) {
-	assert this.finishJobEvent == null;
-	this.finishJobEvent = finishJobEvent;
+	this.setTargetPeer(null);
     }
 
     public void setStartTime(long startTime) {
@@ -98,14 +80,14 @@ public class Job implements Comparable<Job> {
 
     public long getEstimatedFinishTime() {
 	return finishTime = this.getStartTime() + this.getRunTimeDuration();
-    }    
-    
+    }
+
     public long getFinishTime() {
 	return finishTime;
     }
 
     public int getNumberOfpreemptions() {
-        return numberOfpreemptions;
+	return numberOfpreemptions;
     }
 
     @Override

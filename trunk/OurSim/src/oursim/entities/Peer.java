@@ -5,8 +5,8 @@ import oursim.policy.ResourceSharingPolicy;
 
 public class Peer {
 
-    private int amountOfResources;
     private String name;
+    private int amountOfResources;
 
     private ResourceAllocationPolicy resourceAllocationPolicy;
 
@@ -16,28 +16,28 @@ public class Peer {
 	this.resourceAllocationPolicy = new ResourceAllocationPolicy(this, resourceSharingPolicy);
     }
 
-    public double getUtilization() {
-	return ((double) (this.amountOfResources - resourceAllocationPolicy.getAvailableResources())) / this.amountOfResources;
+    public String getName() {
+	return name;
     }
 
     public int getAmountOfResources() {
 	return amountOfResources;
     }
-    
+
     public long getAmountOfResourcesToShare() {
 	return resourceAllocationPolicy.getAmountOfResourcesToShare();
     }
-    
-    public boolean addJob(Job job, Peer consumer, long currentTime) {
-	return this.resourceAllocationPolicy.allocateJob(job, consumer, currentTime);
-    }
 
-    public String getName() {
-	return name;
+    public boolean addJob(Job job, Peer consumer) {
+	return this.resourceAllocationPolicy.allocateJob(job, consumer);
     }
 
     public void finishJob(Job job, boolean preempted) {
 	resourceAllocationPolicy.finishJob(job, preempted);
+    }
+
+    public double getUtilization() {
+	return ((double) (this.amountOfResources - resourceAllocationPolicy.getAvailableResources())) / this.amountOfResources;
     }
 
 }

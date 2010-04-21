@@ -1,19 +1,18 @@
 package oursim.events;
 
 import oursim.entities.Job;
-import oursim.output.OutputManager;
-import oursim.policy.JobSchedulerPolicy;
+import oursim.jobevents.JobEventDispatcher;
 
 public class StartedJobEvent extends TimedEvent {
 
-    StartedJobEvent(Job job, JobSchedulerPolicy sp) {
-	super(job.getStartTime(), -job.getId());
+    StartedJobEvent(Job job) {
+	super(job.getStartTime(), 3);
 	this.job = job;
     }
 
     @Override
     protected void doAction() {
-	OutputManager.getInstance().dispatchJobStarted(job);
+	JobEventDispatcher.getInstance().dispatchJobStarted(job);
     }
 
 }

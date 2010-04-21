@@ -9,8 +9,10 @@ import java.util.TreeSet;
 import oursim.entities.Job;
 import oursim.entities.Peer;
 import oursim.events.EventQueue;
+import oursim.jobevents.JobEvent;
+import oursim.jobevents.JobEventListenerAdapter;
 
-public class OurGridScheduler implements JobSchedulerPolicy {
+public class OurGridScheduler extends JobEventListenerAdapter implements JobSchedulerPolicy {
 
     private EventQueue eventQueue;
 
@@ -51,7 +53,8 @@ public class OurGridScheduler implements JobSchedulerPolicy {
 
     @Override
     public void finishJob(Job job) {
-	job.getTargetPeer().finishJob(job, false);
+	throw new RuntimeException("Método ainda não implementado.");
+	// job.getTargetPeer().finishJob(job, false);
     }
 
     @Override
@@ -78,7 +81,7 @@ public class OurGridScheduler implements JobSchedulerPolicy {
 		    continue;
 		}
 
-		boolean isJobRunning = provider.addJob(job, consumer, eventQueue.currentTime());
+		boolean isJobRunning = provider.addJob(job, consumer);
 
 		if (isJobRunning) {
 		    updateJobState(job, provider, eventQueue.currentTime());
@@ -100,7 +103,25 @@ public class OurGridScheduler implements JobSchedulerPolicy {
     private void updateJobState(Job job, Peer provider, long startTime) {
 	job.setStartTime(startTime);
 	job.setTargetPeer(provider);
-	eventQueue.addStartedJobEvent(job, this);
+	eventQueue.addStartedJobEvent(job);
+    }
+
+    @Override
+    public void jobFinished(JobEvent jobEvent) {
+	Job job = (Job) jobEvent.getSource();
+	job.getTargetPeer().finishJob(job, false);
+    }
+
+    @Override
+    public void jobSubmitted(JobEvent jobEvent) {
+	Job job = (Job) jobEvent.getSource();
+	this.addJob(job);
+    }
+
+    @Override
+    public void jobPreempted(JobEvent jobEvent) {
+	Job job = (Job) jobEvent.getSource();
+	this.rescheduleJob(job);
     }
 
 }
