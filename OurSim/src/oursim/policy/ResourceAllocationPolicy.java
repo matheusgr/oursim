@@ -10,11 +10,12 @@ import java.util.List;
 import oursim.Parameters;
 import oursim.entities.Job;
 import oursim.entities.Peer;
+import oursim.events.EventQueue;
 
-//TODO coisa relacionada ao Peer
 public class ResourceAllocationPolicy {
 
     private int availableResources;
+
     private Peer peer;
 
     private ResourceSharingPolicy resourceSharingPolicy;
@@ -23,7 +24,7 @@ public class ResourceAllocationPolicy {
     private HashSet<Job> runningLocalJobs;
 
     // a quantidade de recursos que o peer remoto está consumindo neste site
-    protected HashMap<Peer, Integer> remoteConsumingPeers;
+    protected HashMap<Peer, Integer> resourcesBeingConsumed;
 
     public ResourceAllocationPolicy(Peer peer, ResourceSharingPolicy resourceSharingPolicy) {
 
@@ -34,7 +35,7 @@ public class ResourceAllocationPolicy {
 	this.runningJobs = new HashSet<Job>();
 	this.runningLocalJobs = new HashSet<Job>();
 
-	this.remoteConsumingPeers = new HashMap<Peer, Integer>();
+	this.resourcesBeingConsumed = new HashMap<Peer, Integer>();
 
 	this.resourceSharingPolicy = resourceSharingPolicy;
 
@@ -42,31 +43,35 @@ public class ResourceAllocationPolicy {
 
     }
 
-    public boolean allocateJob(Job job, final Peer consumer, long time) {
+    public int getAvailableResources() {
+	return availableResources;
+    }
+
+    public boolean allocateJob(Job job, Peer consumer) {
 
 	// There is available resources.
 	if (availableResources > 0) {
 	    startJob(job);
 	    return true;
-	} else if (runningLocalJobs.size() == peer.getAmountOfResources()) {
-	    // Peer is full of local jobs
-	    return false;
-	} else {
-
+	} else if (peer.getAmountOfResources() > runningLocalJobs.size()) {
 	    // This job may need preemption
-	    HashMap<Peer, Integer> allowedResources = resourceSharingPolicy.calculateAllowedResources(peer, consumer, remoteConsumingPeers, runningJobs);
+	    HashMap<Peer, Integer> allowedResources = resourceSharingPolicy.calculateAllowedResources(peer, consumer, resourcesBeingConsumed, runningJobs);
 
-	    int usedResources = remoteConsumingPeers.containsKey(consumer) ? remoteConsumingPeers.get(consumer) : 0;
+	    int usedResources = resourcesBeingConsumed.containsKey(consumer) ? resourcesBeingConsumed.get(consumer) : 0;
 
+	    //TODO se (consumer == peer) poderia preemptar sem recalcular balance algum.
 	    if (consumer == peer || allowedResources.get(consumer) > usedResources) {
 		// Warning: Será que não pode ser preemptado um job do próprio
 		// cara? (Não, não pode!)
-		preemptOneJob(allowedResources, time);
+		preemptOneJob(allowedResources);
 		startJob(job);
 		return true;
 	    }
-	    return false;
 	}
+
+	// Peer is full of local jobs
+	return false;
+
     }
 
     /**
@@ -91,18 +96,17 @@ public class ResourceAllocationPolicy {
 	    boolean removed = this.runningJobs.remove(job);
 	    assert removed;
 
-	    int value = this.remoteConsumingPeers.get(sourcePeer) - 1;
-	    if (value == 0) {
-		this.remoteConsumingPeers.remove(sourcePeer);
+	    int resourcesBeingConsumedByPeer = this.resourcesBeingConsumed.get(sourcePeer) - 1;
+	    if (resourcesBeingConsumedByPeer == 0) {
+		this.resourcesBeingConsumed.remove(sourcePeer);
 	    } else {
-		this.remoteConsumingPeers.put(sourcePeer, value);
+		this.resourcesBeingConsumed.put(sourcePeer, resourcesBeingConsumedByPeer);
 	    }
 	    // compute balance
 	    if (!preempted) {
-		resourceSharingPolicy.setBalance(peer, sourcePeer, -job.getRunTimeDuration());
-		// Não aparenta ser um comportamento autônomo. Está setando o
-		// balance do peer origem.
-		resourceSharingPolicy.setBalance(sourcePeer, peer, job.getRunTimeDuration());
+		resourceSharingPolicy.updateMutualBalance(peer, sourcePeer, job.getRunTimeDuration());
+	    } else {
+		EventQueue.getInstance().addPreemptedJobEvent(job, EventQueue.getInstance().currentTime());
 	    }
 	}
 
@@ -110,55 +114,45 @@ public class ResourceAllocationPolicy {
 
     }
 
-    protected void preemptOneJob(HashMap<Peer, Integer> allowedResources, long time) {
+    protected void preemptOneJob(HashMap<Peer, Integer> allowedResources) {
 
-	Peer choosen = null;
+	Peer chosen = null;
 
-	LinkedList<Peer> peerList = new LinkedList<Peer>(remoteConsumingPeers.keySet());
-	
-	//TODO: matheus solicitou a retirada deste shuffle
+	LinkedList<Peer> peerList = new LinkedList<Peer>(resourcesBeingConsumed.keySet());
+
+	// TODO: matheus solicitou a retirada deste shuffle
 	Collections.shuffle(peerList, Parameters.RANDOM);
 
 	// pega o que estiver usando mais do que merece
 	for (Peer p : peerList) {
-	    int usedResources = remoteConsumingPeers.get(p);
+	    int usedResources = resourcesBeingConsumed.get(p);
 	    if (usedResources > allowedResources.get(p)) {
-		choosen = p;
+		chosen = p;
 		break;
 	    }
 	}
 
-	assert choosen != null;
+	assert chosen != null;
 
 	// todos os jobs do escolhido que estão rodando
 	List<Job> jobs = new LinkedList<Job>();
 	for (Job j : runningJobs) {
-	    if (j.getSourcePeer() == choosen) {
+	    if (j.getSourcePeer() == chosen) {
 		jobs.add(j);
 	    }
 	}
 
-	// get recently start job first
+	// get recently started job first
 	Collections.sort(jobs, new Comparator<Job>() {
-
 	    @Override
-	    public int compare(Job o1, Job o2) {
+	    public int compare(Job j1, Job j2) {
 		// TODO cast promíscuo
-		return (int) (o2.getStartTime() - o1.getStartTime());
+		return (int) (j2.getStartTime() - j1.getStartTime());
 	    }
 	});
-	Job j = jobs.get(0);
-	j.setTargetPeer(null);
-	finishJob(j, true);
-	j.preempt(time);
-	rescheduleJob(j);
-    }
 
-    private void rescheduleJob(Job j) {
-	// GlobalScheduler.getInstance().schedule(j);
-	// TODO: Gerar um evento de preempção de job
-	// throw new UnsupportedOperationException("Operaçao ainda não
-	// implementada.");
+	finishJob(jobs.get(0), true);
+
     }
 
     private void startJob(Job job) {
@@ -175,14 +169,10 @@ public class ResourceAllocationPolicy {
 	}
 
 	int consumedResources = 0;
-	if (this.remoteConsumingPeers.containsKey(sourcePeer)) {
-	    consumedResources = this.remoteConsumingPeers.get(sourcePeer);
+	if (this.resourcesBeingConsumed.containsKey(sourcePeer)) {
+	    consumedResources = this.resourcesBeingConsumed.get(sourcePeer);
 	}
-	this.remoteConsumingPeers.put(sourcePeer, consumedResources + 1);
-    }
-
-    public int getAvailableResources() {
-	return availableResources;
+	this.resourcesBeingConsumed.put(sourcePeer, consumedResources + 1);
     }
 
 }

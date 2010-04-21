@@ -1,23 +1,9 @@
 package oursim.policy;
 
 import oursim.entities.Job;
+import oursim.jobevents.JobEventListener;
 
-public interface JobSchedulerPolicy {
-
-    /**
-     * Performs a rescheduling of the job. This job already has been schedulled
-     * but it was preempted by some reason.
-     * 
-     * @param job
-     *                The job to be rescheduled.
-     */
-    public void rescheduleJob(Job job);
-
-    /**
-     * Performs efectivelly the scheduling of the jobs enqueued in this
-     * scheduler.
-     */
-    public void scheduleJobs();
+public interface JobSchedulerPolicy extends JobEventListener {
 
     /**
      * Simply Adds the job to this scheduler.
@@ -25,7 +11,22 @@ public interface JobSchedulerPolicy {
      * @param job
      *                The job to be added.
      */
-    public void addJob(Job job);
+    void addJob(Job job);    
+    
+    /**
+     * Performs efectivelly the scheduling of the jobs enqueued in this
+     * scheduler.
+     */
+    void scheduleJobs();    
+    
+    /**
+     * Performs a rescheduling of the job. This job already has been schedulled
+     * but it was preempted by some reason.
+     * 
+     * @param job
+     *                The job to be rescheduled.
+     */
+    void rescheduleJob(Job job);
 
     /**
      * Finishs the job from this scheduler.
@@ -33,6 +34,6 @@ public interface JobSchedulerPolicy {
      * @param job
      *                The job to be finished.
      */
-    public void finishJob(Job job);
+    void finishJob(Job job);
 
 }

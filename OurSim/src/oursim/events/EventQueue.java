@@ -1,5 +1,7 @@
 package oursim.events;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.PriorityQueue;
 
 import oursim.entities.Job;
@@ -7,30 +9,49 @@ import oursim.policy.JobSchedulerPolicy;
 
 public class EventQueue {
 
-    private PriorityQueue<TimedEvent> pq;
     private long time = -1;
 
-    public EventQueue() {
+    private PriorityQueue<TimedEvent> pq;
+
+    private static EventQueue instance = null;
+
+    // for cache purpose
+    private Map<Job, FinishJobEvent> job2Event;
+
+    private EventQueue() {
 	pq = new PriorityQueue<TimedEvent>();
+	job2Event = new HashMap<Job, FinishJobEvent>();
+    }
+
+    public static EventQueue getInstance() {
+	return instance = (instance != null) ? instance : new EventQueue();
     }
 
     public void addEvent(TimedEvent event) {
-	assert event.getTime() >= time;
+	assert event.getTime() >= time : event.getTime() + ">=" + time;
 	pq.add(event);
     }
 
     public void addSubmitJobEvent(long submitTime, Job job, JobSchedulerPolicy sp) {
-	this.addEvent(new SubmitJobEvent(submitTime, job, sp));
-    }    
-    
-    public void addStartedJobEvent(Job job, JobSchedulerPolicy sp) {
-	this.addEvent(new StartedJobEvent(job, sp));
-	this.addFinishJobEvent(job.getEstimatedFinishTime(), job, sp);
-    }   
-    
-    public void addFinishJobEvent(long finishTime, Job job, JobSchedulerPolicy sp) {
+	this.addEvent(new SubmitJobEvent(submitTime, job));
+    }
+
+    public void addStartedJobEvent(Job job) {
+	this.addEvent(new StartedJobEvent(job));
+	this.addFinishJobEvent(job.getEstimatedFinishTime(), job);
+    }
+
+    public void addPreemptedJobEvent(Job job, long time) {
+	assert job2Event.containsKey(job);
+	this.job2Event.remove(job).cancel();
+	this.addEvent(new PreemptedJobEvent(job, time));
+    }
+
+    public void addFinishJobEvent(long finishTime, Job job) {
 	assert finishTime > this.currentTime();
-	this.addEvent(new FinishJobEvent(finishTime, job, sp));
+	FinishJobEvent finishJobEvent = new FinishJobEvent(finishTime, job);
+	this.addEvent(finishJobEvent);
+	this.job2Event.put(job, finishJobEvent);
     }
 
     public void removeEvent(TimedEvent event) {

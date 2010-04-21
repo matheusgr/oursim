@@ -1,22 +1,27 @@
 package oursim.events;
 
 import oursim.entities.Job;
-import oursim.policy.JobSchedulerPolicy;
 
 public abstract class TimedEvent implements Comparable<TimedEvent> {
 
-    private long id;
     private boolean cancel;
 
     protected long time;
-    
-    protected JobSchedulerPolicy scheduler;
+
+    // quanto menor maior a preferência para ser executado antes
+    // range -> [1-10]
+    private int priority;
+
     protected Job job;
 
-    public TimedEvent(long time, long id) {
+    public TimedEvent(long time) {
+	this(time, 5);
+    }
+
+    public TimedEvent(long time, int priority) {
 	this.time = time;
+	this.priority = priority;
 	this.cancel = false;
-	this.id = id;
     }
 
     protected abstract void doAction();
@@ -40,10 +45,10 @@ public abstract class TimedEvent implements Comparable<TimedEvent> {
     }
 
     @Override
-    public int compareTo(TimedEvent o) {
-	long diffTime = this.time - o.time;
+    public int compareTo(TimedEvent ev) {
+	long diffTime = this.time - ev.time;
 	if (diffTime == 0) {
-	    if (this.id >= o.id) {
+	    if (this.priority >= ev.priority) {
 		return 1;
 	    } else {
 		return -1;
