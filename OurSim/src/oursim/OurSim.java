@@ -14,57 +14,58 @@ import oursim.policy.NoFSharingPolicy;
 
 public class OurSim {
 
-    private static List<Peer> prepareGrid(int numPeers, int numNodesByPeer) {
+	private static List<Peer> prepareGrid(int numPeers, int numNodesByPeer) {
 
-	ArrayList<Peer> peers = new ArrayList<Peer>(numPeers);
+		ArrayList<Peer> peers = new ArrayList<Peer>(numPeers);
 
-	NoFSharingPolicy sharingPolicy = NoFSharingPolicy.getInstance();
+		NoFSharingPolicy sharingPolicy = NoFSharingPolicy.getInstance();
 
-	for (int i = 0; i < numPeers; i++) {
-	    peers.add(new Peer("P" + i, numNodesByPeer, sharingPolicy));
+		for (int i = 0; i < numPeers; i++) {
+			peers.add(new Peer("P" + i, numNodesByPeer, sharingPolicy));
+		}
+
+		return peers;
+
 	}
 
-	return peers;
+	/**
+	 * @param peers
+	 *            Vai ser usado para atribuir a origem dos jobs
+	 * @return
+	 */
+	private static Workload prepareWorkload(List<Peer> peers) {
 
-    }
+		int execTime = Parameters.EXEC_TIME;
+		int execTimeVariance = Parameters.EXEC_TIME_VAR;
+		int submissionInterval = Parameters.SUBMISSION_INTERVAL;
+		int numJobs = Parameters.NUM_JOBS;
 
-    /**
-     * @param peers
-     *                Vai ser usado para atribuir a origem dos jobs
-     * @return
-     */
-    private static Workload prepareWorkload(List<Peer> peers) {
+		Workload workload = new SyntheticWorkload(execTime, execTimeVariance, submissionInterval, numJobs, peers);
 
-	int execTime = Parameters.EXEC_TIME;
-	int execTimeVariance = Parameters.EXEC_TIME_VAR;
-	int submissionInterval = Parameters.SUBMISSION_INTERVAL;
-	int numJobs = Parameters.NUM_JOBS;
+		return workload;
 
-	Workload workload = new SyntheticWorkload(execTime, execTimeVariance, submissionInterval, numJobs, peers);
+	}
 
-	return workload;
+	public static void main(String[] args) {
 
-    }
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
 
-    public static void main(String[] args) {
+		// OutputManager.getInstance().addListener(new
+		// PrintOutput("oursim_trace.txt"));
+		// OutputManager.getInstance().addListener(new PrintOutput());
 
-	StopWatch stopWatch = new StopWatch();
-	stopWatch.start();
+		List<Peer> peers = prepareGrid(Parameters.NUM_PEERS, Parameters.PEER_SIZE);
+		Workload workload = prepareWorkload(peers);
 
-//	OutputManager.getInstance().addListener(new PrintOutput("oursim_trace.txt"));
-//	OutputManager.getInstance().addListener(new PrintOutput());
+		OurSimAPI.run(peers, workload);
 
-	List<Peer> peers = prepareGrid(Parameters.NUM_PEERS, Parameters.PEER_SIZE);
-	Workload workload = prepareWorkload(peers);
+		System.out.println("# Total of  finished jobs: " + FinishJobEvent.amountOfFinishedJobs);
+		System.out.println("# Total of preempted jobs: " + Job.numberOfPreemptionsForAllJobs);
 
-	OurSimAPI.run(peers, workload);
+		stopWatch.stop();
+		System.out.println(stopWatch);
 
-	System.out.println("# Total of  finished jobs: " + FinishJobEvent.amountOfFinishedJobs);
-	System.out.println("# Total of preempted jobs: " + Job.numberOfPreemptionsForAllJobs);
-
-	stopWatch.stop();
-	System.out.println(stopWatch);
-
-    }
+	}
 
 }

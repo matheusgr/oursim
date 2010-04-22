@@ -5,39 +5,39 @@ import oursim.policy.ResourceSharingPolicy;
 
 public class Peer {
 
-    private String name;
-    private int amountOfResources;
+	private String name;
+	private int amountOfResources;
 
-    private ResourceAllocationPolicy resourceAllocationPolicy;
+	private ResourceAllocationPolicy resourceAllocationPolicy;
 
-    public Peer(String name, int amountOfResources, ResourceSharingPolicy resourceSharingPolicy) {
-	this.name = name;
-	this.amountOfResources = amountOfResources;
-	this.resourceAllocationPolicy = new ResourceAllocationPolicy(this, resourceSharingPolicy);
-    }
+	public Peer(String name, int amountOfResources, ResourceSharingPolicy resourceSharingPolicy) {
+		this.name = name;
+		this.amountOfResources = amountOfResources;
+		this.resourceAllocationPolicy = new ResourceAllocationPolicy(this, resourceSharingPolicy);
+	}
 
-    public String getName() {
-	return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public int getAmountOfResources() {
-	return amountOfResources;
-    }
+	public int getAmountOfResources() {
+		return amountOfResources;
+	}
 
-    public long getAmountOfResourcesToShare() {
-	return resourceAllocationPolicy.getAmountOfResourcesToShare();
-    }
+	public long getAmountOfResourcesToShare() {
+		return resourceAllocationPolicy.getAmountOfResourcesToShare();
+	}
 
-    public boolean addJob(Job job, Peer consumer) {
-	return this.resourceAllocationPolicy.allocateJob(job, consumer);
-    }
+	public boolean addJob(Job job, Peer consumer) {
+		return this.resourceAllocationPolicy.allocateJob(job, consumer);
+	}
 
-    public void finishJob(Job job, boolean preempted) {
-	resourceAllocationPolicy.finishJob(job, preempted);
-    }
+	public void finishJob(Job job, boolean preempted) {
+		resourceAllocationPolicy.finishJob(job, preempted);
+	}
 
-    public double getUtilization() {
-	return ((double) (this.amountOfResources - resourceAllocationPolicy.getAvailableResources())) / this.amountOfResources;
-    }
+	public double getUtilization() {
+		return ((double) (this.amountOfResources - resourceAllocationPolicy.getAvailableResources())) / this.amountOfResources;
+	}
 
 }

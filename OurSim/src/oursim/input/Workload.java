@@ -4,10 +4,10 @@ import oursim.entities.Job;
 
 public interface Workload {
 
-    public abstract Job peek();
+	public abstract Job peek();
 
-    public abstract Job poll();
+	public abstract Job poll();
 
-    public abstract void close();
+	public abstract void close();
 
 }
