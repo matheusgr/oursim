@@ -2,6 +2,7 @@ package oursim.policy;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.TreeMap;
 
 import oursim.entities.Job;
 import oursim.entities.Peer;
@@ -23,7 +24,7 @@ public interface ResourceSharingPolicy {
      * @param runningJobs
      *                todos os jobs não locais que estão rodando neste site
      */
-    public abstract HashMap<Peer, Integer> calculateAllowedResources(Peer provider, Peer consumer, HashMap<Peer, Integer> resourcesBeingConsumed,
+    public abstract TreeMap<Peer, Integer> calculateAllowedResources(Peer provider, Peer consumer, HashMap<Peer, Integer> resourcesBeingConsumed,
 	    HashSet<Job> runningJobs);
 
 }
