@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.TreeMap;
 
-import oursim.Parameters;
 import oursim.entities.Job;
 import oursim.entities.Peer;
 import oursim.events.EventQueue;
@@ -53,23 +53,26 @@ public class ResourceAllocationPolicy {
 	if (availableResources > 0) {
 	    startJob(job);
 	    return true;
-	} else if (peer.getAmountOfResources() > runningLocalJobs.size()) {
-	    // This job may need preemption
-	    HashMap<Peer, Integer> allowedResources = resourceSharingPolicy.calculateAllowedResources(peer, consumer, resourcesBeingConsumed, runningJobs);
-
-	    int usedResources = resourcesBeingConsumed.containsKey(consumer) ? resourcesBeingConsumed.get(consumer) : 0;
-
-	    //TODO se (consumer == peer) poderia preemptar sem recalcular balance algum.
-	    if (consumer == peer || allowedResources.get(consumer) > usedResources) {
-		// Warning: Será que não pode ser preemptado um job do próprio
-		// cara? (Não, não pode!)
-		preemptOneJob(allowedResources);
-		startJob(job);
-		return true;
-	    }
+	}
+	
+	// There are not remote resources that may be preempted
+	if (peer.getAmountOfResourcesToShare() == 0) {
+		return false;
+	}
+	
+	// This job may need preemption
+	TreeMap<Peer, Integer> preemptablePeers = resourceSharingPolicy.calculateAllowedResources(peer, consumer, resourcesBeingConsumed, runningJobs);
+	
+    // Consumer is not preemptable: so it can preempt someone.
+    if (!preemptablePeers.containsKey(consumer)) {
+	// Warning: Será que não pode ser preemptado um job do próprio
+	// cara? (Não, não pode!)
+	preemptOneJob(preemptablePeers);
+	startJob(job);
+	return true;
 	}
 
-	// Peer is full of local jobs
+	// Peer could not preempt someone
 	return false;
 
     }
@@ -114,23 +117,13 @@ public class ResourceAllocationPolicy {
 
     }
 
-    protected void preemptOneJob(HashMap<Peer, Integer> allowedResources) {
+    protected void preemptOneJob(TreeMap<Peer,Integer> allowedResources) {
 
 	Peer chosen = null;
 
 	LinkedList<Peer> peerList = new LinkedList<Peer>(resourcesBeingConsumed.keySet());
 
-	// TODO: matheus solicitou a retirada deste shuffle
-	Collections.shuffle(peerList, Parameters.RANDOM);
-
-	// pega o que estiver usando mais do que merece
-	for (Peer p : peerList) {
-	    int usedResources = resourcesBeingConsumed.get(p);
-	    if (usedResources > allowedResources.get(p)) {
-		chosen = p;
-		break;
-	    }
-	}
+	chosen = peerList.getLast();
 
 	assert chosen != null;
 

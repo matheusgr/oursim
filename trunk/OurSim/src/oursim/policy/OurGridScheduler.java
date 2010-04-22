@@ -43,7 +43,7 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 
     @Override
     public void rescheduleJob(Job job) {
-	eventQueue.addSubmitJobEvent(eventQueue.currentTime(), job, this);
+	eventQueue.addSubmitJobEvent(eventQueue.currentTime(), job);
     }
 
     @Override
