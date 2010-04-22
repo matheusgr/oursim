@@ -5,14 +5,14 @@ import oursim.jobevents.JobEventDispatcher;
 
 public class SubmitJobEvent extends TimedEvent {
 
-    SubmitJobEvent(long time, Job job) {
-	super(time, 4);
-	this.job = job;
-    }
+	SubmitJobEvent(long time, Job job) {
+		super(time, 4);
+		this.job = job;
+	}
 
-    @Override
-    protected final void doAction() {
-	JobEventDispatcher.getInstance().dispatchJobSubmitted(job);
-    }
+	@Override
+	protected final void doAction() {
+		JobEventDispatcher.getInstance().dispatchJobSubmitted(job);
+	}
 
 }
