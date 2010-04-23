@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import oursim.entities.Job;
+import oursim.entities.ComputableElement;
 import oursim.entities.Peer;
 
 public class NoFSharingPolicy implements ResourceSharingPolicy {
@@ -65,7 +65,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 	}
 
 	public TreeMap<Peer, Integer> calculateAllowedResources(final Peer provider, Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
-			final HashSet<Job> runningJobs) {
+			final HashSet<? extends ComputableElement> runningElements) {
 
 		assert allBalances.containsKey(provider);
 
@@ -111,7 +111,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 				Peer p = peer1;
 
 				// Recently job last
-				for (Job j : runningJobs) {
+				for (ComputableElement j : runningElements) {
 					if (j.getSourcePeer() == peer1 && j.getStartTime() < older) {
 						p = peer1;
 						older = j.getStartTime();

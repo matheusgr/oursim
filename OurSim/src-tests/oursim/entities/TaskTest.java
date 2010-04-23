@@ -5,7 +5,7 @@ import junit.framework.*;
 public class TaskTest extends TestCase {
 
 	public void testUpdateProcessing() {
-		Task task = new Task("",30,0,0,null);
+		Task task = new Task(0,"executavel.exe",30,0,null);
 		TaskExecution taskExecution = new TaskExecution(task);
 		Processor processor = new Processor(0, 500);
 		assertEquals(130, taskExecution.updateProcessing(processor, 50));

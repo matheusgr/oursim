@@ -29,11 +29,19 @@ public class Peer {
 	}
 
 	public boolean addJob(Job job, Peer consumer) {
-		return this.resourceAllocationPolicy.allocateJob(job, consumer);
+		throw new RuntimeException("Método ainda não implementado!");
+	}
+
+	public boolean addTask(Task task, Peer consumer) {
+		return this.resourceAllocationPolicy.allocateTask(task, consumer);
 	}
 
 	public void finishJob(Job job, boolean preempted) {
-		resourceAllocationPolicy.finishJob(job, preempted);
+		throw new RuntimeException("Método ainda não implementado!");
+	}
+
+	public void finishTask(Task task, boolean preempted) {
+		resourceAllocationPolicy.finishTask(task, preempted);
 	}
 
 	public double getUtilization() {
