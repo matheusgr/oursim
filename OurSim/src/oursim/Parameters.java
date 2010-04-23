@@ -8,7 +8,7 @@ public class Parameters {
 
 	private static String argsString =
 	// execTime execTimeVar subInterval numJobs numberOfPeers peerSize
-	"       100         50 	      5  100000           10        10";
+	"       100         50            5  100000           10        10";
 
 	private static String[] args = argsString.trim().split("\\s+");
 
