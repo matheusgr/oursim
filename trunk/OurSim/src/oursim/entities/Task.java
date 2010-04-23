@@ -2,7 +2,7 @@ package oursim.entities;
 
 import java.util.List;
 
-class Task implements Comparable<Task> {
+public class Task implements ComputableElement {
 
 	/**
 	 * The duration of this task in seconds on a reference machine.
@@ -23,17 +23,17 @@ class Task implements Comparable<Task> {
 	private long startTime;
 	private long finishTime;
 
-	private final Peer sourcePeer;
+	private Job sourceJob;
 	private Peer targetPeer;
 
 	private int numberOfpreemptions;
 
-	public Task(String executable, long duration, long id, int submissionTime, Peer sourcePeer) {
+	public Task(long id, String executable, long duration, long submissionTime, Job sourceJob) {
 		this.id = id;
 		this.executable = executable;
 		this.duration = duration;
 		this.submissionTime = submissionTime;
-		this.sourcePeer = sourcePeer;
+		this.sourceJob = sourceJob;
 	}
 
 	public void addInputFile(String name, long size) {
@@ -44,14 +44,20 @@ class Task implements Comparable<Task> {
 		this.outputs.add(new File(name, size));
 	}
 
-	public Peer getSourcePeer() {
-		return sourcePeer;
+	public Job getSourceJob() {
+		return sourceJob;
 	}
 
+	void setSourceJob(Job sourceJob) {
+		this.sourceJob = sourceJob;
+	}
+
+	@Override
 	public Peer getTargetPeer() {
 		return targetPeer;
 	}
 
+	@Override
 	public void setTargetPeer(Peer targetPeer) {
 		this.targetPeer = targetPeer;
 	}
@@ -60,22 +66,26 @@ class Task implements Comparable<Task> {
 		return duration;
 	}
 
+	@Override
 	public long getSubmissionTime() {
 		return submissionTime;
 	}
 
+	@Override
 	public long getId() {
 		return id;
 	}
 
-	public void finishJob(long time) {
+	public void finishTask(long time) {
 		this.finishTime = time;
 	}
 
+	@Override
 	public long getStartTime() {
 		return startTime;
 	}
 
+	@Override
 	public void preempt(long time) {
 		assert this.startTime != -1;
 		this.numberOfpreemptions++;
@@ -83,6 +93,7 @@ class Task implements Comparable<Task> {
 		this.setTargetPeer(null);
 	}
 
+	@Override
 	public void setStartTime(long startTime) {
 		this.startTime = startTime;
 	}
@@ -91,20 +102,23 @@ class Task implements Comparable<Task> {
 		return this.finishTime - (this.submissionTime + this.duration);
 	}
 
+	@Override
 	public long getEstimatedFinishTime() {
 		return this.getStartTime() + this.getDuration();
 	}
 
+	@Override
 	public long getFinishTime() {
 		return finishTime;
 	}
 
+	@Override
 	public int getNumberOfpreemptions() {
 		return numberOfpreemptions;
 	}
 
 	@Override
-	public int compareTo(Task t) {
+	public int compareTo(ComputableElement t) {
 		long diffTime = this.submissionTime - t.getSubmissionTime();
 		if (diffTime == 0) {
 			if (id > t.getId()) {
@@ -119,6 +133,16 @@ class Task implements Comparable<Task> {
 		} else {
 			return -5;
 		}
+	}
+
+	@Override
+	public long getRunTimeDuration() {
+		return duration;
+	}
+
+	@Override
+	public Peer getSourcePeer() {
+		return this.sourceJob.getSourcePeer();
 	}
 
 }

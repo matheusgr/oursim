@@ -8,8 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeMap;
 
-import oursim.entities.Job;
 import oursim.entities.Peer;
+import oursim.entities.Task;
 import oursim.events.EventQueue;
 
 public class ResourceAllocationPolicy {
@@ -20,8 +20,8 @@ public class ResourceAllocationPolicy {
 
 	private ResourceSharingPolicy resourceSharingPolicy;
 
-	private HashSet<Job> runningJobs;
-	private HashSet<Job> runningLocalJobs;
+	private HashSet<Task> runningTasks;
+	private HashSet<Task> runningLocalTasks;
 
 	// a quantidade de recursos que o peer remoto está consumindo neste site
 	protected HashMap<Peer, Integer> resourcesBeingConsumed;
@@ -32,8 +32,8 @@ public class ResourceAllocationPolicy {
 
 		this.availableResources = peer.getAmountOfResources();
 
-		this.runningJobs = new HashSet<Job>();
-		this.runningLocalJobs = new HashSet<Job>();
+		this.runningTasks = new HashSet<Task>();
+		this.runningLocalTasks = new HashSet<Task>();
 
 		this.resourcesBeingConsumed = new HashMap<Peer, Integer>();
 
@@ -47,36 +47,6 @@ public class ResourceAllocationPolicy {
 		return availableResources;
 	}
 
-	public boolean allocateJob(Job job, Peer consumer) {
-
-		// There is available resources.
-		if (availableResources > 0) {
-			startJob(job);
-			return true;
-		}
-
-		// There are not remote resources that may be preempted
-		if (peer.getAmountOfResourcesToShare() == 0) {
-			return false;
-		}
-
-		// This job may need preemption
-		TreeMap<Peer, Integer> preemptablePeers = resourceSharingPolicy.calculateAllowedResources(peer, consumer, resourcesBeingConsumed, runningJobs);
-
-		// Consumer is not preemptable: so it can preempt someone.
-		if (!preemptablePeers.containsKey(consumer)) {
-			// Warning: Será que não pode ser preemptado um job do próprio
-			// cara? (Não, não pode!)
-			preemptOneJob(preemptablePeers);
-			startJob(job);
-			return true;
-		}
-
-		// Peer could not preempt someone
-		return false;
-
-	}
-
 	/**
 	 * Only use resources that are busy by local jobs o total de recursos menos
 	 * o que está sendo doado.
@@ -84,19 +54,21 @@ public class ResourceAllocationPolicy {
 	 * @return
 	 */
 	public long getAmountOfResourcesToShare() {
-		return peer.getAmountOfResources() - runningLocalJobs.size();
+		return peer.getAmountOfResources() - runningLocalTasks.size();
+		// TODO:TASK return peer.getAmountOfResources() -
+		// runningLocalJobs.size();
 	}
 
-	public void finishJob(Job job, boolean preempted) {
+	public void finishTask(Task task, boolean preempted) {
 
-		Peer sourcePeer = job.getSourcePeer();
+		Peer sourcePeer = task.getSourceJob().getSourcePeer();
 
 		if (sourcePeer == peer) {
-			boolean removed = this.runningLocalJobs.remove(job);
+			boolean removed = this.runningLocalTasks.remove(task);
 			assert removed;
 			// Don't compute own balance
 		} else {
-			boolean removed = this.runningJobs.remove(job);
+			boolean removed = this.runningTasks.remove(task);
 			assert removed;
 
 			int resourcesBeingConsumedByPeer = this.resourcesBeingConsumed.get(sourcePeer) - 1;
@@ -107,9 +79,10 @@ public class ResourceAllocationPolicy {
 			}
 			// compute balance
 			if (!preempted) {
-				resourceSharingPolicy.updateMutualBalance(peer, sourcePeer, job.getRunTimeDuration());
+				resourceSharingPolicy.updateMutualBalance(peer, sourcePeer, task.getRunTimeDuration());
 			} else {
-				EventQueue.getInstance().addPreemptedJobEvent(job, EventQueue.getInstance().currentTime());
+				// TODO: This is not cool!
+				EventQueue.getInstance().addPreemptedJobEvent(task.getSourceJob(), EventQueue.getInstance().currentTime());
 			}
 		}
 
@@ -117,7 +90,7 @@ public class ResourceAllocationPolicy {
 
 	}
 
-	protected void preemptOneJob(TreeMap<Peer, Integer> allowedResources) {
+	protected void preemptOneTask(TreeMap<Peer, Integer> allowedResources) {
 
 		Peer chosen = null;
 
@@ -128,33 +101,33 @@ public class ResourceAllocationPolicy {
 		assert chosen != null;
 
 		// todos os jobs do escolhido que estão rodando
-		List<Job> jobs = new LinkedList<Job>();
-		for (Job j : runningJobs) {
+		List<Task> tasks = new LinkedList<Task>();
+		for (Task j : runningTasks) {
 			if (j.getSourcePeer() == chosen) {
-				jobs.add(j);
+				tasks.add(j);
 			}
 		}
 
 		// get recently started job first
-		Collections.sort(jobs, new Comparator<Job>() {
+		Collections.sort(tasks, new Comparator<Task>() {
 			@Override
-			public int compare(Job j1, Job j2) {
+			public int compare(Task t1, Task t2) {
 				// TODO cast promíscuo
-				return (int) (j2.getStartTime() - j1.getStartTime());
+				return (int) (t2.getStartTime() - t1.getStartTime());
 			}
 		});
 
-		finishJob(jobs.get(0), true);
+		finishTask(tasks.get(0), true);
 
 	}
 
-	private void startJob(Job job) {
+	private void startTask(Task task) {
 		availableResources--;
-		Peer sourcePeer = job.getSourcePeer();
+		Peer sourcePeer = task.getSourceJob().getSourcePeer();
 		if (sourcePeer == peer) {
-			runningLocalJobs.add(job);
+			runningLocalTasks.add(task);
 		} else {
-			runningJobs.add(job);
+			runningTasks.add(task);
 		}
 
 		if (sourcePeer == peer) {
@@ -166,6 +139,35 @@ public class ResourceAllocationPolicy {
 			consumedResources = this.resourcesBeingConsumed.get(sourcePeer);
 		}
 		this.resourcesBeingConsumed.put(sourcePeer, consumedResources + 1);
+	}
+
+	public boolean allocateTask(Task task, Peer consumer) {
+		// There is available resources.
+		if (availableResources > 0) {
+			startTask(task);
+			return true;
+		}
+
+		// There are not remote resources that may be preempted
+		if (peer.getAmountOfResourcesToShare() == 0) {
+			return false;
+		}
+
+		// This task may need preemption
+		TreeMap<Peer, Integer> preemptablePeers = resourceSharingPolicy.calculateAllowedResources(peer, consumer, resourcesBeingConsumed, runningTasks);
+
+		// Consumer is not preemptable: so it can preempt someone.
+		if (!preemptablePeers.containsKey(consumer)) {
+			// Warning: Será que não pode ser preemptado um job do próprio
+			// cara? (Não, não pode!)
+			preemptOneTask(preemptablePeers);
+			startTask(task);
+			return true;
+		}
+
+		// Peer could not preempt someone
+		return false;
+
 	}
 
 }

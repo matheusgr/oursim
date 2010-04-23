@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeMap;
 
-import oursim.entities.Job;
+import oursim.entities.ComputableElement;
 import oursim.entities.Peer;
 
 public interface ResourceSharingPolicy {
@@ -21,10 +21,10 @@ public interface ResourceSharingPolicy {
 	 * @param resourcesBeingConsumed
 	 *            a quantidade de recursos que cada peer remoto está consumindo
 	 *            neste site
-	 * @param runningJobs
+	 * @param runningElements
 	 *            todos os jobs não locais que estão rodando neste site
 	 */
 	public abstract TreeMap<Peer, Integer> calculateAllowedResources(Peer provider, Peer consumer, HashMap<Peer, Integer> resourcesBeingConsumed,
-			HashSet<Job> runningJobs);
+			HashSet<? extends ComputableElement> runningElements);
 
 }

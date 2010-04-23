@@ -81,7 +81,7 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 					continue;
 				}
 
-				boolean isJobRunning = provider.addJob(job, consumer);
+				boolean isJobRunning = provider.addTask(job.getFirstTask(), consumer);
 
 				if (isJobRunning) {
 					updateJobState(job, provider, eventQueue.currentTime());
@@ -109,7 +109,7 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 	@Override
 	public void jobFinished(JobEvent jobEvent) {
 		Job job = (Job) jobEvent.getSource();
-		job.getTargetPeer().finishJob(job, false);
+		job.getTargetPeer().finishTask(job.getFirstTask(), false);
 	}
 
 	@Override
