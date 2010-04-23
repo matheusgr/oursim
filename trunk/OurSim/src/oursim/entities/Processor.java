@@ -49,7 +49,7 @@ public class Processor {
 	public void free() {
 		this.busy = false;
 	}
-	
+
 	public long calculateAmountOfInstructionsProcessed(long duration) {
 		assert duration > 0;
 		return speed * duration;
