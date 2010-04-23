@@ -1,5 +1,8 @@
 package oursim.entities;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Job implements Comparable<Job> {
 
 	private final long id;
@@ -13,6 +16,8 @@ public class Job implements Comparable<Job> {
 	private final Peer sourcePeer;
 	private Peer targetPeer;
 
+	private List<Task> tasks;
+
 	private int numberOfpreemptions;
 	public static int numberOfPreemptionsForAllJobs = 0;
 
@@ -23,6 +28,12 @@ public class Job implements Comparable<Job> {
 		this.runTimeDuration = runTimeDuration;
 		this.sourcePeer = sourcePeer;
 
+		this.tasks = new ArrayList<Task>();
+
+	}
+
+	public void addTask(Task task) {
+		this.tasks.add(task);
 	}
 
 	public long getSubmissionTime() {
