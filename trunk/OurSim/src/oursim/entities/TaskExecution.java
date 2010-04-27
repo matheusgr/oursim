@@ -29,9 +29,10 @@ class TaskExecution {
 		assert currentTime > previousTime;
 
 		// time since last update
-		long timePassed = currentTime - previousTime;
+		long timeElapsed = currentTime - previousTime;
 
-		this.remainingSize -= processor.calculateAmountOfInstructionsProcessed(timePassed);
+		//TODO: verificar as consequências do remaining time negativo.
+		this.remainingSize -= processor.calculateAmountOfInstructionsProcessed(timeElapsed);
 
 		long estimatedTimeToFinish = (remainingSize <= 0) ? 0 : processor.calculateTimeToExecute(remainingSize);
 

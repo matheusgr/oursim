@@ -6,6 +6,7 @@ import oursim.entities.Job;
 import oursim.entities.Peer;
 import oursim.events.EventQueue;
 import oursim.input.Workload;
+import oursim.jobevents.ComputableElementEventDispatcher;
 import oursim.jobevents.JobEventDispatcher;
 import oursim.policy.JobSchedulerPolicy;
 import oursim.policy.OurGridScheduler;
@@ -28,6 +29,7 @@ public class OurSimAPI {
 		JobSchedulerPolicy sp = new OurGridScheduler(eq, peers);
 
 		JobEventDispatcher.getInstance().addListener(sp);
+		ComputableElementEventDispatcher.getInstance().addListener(sp);
 
 		scheduleEvents(eq, workload, sp);
 
@@ -38,6 +40,8 @@ public class OurSimAPI {
 			}
 			sp.scheduleJobs();
 		}
+		
+		eq.close();
 
 	}
 

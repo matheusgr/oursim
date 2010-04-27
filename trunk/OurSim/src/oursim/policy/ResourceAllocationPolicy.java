@@ -6,8 +6,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.TreeMap;
+import java.util.Map;
 
+import oursim.entities.Machine;
 import oursim.entities.Peer;
 import oursim.entities.Task;
 import oursim.events.EventQueue;
@@ -15,6 +16,8 @@ import oursim.events.EventQueue;
 public class ResourceAllocationPolicy {
 
 	private int availableResources;
+
+	private List<Machine> allocatedResources;
 
 	private Peer peer;
 
@@ -48,8 +51,9 @@ public class ResourceAllocationPolicy {
 	}
 
 	/**
-	 * Only use resources that are busy by local jobs o total de recursos menos
-	 * o que está sendo doado.
+	 * Only use resources that are busy by local jobs.
+	 * 
+	 * o total de recursos menos o que está sendo doado.
 	 * 
 	 * @return
 	 */
@@ -79,10 +83,10 @@ public class ResourceAllocationPolicy {
 			}
 			// compute balance
 			if (!preempted) {
-				resourceSharingPolicy.updateMutualBalance(peer, sourcePeer, task.getRunTimeDuration());
+				resourceSharingPolicy.updateMutualBalance(peer, sourcePeer, task.getDuration());
 			} else {
 				// TODO: This is not cool!
-				EventQueue.getInstance().addPreemptedJobEvent(task.getSourceJob(), EventQueue.getInstance().currentTime());
+				EventQueue.getInstance().addPreemptedTaskEvent(task, EventQueue.getInstance().currentTime());
 			}
 		}
 
@@ -90,7 +94,7 @@ public class ResourceAllocationPolicy {
 
 	}
 
-	protected void preemptOneTask(TreeMap<Peer, Integer> allowedResources) {
+	protected void preemptOneTask(Map<Peer, Long> preemptablePeers) {
 
 		Peer chosen = null;
 
@@ -154,10 +158,10 @@ public class ResourceAllocationPolicy {
 		}
 
 		// This task may need preemption
-		TreeMap<Peer, Integer> preemptablePeers = resourceSharingPolicy.calculateAllowedResources(peer, consumer, resourcesBeingConsumed, runningTasks);
+		Map<Peer, Long> preemptablePeers = resourceSharingPolicy.calculateAllowedResources(peer, consumer, resourcesBeingConsumed, runningTasks);
 
 		// Consumer is not preemptable: so it can preempt someone.
-		if (!preemptablePeers.containsKey(consumer)) {
+		if (!preemptablePeers.isEmpty() && !preemptablePeers.containsKey(consumer)) {
 			// Warning: Será que não pode ser preemptado um job do próprio
 			// cara? (Não, não pode!)
 			preemptOneTask(preemptablePeers);

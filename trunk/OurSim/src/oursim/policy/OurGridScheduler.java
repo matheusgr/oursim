@@ -8,7 +8,9 @@ import java.util.TreeSet;
 
 import oursim.entities.Job;
 import oursim.entities.Peer;
+import oursim.entities.Task;
 import oursim.events.EventQueue;
+import oursim.jobevents.ComputableElementEvent;
 import oursim.jobevents.JobEvent;
 import oursim.jobevents.JobEventListenerAdapter;
 
@@ -18,10 +20,16 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 
 	private TreeSet<Job> submittedJobs;
 
+	private TreeSet<Task> submittedTasks;
+
 	private List<Peer> peers;
 	private HashMap<String, Peer> peersMap;
 
 	private ResourceRequestPolicy resourceRequestPolicy;
+
+	public static int numberOfPreemptionsForAllJobs = 0;
+
+	public static long numberOfPreemptionsForAllTasks = 0;
 
 	public OurGridScheduler(EventQueue eventQueue, List<Peer> peers) {
 		this(eventQueue, peers, new TreeSet<Job>());
@@ -32,6 +40,12 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 		this.eventQueue = eventQueue;
 		this.submittedJobs = submittedJobs;
 		this.peersMap = new HashMap<String, Peer>();
+
+		this.submittedTasks = new TreeSet<Task>();
+
+		for (Job job : submittedJobs) {
+			this.submittedTasks.addAll(job.getTasks());
+		}
 
 		for (Peer p : this.peers) {
 			peersMap.put(p.getName(), p);
@@ -46,9 +60,18 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 		eventQueue.addSubmitJobEvent(eventQueue.currentTime(), job);
 	}
 
+	public void rescheduleTask(Task task) {
+		eventQueue.addSubmitTaskEvent(eventQueue.currentTime(), task);
+	}
+
 	@Override
 	public void addJob(Job job) {
 		this.submittedJobs.add(job);
+		this.submittedTasks.addAll(job.getTasks());
+	}
+
+	public void addTask(Task task) {
+		this.submittedTasks.add(task);
 	}
 
 	@Override
@@ -62,13 +85,14 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 
 		HashMap<Peer, HashSet<Peer>> triedPeers = new HashMap<Peer, HashSet<Peer>>(peersMap.size());
 
-		int originalSize = submittedJobs.size();
+		int originalSize = submittedTasks.size();
 
-		Iterator<Job> it = submittedJobs.iterator();
+		Iterator<Task> it = submittedTasks.iterator();
 		for (int i = 0; i < originalSize; i++) {
 
-			Job job = it.next();
-			Peer consumer = job.getSourcePeer();
+			Task task = it.next();
+
+			Peer consumer = task.getSourcePeer();
 
 			// efeito colateral: reordena os peers
 			resourceRequestPolicy.request(consumer, peers);
@@ -81,10 +105,10 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 					continue;
 				}
 
-				boolean isJobRunning = provider.addTask(job.getFirstTask(), consumer);
+				boolean isTaskRunning = provider.addTask(task, consumer);
 
-				if (isJobRunning) {
-					updateJobState(job, provider, eventQueue.currentTime());
+				if (isTaskRunning) {
+					updateTaskState(task, provider, eventQueue.currentTime());
 					it.remove();
 					break;
 				} else {
@@ -100,16 +124,10 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 
 	}
 
-	private void updateJobState(Job job, Peer provider, long startTime) {
-		job.setStartTime(startTime);
-		job.setTargetPeer(provider);
-		eventQueue.addStartedJobEvent(job);
-	}
-
-	@Override
-	public void jobFinished(JobEvent jobEvent) {
-		Job job = (Job) jobEvent.getSource();
-		job.getTargetPeer().finishTask(job.getFirstTask(), false);
+	private void updateTaskState(Task task, Peer provider, long startTime) {
+		task.setStartTime(startTime);
+		task.setTargetPeer(provider);
+		eventQueue.addStartedTaskEvent(task);
 	}
 
 	@Override
@@ -120,8 +138,36 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 
 	@Override
 	public void jobPreempted(JobEvent jobEvent) {
+		numberOfPreemptionsForAllJobs++;
 		Job job = (Job) jobEvent.getSource();
 		this.rescheduleJob(job);
+	}
+
+	@Override
+	public void finished(ComputableElementEvent computableElement) {
+		Task task = (Task) computableElement.getSource();
+		task.getTargetPeer().finishTask(task, false);
+		if (task.getSourceJob().isFinished()) {
+			eventQueue.addFinishJobEvent(eventQueue.currentTime(), task.getSourceJob());
+		}
+	}
+
+	@Override
+	public void submitted(ComputableElementEvent computableElement) {
+		Task task = (Task) computableElement.getSource();
+		this.addTask(task);
+	}
+
+	@Override
+	public void preempted(ComputableElementEvent computableElement) {
+		numberOfPreemptionsForAllTasks++;
+		Task task = (Task) computableElement.getSource();
+		this.rescheduleTask(task);
+	}
+
+	@Override
+	public void started(ComputableElementEvent computableElement) {
+		// nothing to do
 	}
 
 }

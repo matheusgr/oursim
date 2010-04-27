@@ -8,6 +8,7 @@ public interface JobEventListener extends EventListener {
 
 	void jobStarted(JobEvent jobEvent);
 
+	// TODO: qual a semântica de JobFinished?
 	void jobFinished(JobEvent jobEvent);
 
 	void jobPreempted(JobEvent jobEvent);

@@ -30,8 +30,8 @@ public class PrintOutput implements Output {
 
 		long id = job.getId();
 		long submissionTime = job.getSubmissionTime();
-		int numberOfpreemptions = job.getNumberOfpreemptions();
-		long runTimeDuration = job.getRunTimeDuration();
+		long numberOfpreemptions = job.getNumberOfpreemptions();
+		long runTimeDuration = job.getDuration();
 
 		this.out.println("F:" + id + ":" + submissionTime + ":" + runTimeDuration + ":" + numberOfpreemptions);
 
@@ -55,7 +55,6 @@ public class PrintOutput implements Output {
 
 	@Override
 	public void jobPreempted(JobEvent jobEvent) {
-
 		Job job = (Job) jobEvent.getSource();
 		this.out.println("P:" + job.getStartTime() + ":" + job.getId() + ":" + jobEvent.getTime());
 
@@ -63,7 +62,7 @@ public class PrintOutput implements Output {
 
 	@Override
 	public void close() {
-		// nothing to do
+		this.out.close();
 	}
 
 }

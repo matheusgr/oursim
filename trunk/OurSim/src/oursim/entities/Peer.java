@@ -1,5 +1,8 @@
 package oursim.entities;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import oursim.policy.ResourceAllocationPolicy;
 import oursim.policy.ResourceSharingPolicy;
 
@@ -7,6 +10,8 @@ public class Peer {
 
 	private String name;
 	private int amountOfResources;
+
+	private List<Machine> resources = new ArrayList<Machine>();
 
 	private ResourceAllocationPolicy resourceAllocationPolicy;
 
@@ -21,7 +26,12 @@ public class Peer {
 	}
 
 	public int getAmountOfResources() {
-		return amountOfResources;
+		return this.resources.size();
+		// TODO: return amountOfResources;
+	}
+
+	public void addResource(Machine machine) {
+		this.resources.add(machine);
 	}
 
 	public long getAmountOfResourcesToShare() {

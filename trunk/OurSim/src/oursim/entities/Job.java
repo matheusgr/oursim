@@ -2,26 +2,22 @@ package oursim.entities;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
-public class Job implements ComputableElement {
+public class Job extends ComputableElementAbstract implements ComputableElement, Comparable<Job> {
 
 	private final long id;
 
 	private final long submissionTime;
-	private long startTime;
-	private long finishTime;
-	private long runTimeDuration;
-	private int wastedTime;
 
 	private final Peer sourcePeer;
-	private Peer targetPeer;
 
 	private final List<Task> tasks;
 
-	private int numberOfpreemptions;
-	public static int numberOfPreemptionsForAllJobs = 0;
+	private static long nextTaskId = 0;
 
-	public Job(long id, int submissionTime, Peer sourcePeer) {
+	public Job(long id, long submissionTime, Peer sourcePeer) {
 
 		this.id = id;
 		this.submissionTime = submissionTime;
@@ -31,49 +27,77 @@ public class Job implements ComputableElement {
 
 	}
 
-	public Job(long id, int submissionTime, int runTimeDuration, Peer sourcePeer) {
+	public Job(long id, long submissionTime, long runTimeDuration, Peer sourcePeer) {
 		this(id, submissionTime, sourcePeer);
-		this.runTimeDuration = runTimeDuration;
 
-		this.tasks.add(new Task(this.id, "executable.exe", this.runTimeDuration, this.submissionTime, this));
+		this.tasks.add(new Task(this.id, "executable.exe", runTimeDuration, this.submissionTime, this));
 
-	}
-
-	public void addTask(Task task) {
-		task.setSourceJob(this);
-		this.tasks.add(task);
-	}
-
-	public Task getFirstTask() {
-		return this.tasks.get(0);
-	}
-
-	@Override
-	public long getSubmissionTime() {
-		return getFirstTask().getSubmissionTime();
 	}
 
 	@Override
 	public long getId() {
-		return this.getFirstTask().getId();
-		// TODO:JOB return id;
+		return id;
 	}
 
-	public void finishJob(long time) {
-		this.getFirstTask().finishTask(time);
-		// TODO:JOB this.finishTime = time;
+	public void addTask(Task task) {
+		assert task.getSourceJob() == null;
+		task.setSourceJob(this);
+		this.tasks.add(task);
+	}
+
+	public void addTask(String executable, long duration) {
+		this.tasks.add(new Task(nextTaskId, executable, duration, submissionTime, this));
+		nextTaskId++;
+	}
+
+	public List<Task> getTasks() {
+		return tasks;
 	}
 
 	@Override
-	public long getRunTimeDuration() {
-		return this.getFirstTask().getRunTimeDuration();
-		// TODO:JOB return runTimeDuration;
+	public long getSubmissionTime() {
+		return submissionTime;
 	}
 
 	@Override
-	public long getStartTime() {
-		return this.getFirstTask().getStartTime();
-		// TODO:JOB return startTime;
+	public void finish(long time) {
+		for (Task task : tasks) {
+			task.finish(time);
+		}
+	}
+
+	@Override
+	public long getDuration() {
+		// a job's duration is a duration of its longest task
+		// TODO: another possibility is the sum of all of its tasks
+		long longestTaskDuration = Long.MIN_VALUE;
+		for (Task task : tasks) {
+			longestTaskDuration = Math.max(longestTaskDuration, task.getDuration());
+		}
+		return longestTaskDuration;
+	}
+
+	@Override
+	public Long getStartTime() {
+		// a job's start time is the start time of its earlier started task
+		long earliestTaskStartTime = Long.MAX_VALUE;
+		for (Task task : tasks) {
+			if (task.isRunning() || task.isFinished()) {
+				earliestTaskStartTime = Math.min(earliestTaskStartTime, task.getStartTime());
+			}
+		}
+		return earliestTaskStartTime != Long.MAX_VALUE ? earliestTaskStartTime : null;
+	}
+
+	@Override
+	public boolean isRunning() {
+		// a job is running if at least one of its tasks is running
+		for (Task task : tasks) {
+			if (task.isRunning()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -82,83 +106,99 @@ public class Job implements ComputableElement {
 	}
 
 	@Override
-	public Peer getTargetPeer() {
-		return this.getFirstTask().getTargetPeer();
-		// TODO:JOB return targetPeer;
+	public List<Peer> getTargetPeers() {
+		List<Peer> targetPeers = new ArrayList<Peer>();
+		for (Task task : tasks) {
+			targetPeers.add(task.getTargetPeer());
+		}
+		return targetPeers;
 	}
 
 	@Override
 	public void setTargetPeer(Peer targetPeer) {
-		this.getFirstTask().setTargetPeer(targetPeer);
-		// TODO:JOB this.targetPeer = targetPeer;
+		for (Task task : tasks) {
+			task.setTargetPeer(targetPeer);
+		}
 	}
 
 	@Override
 	public void preempt(long time) {
-		this.getFirstTask().preempt(time);
-		// TODO:JOB
-		// assert this.startTime != -1;
-		// this.numberOfpreemptions++;
-		numberOfPreemptionsForAllJobs++;
-		this.wastedTime += (time - this.startTime);
-		// this.startTime = -1;
-		// this.setTargetPeer(null);
+		for (Task task : tasks) {
+			task.preempt(time);
+		}
 	}
 
 	@Override
 	public void setStartTime(long startTime) {
-		this.getFirstTask().setStartTime(startTime);
-		// TODO:JOB this.startTime = startTime;
-	}
-
-	@Deprecated
-	public int getWastedTime() {
-		return wastedTime;
-	}
-
-	@Deprecated
-	public long getWaitedTime() {
-		return this.finishTime - (this.submissionTime + this.runTimeDuration);
+		for (Task task : tasks) {
+			task.setStartTime(startTime);
+		}
 	}
 
 	@Override
-	public long getEstimatedFinishTime() {
-		return this.getFirstTask().getEstimatedFinishTime();
-		// TODO:JOB return finishTime = this.getStartTime() +
-		// this.getRunTimeDuration();
+	public Long getEstimatedFinishTime() {
+		long lastTaskEstimatedFinishTime = Long.MIN_VALUE;
+		boolean allTasksAreRunning = true;
+		for (Task task : tasks) {
+			if (allTasksAreRunning &= task.isRunning()) {
+				lastTaskEstimatedFinishTime = Math.max(lastTaskEstimatedFinishTime, task.getEstimatedFinishTime());
+			} else {
+				return null;
+			}
+		}
+		return lastTaskEstimatedFinishTime;
 	}
 
 	@Override
-	public long getFinishTime() {
-		return this.getFirstTask().getFinishTime();
-		// TODO:JOB return finishTime;
+	public Long getFinishTime() {
+		long lastFinishTime = Long.MIN_VALUE;
+		boolean allTasksAreFinished = true;
+		for (Task task : tasks) {
+			if (allTasksAreFinished &= task.isFinished()) {
+				lastFinishTime = Math.max(lastFinishTime, task.getFinishTime());
+			} else {
+				return null;
+			}
+		}
+		return lastFinishTime;
 	}
 
 	@Override
-	public int getNumberOfpreemptions() {
-		return this.getFirstTask().getNumberOfpreemptions();
-		// TODO:JOB return numberOfpreemptions;
+	public long getNumberOfpreemptions() {
+		long totalOfPreemptions = 0;
+		for (Task task : tasks) {
+			totalOfPreemptions += task.getNumberOfpreemptions();
+		}
+		return totalOfPreemptions;
 	}
 
 	@Override
-	public int compareTo(ComputableElement o) {
-		return this.getFirstTask().compareTo(o);
-		// TODO:JOB
-		// long diffTime = this.submissionTime - o.getSubmissionTime();
-		// if (diffTime == 0) {
-		// if (id > o.getId()) {
-		// return 2;
-		// } else if (id == o.getId()) {
-		// return this.hashCode() == o.hashCode() ? 0 : (this.hashCode() >
-		// o.hashCode() ? 1 : -1);
-		// } else {
-		// return -2;
-		// }
-		// } else if (diffTime > 0) {
-		// return 5;
-		// } else {
-		// return -5;
-		// }
+	public boolean isFinished() {
+		return getFinishTime() != null;
+	}
+
+	@Override
+	public int compareTo(Job j) {
+		long diffTime = this.submissionTime - j.getSubmissionTime();
+		if (diffTime == 0) {
+			if (id > j.getId()) {
+				return 2;
+			} else if (id == j.getId()) {
+				return this.hashCode() == j.hashCode() ? 0 : (this.hashCode() > j.hashCode() ? 1 : -1);
+			} else {
+				return -2;
+			}
+		} else if (diffTime > 0) {
+			return 5;
+		} else {
+			return -5;
+		}
+	}
+
+	@Override
+	public String toString() {
+		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("id", id).append("submissionTime", submissionTime).append("sourcePeer",
+				sourcePeer.getName()).append("#tasks", tasks.size()).toString();
 	}
 
 }

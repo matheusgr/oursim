@@ -1,6 +1,5 @@
 package oursim.events;
 
-import oursim.entities.Job;
 
 public abstract class TimedEvent implements Comparable<TimedEvent> {
 
@@ -11,8 +10,6 @@ public abstract class TimedEvent implements Comparable<TimedEvent> {
 	// quanto menor maior a preferência para ser executado antes
 	// range -> [1-10]
 	private int priority;
-
-	protected Job job;
 
 	public TimedEvent(long time) {
 		this(time, 5);
@@ -26,6 +23,13 @@ public abstract class TimedEvent implements Comparable<TimedEvent> {
 
 	protected abstract void doAction();
 
+	public String getType() {
+		String thisClassSimpleName = this.getClass().getSimpleName();
+		//TODO: following a implicit name convention
+		String eventName = thisClassSimpleName.substring(0, thisClassSimpleName.indexOf("Event"));
+		return eventName;
+	}
+	
 	public void cancel() {
 		this.cancel = true;
 	}
