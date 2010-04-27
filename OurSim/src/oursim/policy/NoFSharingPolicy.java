@@ -64,7 +64,8 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 		return balances.containsKey(consumer) ? balances.get(consumer) : 0;
 	}
 
-	public TreeMap<Peer, Integer> calculateAllowedResources(final Peer provider, Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
+	@Override
+	public Map<Peer, Long> calculateAllowedResources(final Peer provider, Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
 			final HashSet<? extends ComputableElement> runningElements) {
 
 		assert allBalances.containsKey(provider);
@@ -78,7 +79,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 
 		// quanto cada peer merece neste provedor, ordenado pelos criterios de
 		// desempate.
-		TreeMap<Peer, Integer> preemptablePeers = new TreeMap<Peer, Integer>(new Comparator<Peer>() {
+		TreeMap<Peer, Long> preemptablePeers = new TreeMap<Peer, Long>(new Comparator<Peer>() {
 			@Override
 			public int compare(Peer peer1, Peer peer2) {
 
@@ -142,7 +143,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 
 		// Set minimum resources allowed for each peer
 		for (Peer remoteConsumer : resourcesBeingConsumedClone.keySet()) {
-			int resourcesForPeer = 0;
+			long resourcesForPeer = 0;
 			double share;
 			if (totalBalance == 0) {
 				share = (1.0d / numConsumingPeers);

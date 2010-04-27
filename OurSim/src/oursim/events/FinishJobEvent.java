@@ -3,18 +3,18 @@ package oursim.events;
 import oursim.entities.Job;
 import oursim.jobevents.JobEventDispatcher;
 
-public class FinishJobEvent extends TimedEvent {
+public class FinishJobEvent extends JobTimedEvent {
 
 	public static int amountOfFinishedJobs = 0;
 
 	FinishJobEvent(long time, Job job) {
-		super(time, 1);
-		this.job = job;
+		super(time, 1, job);
 	}
 
 	@Override
 	protected final void doAction() {
-		this.job.finishJob(time);
+		Job job = (Job) compElement;
+		job.finish(time);
 		amountOfFinishedJobs++;
 		JobEventDispatcher.getInstance().dispatchJobFinished(job);
 	}

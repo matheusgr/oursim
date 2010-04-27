@@ -13,7 +13,7 @@ public class SyntheticWorkload implements Workload {
 
 	private LinkedList<Job> jobs = new LinkedList<Job>();
 
-	public SyntheticWorkload(int runTime, int runTimeVar, int submissionInterval, int numJobs, List<Peer> peers) {
+	public SyntheticWorkload(int runTime, int runTimeVar, int submissionInterval, int numJobs, int numTasksByJob, List<Peer> peers) {
 
 		int submissionTime = 0;
 
@@ -21,15 +21,21 @@ public class SyntheticWorkload implements Workload {
 
 			submissionTime += Parameters.RANDOM.nextInt(submissionInterval);
 
-			double magic = Math.abs(Parameters.RANDOM.nextGaussian());
-			magic *= peers.size() / 3.0;
-			magic = magic > peers.size() ? peers.size() - 1 : magic;
+			double peerIndexD = Math.abs(Parameters.RANDOM.nextGaussian());
+			peerIndexD *= peers.size() / 3.0;
+			peerIndexD = peerIndexD > peers.size() ? peers.size() - 1 : peerIndexD;
 
-			int randomPeer = (int) (magic);
+			int peerIndex = (int) (peerIndexD);
 			int runTimeDuration = runTime + Parameters.RANDOM.nextInt(runTimeVar);
-			Peer sourcePeer = peers.get(randomPeer);
+			Peer sourcePeer = peers.get(peerIndex);
 
-			jobs.add(new Job(jobId, submissionTime, runTimeDuration, sourcePeer));
+			Job job = new Job(jobId, submissionTime, sourcePeer);
+
+			for (int i = 0; i < numTasksByJob; i++) {
+				job.addTask("", runTimeDuration);
+			}
+
+			jobs.add(job);
 
 		}
 
@@ -37,14 +43,7 @@ public class SyntheticWorkload implements Workload {
 
 	@Override
 	public void close() {
-		try {
-			PrintStream out = new PrintStream("workload_oursim.txt");
-			for (Job job : jobs) {
-				out.printf("%s %s %s %s\n", job.getId(), job.getSourcePeer().getName(), job.getRunTimeDuration(), job.getSubmissionTime());
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+		// nothing to do
 	}
 
 	@Override
@@ -55,6 +54,14 @@ public class SyntheticWorkload implements Workload {
 	@Override
 	public Job poll() {
 		return jobs.pollFirst();
+	}
+
+	public void save(String fileName) throws FileNotFoundException {
+		PrintStream out = new PrintStream(fileName);
+		for (Job job : jobs) {
+			out.printf("%s %s %s %s\n", job.getId(), job.getSourcePeer().getName(), job.getDuration(), job.getSubmissionTime());
+		}
+		out.close();
 	}
 
 }

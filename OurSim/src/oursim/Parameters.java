@@ -4,11 +4,17 @@ import java.util.Random;
 
 public class Parameters {
 
+	public static final boolean USE_NOF = false;
+
+	public static final boolean LOG = true;
+
 	public static Random RANDOM = new Random(9354269l);
 
 	private static String argsString =
-	// execTime execTimeVar subInterval numJobs numberOfPeers peerSize
-	"       100         50            5  100000           10        10";
+	// execTime execTimeVar subInterval   #Jobs  #TasksByJob #Peers #nodesByPeer
+	"       100         50            5    1000            2     10 		  10";
+
+	// 100000
 
 	private static String[] args = argsString.trim().split("\\s+");
 
@@ -26,9 +32,11 @@ public class Parameters {
 	// quantidade total de jobs do workload
 	public static int NUM_JOBS = Integer.parseInt(args[i++]);
 
+	public static int NUM_TASKS_BY_JOB = Integer.parseInt(args[i++]);
+
 	public static int NUM_PEERS = Integer.parseInt(args[i++]);
 
 	// número de nodos do peer
-	public static int PEER_SIZE = Integer.parseInt(args[i++]);
+	public static int NUM_RESOURCES_BY_PEER = Integer.parseInt(args[i++]);
 
 }

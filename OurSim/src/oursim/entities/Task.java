@@ -1,8 +1,11 @@
 package oursim.entities;
 
+import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
-public class Task implements ComputableElement {
+public class Task extends ComputableElementAbstract implements ComputableElement, Comparable<Task> {
 
 	/**
 	 * The duration of this task in seconds on a reference machine.
@@ -20,8 +23,8 @@ public class Task implements ComputableElement {
 	private final long id;
 
 	private final long submissionTime;
-	private long startTime;
-	private long finishTime;
+	private Long startTime = null;
+	private Long finishTime;
 
 	private Job sourceJob;
 	private Peer targetPeer;
@@ -52,9 +55,15 @@ public class Task implements ComputableElement {
 		this.sourceJob = sourceJob;
 	}
 
-	@Override
 	public Peer getTargetPeer() {
 		return targetPeer;
+	}
+
+	@Override
+	public List<Peer> getTargetPeers() {
+		List<Peer> targetPeers = new ArrayList<Peer>();
+		targetPeers.add(targetPeer);
+		return targetPeers;
 	}
 
 	@Override
@@ -62,6 +71,7 @@ public class Task implements ComputableElement {
 		this.targetPeer = targetPeer;
 	}
 
+	@Override
 	public long getDuration() {
 		return duration;
 	}
@@ -76,20 +86,21 @@ public class Task implements ComputableElement {
 		return id;
 	}
 
-	public void finishTask(long time) {
+	@Override
+	public void finish(long time) {
 		this.finishTime = time;
 	}
 
 	@Override
-	public long getStartTime() {
+	public Long getStartTime() {
 		return startTime;
 	}
 
 	@Override
 	public void preempt(long time) {
-		assert this.startTime != -1;
+		assert this.startTime != null;
 		this.numberOfpreemptions++;
-		this.startTime = -1;
+		this.startTime = null;
 		this.setTargetPeer(null);
 	}
 
@@ -103,22 +114,45 @@ public class Task implements ComputableElement {
 	}
 
 	@Override
-	public long getEstimatedFinishTime() {
+	public Long getEstimatedFinishTime() {
 		return this.getStartTime() + this.getDuration();
 	}
 
 	@Override
-	public long getFinishTime() {
+	public Long getFinishTime() {
 		return finishTime;
 	}
 
 	@Override
-	public int getNumberOfpreemptions() {
+	public long getNumberOfpreemptions() {
 		return numberOfpreemptions;
 	}
 
 	@Override
-	public int compareTo(ComputableElement t) {
+	public Peer getSourcePeer() {
+		return this.sourceJob.getSourcePeer();
+	}
+
+	@Override
+	public boolean isRunning() {
+		return this.startTime != null;
+	}
+
+	@Override
+	public boolean isFinished() {
+		return finishTime != null;
+	}
+
+	@Override
+	public String toString() {
+		// [id, duration, submissionTime, startTime, finishTime,
+		// numberOfpreemptions]
+		return new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE).append("id", id).append("duration", duration).append("submissionTime", submissionTime)
+				.append("startTime", startTime).append("finishTime", finishTime).append("numberOfpreemptions", numberOfpreemptions).toString();
+	}
+
+	@Override
+	public int compareTo(Task t) {
 		long diffTime = this.submissionTime - t.getSubmissionTime();
 		if (diffTime == 0) {
 			if (id > t.getId()) {
@@ -133,16 +167,6 @@ public class Task implements ComputableElement {
 		} else {
 			return -5;
 		}
-	}
-
-	@Override
-	public long getRunTimeDuration() {
-		return duration;
-	}
-
-	@Override
-	public Peer getSourcePeer() {
-		return this.sourceJob.getSourcePeer();
 	}
 
 }

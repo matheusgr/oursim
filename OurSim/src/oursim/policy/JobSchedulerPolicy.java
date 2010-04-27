@@ -1,9 +1,10 @@
 package oursim.policy;
 
 import oursim.entities.Job;
+import oursim.jobevents.ComputableElementEventListener;
 import oursim.jobevents.JobEventListener;
 
-public interface JobSchedulerPolicy extends JobEventListener {
+public interface JobSchedulerPolicy extends JobEventListener, ComputableElementEventListener {
 
 	/**
 	 * Simply Adds the job to this scheduler.

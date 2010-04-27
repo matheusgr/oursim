@@ -3,16 +3,15 @@ package oursim.events;
 import oursim.entities.Job;
 import oursim.jobevents.JobEventDispatcher;
 
-public class StartedJobEvent extends TimedEvent {
+public class StartedJobEvent extends JobTimedEvent {
 
 	StartedJobEvent(Job job) {
-		super(job.getStartTime(), 3);
-		this.job = job;
+		super(job.getStartTime(), 3, job);
 	}
 
 	@Override
 	protected void doAction() {
-		JobEventDispatcher.getInstance().dispatchJobStarted(job);
+		JobEventDispatcher.getInstance().dispatchJobStarted((Job) compElement);
 	}
 
 }

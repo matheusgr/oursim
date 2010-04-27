@@ -1,29 +1,44 @@
 package oursim.entities;
 
-public interface ComputableElement extends Comparable<ComputableElement> {
+import java.util.List;
+
+public interface ComputableElement {
 
 	long getId();
 	
 	long getSubmissionTime();
 
-	long getRunTimeDuration();
+	long getDuration();
 
-	long getStartTime();
-
+	Long getStartTime();
+	
 	void setStartTime(long startTime);
+
+	Long getEstimatedFinishTime();
+
+	Long getFinishTime();
 
 	Peer getSourcePeer();
 
-	Peer getTargetPeer();
+	//TODO: estranha essa assinatura
+	List<Peer> getTargetPeers();
 
 	void setTargetPeer(Peer targetPeer);
 
 	void preempt(long time);
 
-	long getEstimatedFinishTime();
+	void finish(long time);
 
-	long getFinishTime();
+	long getNumberOfpreemptions();
 
-	int getNumberOfpreemptions();
+	boolean isRunning();
+
+	boolean isFinished();
+	
+	Long getMakeSpan();
+
+	Long getRunningTime();
+
+	Long getQueueingTime();
 
 }
