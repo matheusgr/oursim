@@ -1,11 +1,13 @@
 package oursim.policy;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 
 import oursim.entities.ComputableElement;
 import oursim.entities.Peer;
+import oursim.entities.Task;
 
 public class DefaultSharingPolicy implements ResourceSharingPolicy {
 
@@ -19,27 +21,30 @@ public class DefaultSharingPolicy implements ResourceSharingPolicy {
 	}
 
 	@Override
+	public List<Peer> getPreemptablePeers(final Peer provider, Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
+			final HashSet<? extends ComputableElement> runningElements) {
+		return new ArrayList<Peer>();
+	}
+
+	@Override
+	public long getBalance(Peer source, Peer target) {
+		return Long.MAX_VALUE;
+	}	
+	
+	@Override
 	public void addPeer(Peer peer) {
 	}
 
 	@Override
-	public void updateBalance(Peer provider, Peer consumer, long balance) {
+	public void increaseBalance(Peer source, Peer target, Task task) {
 	}
 
 	@Override
-	public void updateMutualBalance(Peer provider, Peer consumer, long runTimeDuration) {
+	public void decreaseBalance(Peer source, Peer target, Task task) {
 	}
 
 	@Override
-	public long getBalance(Peer provider, Peer consumer) {
-		return Long.MAX_VALUE;
-	}
-
-	@Override
-	public Map<Peer, Long> calculateAllowedResources(final Peer provider, Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
-			final HashSet<? extends ComputableElement> runningElements) {
-		HashMap<Peer, Long> preemptablePeers = new HashMap<Peer, Long>();
-		return preemptablePeers;
+	public void updateMutualBalance(Peer provider, Peer consumer, Task task) {
 	}
 
 }

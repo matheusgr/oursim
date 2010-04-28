@@ -11,7 +11,7 @@ public class StartedJobEvent extends JobTimedEvent {
 
 	@Override
 	protected void doAction() {
-		JobEventDispatcher.getInstance().dispatchJobStarted((Job) compElement);
+		JobEventDispatcher.getInstance().dispatchJobStarted((Job) content);
 	}
 
 }

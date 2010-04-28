@@ -13,7 +13,7 @@ public abstract class TaskTimedEvent extends ComputableElementTimedEvent {
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("task", (Task) compElement).toString();
+		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("task", (Task) content).toString();
 	}
 
 }

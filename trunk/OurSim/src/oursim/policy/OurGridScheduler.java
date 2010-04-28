@@ -105,7 +105,7 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 					continue;
 				}
 
-				boolean isTaskRunning = provider.addTask(task, consumer);
+				boolean isTaskRunning = provider.addTask(task);
 
 				if (isTaskRunning) {
 					assert task.getTaskExecution() != null;
@@ -147,7 +147,7 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 	@Override
 	public void taskFinished(TaskEvent taskEvent) {
 		Task task = (Task) taskEvent.getSource();
-		task.getTargetPeer().finishTask(task, false);
+		task.getTargetPeer().finishTask(task);
 		if (task.getSourceJob().isFinished()) {
 			eventQueue.addFinishJobEvent(eventQueue.currentTime(), task.getSourceJob());
 		}

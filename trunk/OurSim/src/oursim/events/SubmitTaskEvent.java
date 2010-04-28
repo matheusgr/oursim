@@ -11,7 +11,7 @@ public class SubmitTaskEvent extends TaskTimedEvent {
 
 	@Override
 	protected final void doAction() {
-		TaskEventDispatcher.getInstance().dispatchTaskSubmitted((Task) compElement);
+		TaskEventDispatcher.getInstance().dispatchTaskSubmitted((Task) content);
 	}
 
 }

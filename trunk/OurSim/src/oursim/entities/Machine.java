@@ -57,5 +57,10 @@ public class Machine {
 	public Processor getDefaultProcessor(){
 		return processors.get(0);
 	}
+	
+	@Override
+	public String toString() {
+		return name;
+	}
 
 }

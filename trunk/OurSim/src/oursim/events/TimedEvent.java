@@ -1,21 +1,20 @@
 package oursim.events;
 
-
 public abstract class TimedEvent implements Comparable<TimedEvent> {
 
 	private boolean cancel;
 
 	protected long time;
 
-	// quanto menor maior a preferência para ser executado antes
+	// quanto menor, maior a preferência para ser executado antes
 	// range -> [1-10]
 	private int priority;
 
-	public TimedEvent(long time) {
+	protected TimedEvent(long time) {
 		this(time, 5);
 	}
 
-	public TimedEvent(long time, int priority) {
+	protected TimedEvent(long time, int priority) {
 		this.time = time;
 		this.priority = priority;
 		this.cancel = false;
@@ -25,11 +24,11 @@ public abstract class TimedEvent implements Comparable<TimedEvent> {
 
 	public String getType() {
 		String thisClassSimpleName = this.getClass().getSimpleName();
-		//TODO: following a implicit name convention
+		// TODO: following a implicit name convention
 		String eventName = thisClassSimpleName.substring(0, thisClassSimpleName.indexOf("Event"));
 		return eventName;
 	}
-	
+
 	public void cancel() {
 		this.cancel = true;
 	}

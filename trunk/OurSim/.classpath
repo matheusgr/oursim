@@ -2,8 +2,11 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="src-tests"/>
-	<classpathentry kind="output" path="bin"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.4.jar"/>
+	<classpathentry kind="lib" path="lib/jahmm-0.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/ssj.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/SegHidroUtils"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>

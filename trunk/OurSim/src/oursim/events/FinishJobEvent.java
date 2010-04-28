@@ -13,7 +13,7 @@ public class FinishJobEvent extends JobTimedEvent {
 
 	@Override
 	protected final void doAction() {
-		Job job = (Job) compElement;
+		Job job = (Job) content;
 		job.finish(time);
 		amountOfFinishedJobs++;
 		JobEventDispatcher.getInstance().dispatchJobFinished(job);

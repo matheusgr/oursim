@@ -40,7 +40,7 @@ public class EventQueue {
 	private void addEvent(TimedEvent event) {
 		assert event.getTime() >= time : event.getTime() + ">=" + time;
 		amountOfEvents++;
-		printEvent(event);
+		// printEvent(event);
 		pq.add(event);
 	}
 
@@ -85,12 +85,18 @@ public class EventQueue {
 		assert finishTime > this.currentTime();
 		FinishTaskEvent finishJobEvent = new FinishTaskEvent(finishTime, task);
 		this.addEvent(finishJobEvent);
-		
+
 		if (task2FinishTaskEvent.containsKey(task)) {
 			this.task2FinishTaskEvent.remove(task).cancel();
 		}
-		
+
 		this.task2FinishTaskEvent.put(task, finishJobEvent);
+	}
+
+	public void addWorkerAvailableEvent(String machineName, long time, long duration) {
+		assert duration > 0;
+		addEvent(new WorkerAvailableEvent(time, machineName));
+		addEvent(new WorkerUnavailableEvent(time + duration, machineName));
 	}
 
 	public void removeEvent(TimedEvent event) {
@@ -147,17 +153,17 @@ public class EventQueue {
 				String time = Long.toString(event.getTime());
 				String taskId = null;
 				String jobId = null;
-				String peer = event.compElement.getSourcePeer().getName();
+				String peer = event.content.getSourcePeer().getName();
 				try {
-					Task task = (Task) event.compElement;
+					Task task = (Task) event.content;
 					taskId = Long.toString(task.getId());
 					jobId = Long.toString(task.getSourceJob().getId());
 				} catch (ClassCastException e) {
-					jobId = Long.toString(event.compElement.getId());
+					jobId = Long.toString(event.content.getId());
 				}
-				String makespan = event.compElement.getMakeSpan() + "";
-				String runningTime = event.compElement.getRunningTime() + "";
-				String queuingTime = event.compElement.getQueueingTime() + "";
+				String makespan = event.content.getMakeSpan() + "";
+				String runningTime = event.content.getRunningTime() + "";
+				String queuingTime = event.content.getQueueingTime() + "";
 
 				bw.append(type).append(" ").append(time).append(" ").append(taskId).append(" ").append(jobId).append(" ").append(peer).append(" ").append(
 						makespan).append(" ").append(runningTime).append(" ").append(queuingTime).append("\n");
