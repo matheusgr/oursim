@@ -6,9 +6,9 @@ public interface ComputableElement {
 
 	long getId();
 	
-	long getSubmissionTime();
-
 	long getDuration();
+
+	long getSubmissionTime();
 
 	Long getStartTime();
 	

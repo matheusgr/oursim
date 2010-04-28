@@ -1,7 +1,7 @@
 package oursim.events;
 
 import oursim.entities.Task;
-import oursim.jobevents.ComputableElementEventDispatcher;
+import oursim.jobevents.TaskEventDispatcher;
 
 public class FinishTaskEvent extends TaskTimedEvent {
 
@@ -16,7 +16,7 @@ public class FinishTaskEvent extends TaskTimedEvent {
 		amountOfFinishedTasks++;
 		Task task = (Task)compElement;
 		task.finish(time);
-		ComputableElementEventDispatcher.getInstance().dispatchFinished(task);
+		TaskEventDispatcher.getInstance().dispatchTaskFinished(task);
 	}
 
 }

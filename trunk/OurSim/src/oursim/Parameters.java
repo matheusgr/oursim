@@ -11,8 +11,8 @@ public class Parameters {
 	public static Random RANDOM = new Random(9354269l);
 
 	private static String argsString =
-	// execTime execTimeVar subInterval   #Jobs  #TasksByJob #Peers #nodesByPeer
-	"       100         50            5    1000            2     10 		  10";
+	// execTime execTimeVar subInterval   #Jobs  #TasksByJob #Peers #nodesByPeer nodeMIPSRating
+	"       100         50            5    1000            2     10 		  10           3000";
 
 	// 100000
 
@@ -38,5 +38,7 @@ public class Parameters {
 
 	// número de nodos do peer
 	public static int NUM_RESOURCES_BY_PEER = Integer.parseInt(args[i++]);
+
+	public static int NODE_MIPS_RATING = Integer.parseInt(args[i++]);
 
 }

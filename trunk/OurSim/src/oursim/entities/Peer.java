@@ -9,25 +9,40 @@ import oursim.policy.ResourceSharingPolicy;
 public class Peer {
 
 	private String name;
-	private int amountOfResources;
 
-	private List<Machine> resources = new ArrayList<Machine>();
+	private List<Machine> resources;
 
 	private ResourceAllocationPolicy resourceAllocationPolicy;
 
-	public Peer(String name, int amountOfResources, ResourceSharingPolicy resourceSharingPolicy) {
+	private static long nextMachineId = 0;
+
+	public Peer(String name, int amountOfResources, int nodeMIPSRating, ResourceSharingPolicy resourceSharingPolicy) {
 		this.name = name;
-		this.amountOfResources = amountOfResources;
+
+		this.resources = new ArrayList<Machine>(amountOfResources);
+
+		for (int i = 0; i < amountOfResources; i++) {
+			addMachine(nodeMIPSRating);
+		}
+
 		this.resourceAllocationPolicy = new ResourceAllocationPolicy(this, resourceSharingPolicy);
+	}
+
+	private void addMachine(int nodeMIPSRating) {
+		this.resources.add(new Machine("M" + nextMachineId, nodeMIPSRating));
+		nextMachineId++;
 	}
 
 	public String getName() {
 		return name;
 	}
 
+	public void updateTime(long currentTime) {
+		this.resourceAllocationPolicy.updateTime(currentTime);
+	}
+
 	public int getAmountOfResources() {
 		return this.resources.size();
-		// TODO: return amountOfResources;
 	}
 
 	public void addResource(Machine machine) {
@@ -55,7 +70,11 @@ public class Peer {
 	}
 
 	public double getUtilization() {
-		return ((double) (this.amountOfResources - resourceAllocationPolicy.getAvailableResources())) / this.amountOfResources;
+		return ((double) (this.getAmountOfResources() - resourceAllocationPolicy.getAvailableResources())) / this.getAmountOfResources();
+	}
+
+	public List<Machine> getResources() {
+		return resources;
 	}
 
 }

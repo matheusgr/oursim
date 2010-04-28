@@ -1,7 +1,7 @@
 package oursim.events;
 
 import oursim.entities.Task;
-import oursim.jobevents.ComputableElementEventDispatcher;
+import oursim.jobevents.TaskEventDispatcher;
 
 public class StartedTaskEvent extends TaskTimedEvent {
 
@@ -11,7 +11,7 @@ public class StartedTaskEvent extends TaskTimedEvent {
 
 	@Override
 	protected void doAction() {
-		ComputableElementEventDispatcher.getInstance().dispatchStarted(compElement);
+		TaskEventDispatcher.getInstance().dispatchTaskStarted((Task) compElement);
 	}
 
 }

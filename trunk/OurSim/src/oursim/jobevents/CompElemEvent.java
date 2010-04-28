@@ -4,17 +4,17 @@ import java.util.EventObject;
 
 import oursim.entities.ComputableElement;
 
-public class ComputableElementEvent extends EventObject {
+public class CompElemEvent extends EventObject {
 
 	private static final long serialVersionUID = 1338458542592060286L;
 
-	private long time = -1;
+	protected long time = -1;
 
-	public ComputableElementEvent(ComputableElement source) {
+	public CompElemEvent(ComputableElement source) {
 		super(source);
 	}
 
-	public ComputableElementEvent(long time, ComputableElement source) {
+	public CompElemEvent(long time, ComputableElement source) {
 		super(source);
 		this.time = time;
 	}

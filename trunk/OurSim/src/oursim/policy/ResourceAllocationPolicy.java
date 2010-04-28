@@ -1,5 +1,6 @@
 package oursim.policy;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -7,38 +8,47 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import oursim.entities.Machine;
 import oursim.entities.Peer;
+import oursim.entities.Processor;
 import oursim.entities.Task;
+import oursim.entities.TaskExecution;
 import oursim.events.EventQueue;
 
 public class ResourceAllocationPolicy {
-
-	private int availableResources;
-
-	private List<Machine> allocatedResources;
 
 	private Peer peer;
 
 	private ResourceSharingPolicy resourceSharingPolicy;
 
-	private HashSet<Task> runningTasks;
-	private HashSet<Task> runningLocalTasks;
+	private List<Machine> allocatedResources;
+
+	private List<Machine> availableResources;	
+	
+	private Map<Task, Machine> tasksInExecution;
+
+	private HashSet<Task> localTasks;
+	private HashSet<Task> foreignTasks;
 
 	// a quantidade de recursos que o peer remoto está consumindo neste site
-	protected HashMap<Peer, Integer> resourcesBeingConsumed;
+	protected HashMap<Peer, Integer> amountOfAllocatedResourcesByPeer;
 
 	public ResourceAllocationPolicy(Peer peer, ResourceSharingPolicy resourceSharingPolicy) {
 
 		this.peer = peer;
 
-		this.availableResources = peer.getAmountOfResources();
+		this.availableResources = peer.getResources();
 
-		this.runningTasks = new HashSet<Task>();
-		this.runningLocalTasks = new HashSet<Task>();
+		this.allocatedResources = new ArrayList<Machine>();
 
-		this.resourcesBeingConsumed = new HashMap<Peer, Integer>();
+		this.tasksInExecution = new HashMap<Task, Machine>();
+
+		this.foreignTasks = new HashSet<Task>();
+		this.localTasks = new HashSet<Task>();
+
+		this.amountOfAllocatedResourcesByPeer = new HashMap<Peer, Integer>();
 
 		this.resourceSharingPolicy = resourceSharingPolicy;
 
@@ -47,7 +57,7 @@ public class ResourceAllocationPolicy {
 	}
 
 	public int getAvailableResources() {
-		return availableResources;
+		return availableResources.size();
 	}
 
 	/**
@@ -58,47 +68,57 @@ public class ResourceAllocationPolicy {
 	 * @return
 	 */
 	public long getAmountOfResourcesToShare() {
-		return peer.getAmountOfResources() - runningLocalTasks.size();
-		// TODO:TASK return peer.getAmountOfResources() -
-		// runningLocalJobs.size();
+		return peer.getAmountOfResources() - localTasks.size();
 	}
 
 	public void finishTask(Task task, boolean preempted) {
 
-		Peer sourcePeer = task.getSourceJob().getSourcePeer();
+		Peer sourcePeer = task.getSourcePeer();
 
 		if (sourcePeer == peer) {
-			boolean removed = this.runningLocalTasks.remove(task);
+			boolean removed = this.localTasks.remove(task);
 			assert removed;
 			// Don't compute own balance
 		} else {
-			boolean removed = this.runningTasks.remove(task);
+			boolean removed = this.foreignTasks.remove(task);
 			assert removed;
 
-			int resourcesBeingConsumedByPeer = this.resourcesBeingConsumed.get(sourcePeer) - 1;
+			int resourcesBeingConsumedByPeer = this.amountOfAllocatedResourcesByPeer.get(sourcePeer) - 1;
 			if (resourcesBeingConsumedByPeer == 0) {
-				this.resourcesBeingConsumed.remove(sourcePeer);
+				this.amountOfAllocatedResourcesByPeer.remove(sourcePeer);
 			} else {
-				this.resourcesBeingConsumed.put(sourcePeer, resourcesBeingConsumedByPeer);
+				this.amountOfAllocatedResourcesByPeer.put(sourcePeer, resourcesBeingConsumedByPeer);
 			}
 			// compute balance
 			if (!preempted) {
-				resourceSharingPolicy.updateMutualBalance(peer, sourcePeer, task.getDuration());
+				resourceSharingPolicy.updateMutualBalance(peer, sourcePeer, task.getRunningTime());
 			} else {
 				// TODO: This is not cool!
 				EventQueue.getInstance().addPreemptedTaskEvent(task, EventQueue.getInstance().currentTime());
 			}
 		}
 
-		this.availableResources++;
+		releaseResource(task);
 
+	}
+
+	private void allocateResource(Task task) {
+		Machine resource = this.availableResources.remove(0);
+		this.allocatedResources.add(resource);
+		this.tasksInExecution.put(task, resource);
+	}
+
+	private void releaseResource(Task task) {
+		Machine resource = this.tasksInExecution.remove(task);
+		this.allocatedResources.remove(resource);
+		this.availableResources.add(resource);
 	}
 
 	protected void preemptOneTask(Map<Peer, Long> preemptablePeers) {
 
 		Peer chosen = null;
 
-		LinkedList<Peer> peerList = new LinkedList<Peer>(resourcesBeingConsumed.keySet());
+		LinkedList<Peer> peerList = new LinkedList<Peer>(amountOfAllocatedResourcesByPeer.keySet());
 
 		chosen = peerList.getLast();
 
@@ -106,7 +126,7 @@ public class ResourceAllocationPolicy {
 
 		// todos os jobs do escolhido que estão rodando
 		List<Task> tasks = new LinkedList<Task>();
-		for (Task j : runningTasks) {
+		for (Task j : foreignTasks) {
 			if (j.getSourcePeer() == chosen) {
 				tasks.add(j);
 			}
@@ -126,12 +146,19 @@ public class ResourceAllocationPolicy {
 	}
 
 	private void startTask(Task task) {
-		availableResources--;
-		Peer sourcePeer = task.getSourceJob().getSourcePeer();
+
+		assert task.getTaskExecution() == null;
+
+		allocateResource(task);
+		long currentTime = EventQueue.getInstance().currentTime();
+		Processor defaultProcessor = tasksInExecution.get(task).getDefaultProcessor();
+		task.setTaskExecution(new TaskExecution(task, defaultProcessor, currentTime));
+
+		Peer sourcePeer = task.getSourcePeer();
 		if (sourcePeer == peer) {
-			runningLocalTasks.add(task);
+			localTasks.add(task);
 		} else {
-			runningTasks.add(task);
+			foreignTasks.add(task);
 		}
 
 		if (sourcePeer == peer) {
@@ -139,15 +166,17 @@ public class ResourceAllocationPolicy {
 		}
 
 		int consumedResources = 0;
-		if (this.resourcesBeingConsumed.containsKey(sourcePeer)) {
-			consumedResources = this.resourcesBeingConsumed.get(sourcePeer);
+		if (this.amountOfAllocatedResourcesByPeer.containsKey(sourcePeer)) {
+			consumedResources = this.amountOfAllocatedResourcesByPeer.get(sourcePeer);
 		}
-		this.resourcesBeingConsumed.put(sourcePeer, consumedResources + 1);
+		this.amountOfAllocatedResourcesByPeer.put(sourcePeer, consumedResources + 1);
+
+		assert task.getTaskExecution() != null;
 	}
 
 	public boolean allocateTask(Task task, Peer consumer) {
 		// There is available resources.
-		if (availableResources > 0) {
+		if (getAvailableResources() > 0) {
 			startTask(task);
 			return true;
 		}
@@ -158,7 +187,7 @@ public class ResourceAllocationPolicy {
 		}
 
 		// This task may need preemption
-		Map<Peer, Long> preemptablePeers = resourceSharingPolicy.calculateAllowedResources(peer, consumer, resourcesBeingConsumed, runningTasks);
+		Map<Peer, Long> preemptablePeers = resourceSharingPolicy.calculateAllowedResources(peer, consumer, amountOfAllocatedResourcesByPeer, foreignTasks);
 
 		// Consumer is not preemptable: so it can preempt someone.
 		if (!preemptablePeers.isEmpty() && !preemptablePeers.containsKey(consumer)) {
@@ -172,6 +201,17 @@ public class ResourceAllocationPolicy {
 		// Peer could not preempt someone
 		return false;
 
+	}
+
+	public void updateTime(long currentTime) {
+		for (Entry<Task, Machine> taskAndMachine : tasksInExecution.entrySet()) {
+			Task task = taskAndMachine.getKey();
+			Long estimatedFinishTime = task.getTaskExecution().updateProcessing(currentTime);
+			if (estimatedFinishTime != null) {
+				long finishTime = EventQueue.getInstance().currentTime() + estimatedFinishTime;
+				EventQueue.getInstance().addFinishTaskEvent(finishTime, task);
+			}
+		}
 	}
 
 }
