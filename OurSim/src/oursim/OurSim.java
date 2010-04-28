@@ -6,10 +6,13 @@ import java.util.List;
 
 import org.apache.commons.lang.time.StopWatch;
 
+import oursim.availability.AvailabilityRecord;
 import oursim.entities.Peer;
 import oursim.events.EventQueue;
 import oursim.events.FinishJobEvent;
 import oursim.events.FinishTaskEvent;
+import oursim.input.Availability;
+import oursim.input.Input;
 import oursim.input.SyntheticWorkload;
 import oursim.input.Workload;
 import oursim.policy.DefaultSharingPolicy;
@@ -58,7 +61,7 @@ public class OurSim {
 
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException {
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
@@ -69,10 +72,11 @@ public class OurSim {
 
 		List<Peer> peers = prepareGrid(Parameters.NUM_PEERS, Parameters.NUM_RESOURCES_BY_PEER,Parameters.NODE_MIPS_RATING, Parameters.USE_NOF);
 		Workload workload = prepareWorkload(peers);
+		Input<AvailabilityRecord> availability = new Availability("trace_mutka_100-machines_10-hours.txt");
 
 		System.out.println("Starting Simulation...");
 
-		OurSimAPI.run(peers, workload);
+		OurSimAPI.run(peers, workload, availability);
 
 		System.out.println("# Total of  finished  jobs: " + FinishJobEvent.amountOfFinishedJobs);
 		System.out.println("# Total of preempted  jobs: " + OurGridScheduler.numberOfPreemptionsForAllJobs);

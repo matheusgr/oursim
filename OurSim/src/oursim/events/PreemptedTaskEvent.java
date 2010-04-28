@@ -11,7 +11,7 @@ public class PreemptedTaskEvent extends TaskTimedEvent {
 
 	@Override
 	protected void doAction() {
-		Task task = (Task) compElement;
+		Task task = (Task) content;
 		task.preempt(time);
 		TaskEventDispatcher.getInstance().dispatchTaskPreempted(task);
 	}

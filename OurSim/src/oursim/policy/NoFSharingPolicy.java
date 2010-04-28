@@ -1,14 +1,17 @@
 package oursim.policy;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import oursim.entities.ComputableElement;
 import oursim.entities.Peer;
+import oursim.entities.Task;
 
 public class NoFSharingPolicy implements ResourceSharingPolicy {
 
@@ -29,35 +32,46 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 		this.allBalances.put(peer, new HashMap<Peer, Long>());
 	}
 
-	@Override
-	public void updateBalance(Peer provider, Peer consumer, long balance) {
-		assert consumer != provider;
+	private void updateBalance(Peer provider, Peer consumer, long balance) {
 		HashMap<Peer, Long> balances = allBalances.get(provider);
-
 		long finalBalance = getBalance(consumer, balances) + balance;
-
 		if (finalBalance < 0) {
 			balances.remove(consumer);
 		} else {
 			balances.put(consumer, finalBalance);
 		}
+	}
+
+	@Override
+	public void increaseBalance(Peer source, Peer target, Task task) {
+		assert target != source;
+		if (task.isFinished()) {
+			updateBalance(source, target, task.getRunningTime());
+		}
 
 	}
 
 	@Override
-	public void updateMutualBalance(Peer provider, Peer consumer, long runTimeDuration) {
-		// Don't update the balance to itself
-		if (provider != consumer) {
-			updateBalance(provider, consumer, -runTimeDuration);
-			updateBalance(consumer, provider, runTimeDuration);
+	public void decreaseBalance(Peer source, Peer target, Task task) {
+		if (task.isFinished()) {
+			updateBalance(source, target, -task.getRunningTime());
 		}
 	}
 
 	@Override
-	public long getBalance(Peer provider, Peer consumer) {
-		assert allBalances.containsKey(provider);
-		HashMap<Peer, Long> balances = allBalances.get(provider);
-		return getBalance(consumer, balances);
+	public void updateMutualBalance(Peer provider, Peer consumer, Task task) {
+		// Don't update the balance to itself
+		if (provider != consumer) {
+			decreaseBalance(provider, consumer, task);
+			increaseBalance(consumer, provider, task);
+		}
+	}
+
+	@Override
+	public long getBalance(Peer source, Peer target) {
+		assert allBalances.containsKey(source);
+		HashMap<Peer, Long> balances = allBalances.get(source);
+		return getBalance(target, balances);
 	}
 
 	private long getBalance(Peer consumer, HashMap<Peer, Long> balances) {
@@ -65,9 +79,16 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 	}
 
 	@Override
-	public Map<Peer, Long> calculateAllowedResources(final Peer provider, Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
+	public List<Peer> getPreemptablePeers(final Peer provider, Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
 			final HashSet<? extends ComputableElement> runningElements) {
 
+		List<Peer> peersByPriorityOfPreemption = sortPeersByPriorityOfPreemption(provider, consumer, resourcesBeingConsumed, runningElements);
+		peersByPriorityOfPreemption.remove(consumer);
+		return peersByPriorityOfPreemption;
+	}
+
+	private List<Peer> sortPeersByPriorityOfPreemption(final Peer provider, Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
+			final HashSet<? extends ComputableElement> runningElements) {
 		assert allBalances.containsKey(provider);
 
 		HashMap<Peer, Long> balances = allBalances.get(provider);
@@ -157,7 +178,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 				// machine
 				if (resourcesInUse + 1 > resourcesForPeer) {
 					preemptablePeers.put(remoteConsumer, resourcesForPeer);
-					return preemptablePeers;
+					return new ArrayList<Peer>(preemptablePeers.keySet());
 				}
 			}
 			if (Math.min(resourcesInUse, resourcesForPeer) > resourcesForPeer) {
@@ -168,7 +189,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 
 		// consumer will not get any resource from this provider
 		if (preemptablePeers.containsKey(consumer)) {
-			return preemptablePeers;
+			return new ArrayList<Peer>(preemptablePeers.keySet());
 		}
 
 		// distribute resources left using reluctant strategy
@@ -190,7 +211,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 
 		assert (resourcesLeft == 0);
 
-		return preemptablePeers;
+		return new ArrayList<Peer>(preemptablePeers.keySet());
 	}
 
 }
