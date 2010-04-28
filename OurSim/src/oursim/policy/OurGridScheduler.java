@@ -10,9 +10,9 @@ import oursim.entities.Job;
 import oursim.entities.Peer;
 import oursim.entities.Task;
 import oursim.events.EventQueue;
-import oursim.jobevents.ComputableElementEvent;
 import oursim.jobevents.JobEvent;
 import oursim.jobevents.JobEventListenerAdapter;
+import oursim.jobevents.TaskEvent;
 
 public class OurGridScheduler extends JobEventListenerAdapter implements JobSchedulerPolicy {
 
@@ -108,6 +108,7 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 				boolean isTaskRunning = provider.addTask(task, consumer);
 
 				if (isTaskRunning) {
+					assert task.getTaskExecution() != null;
 					updateTaskState(task, provider, eventQueue.currentTime());
 					it.remove();
 					break;
@@ -144,8 +145,8 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 	}
 
 	@Override
-	public void finished(ComputableElementEvent computableElement) {
-		Task task = (Task) computableElement.getSource();
+	public void taskFinished(TaskEvent taskEvent) {
+		Task task = (Task) taskEvent.getSource();
 		task.getTargetPeer().finishTask(task, false);
 		if (task.getSourceJob().isFinished()) {
 			eventQueue.addFinishJobEvent(eventQueue.currentTime(), task.getSourceJob());
@@ -153,20 +154,20 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 	}
 
 	@Override
-	public void submitted(ComputableElementEvent computableElement) {
-		Task task = (Task) computableElement.getSource();
+	public void taskSubmitted(TaskEvent taskEvent) {
+		Task task = (Task) taskEvent.getSource();
 		this.addTask(task);
 	}
 
 	@Override
-	public void preempted(ComputableElementEvent computableElement) {
+	public void taskPreempted(TaskEvent taskEvent) {
 		numberOfPreemptionsForAllTasks++;
-		Task task = (Task) computableElement.getSource();
+		Task task = (Task) taskEvent.getSource();
 		this.rescheduleTask(task);
 	}
 
 	@Override
-	public void started(ComputableElementEvent computableElement) {
+	public void taskStarted(TaskEvent taskEvent) {
 		// nothing to do
 	}
 

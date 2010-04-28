@@ -19,14 +19,14 @@ import oursim.policy.ResourceSharingPolicy;
 
 public class OurSim {
 
-	private static List<Peer> prepareGrid(int numPeers, int numNodesByPeer, boolean useNoF) {
+	private static List<Peer> prepareGrid(int numPeers, int numNodesByPeer,int nodeMIPSRating, boolean useNoF) {
 
 		ArrayList<Peer> peers = new ArrayList<Peer>(numPeers);
 
 		ResourceSharingPolicy sharingPolicy = useNoF ? NoFSharingPolicy.getInstance() : DefaultSharingPolicy.getInstance();
 
 		for (int i = 0; i < numPeers; i++) {
-			peers.add(new Peer("P" + i, numNodesByPeer, sharingPolicy));
+			peers.add(new Peer("P" + i, numNodesByPeer, nodeMIPSRating, sharingPolicy));
 		}
 
 		return peers;
@@ -67,7 +67,7 @@ public class OurSim {
 		// PrintOutput("oursim_trace.txt"));
 		// OutputManager.getInstance().addListener(new PrintOutput());
 
-		List<Peer> peers = prepareGrid(Parameters.NUM_PEERS, Parameters.NUM_RESOURCES_BY_PEER, Parameters.USE_NOF);
+		List<Peer> peers = prepareGrid(Parameters.NUM_PEERS, Parameters.NUM_RESOURCES_BY_PEER,Parameters.NODE_MIPS_RATING, Parameters.USE_NOF);
 		Workload workload = prepareWorkload(peers);
 
 		System.out.println("Starting Simulation...");

@@ -1,7 +1,7 @@
 package oursim.events;
 
 import oursim.entities.Task;
-import oursim.jobevents.ComputableElementEventDispatcher;
+import oursim.jobevents.TaskEventDispatcher;
 
 public class SubmitTaskEvent extends TaskTimedEvent {
 
@@ -11,7 +11,7 @@ public class SubmitTaskEvent extends TaskTimedEvent {
 
 	@Override
 	protected final void doAction() {
-		ComputableElementEventDispatcher.getInstance().dispatchSubmitted((Task) compElement);
+		TaskEventDispatcher.getInstance().dispatchTaskSubmitted((Task) compElement);
 	}
 
 }

@@ -1,7 +1,7 @@
 package oursim.events;
 
 import oursim.entities.Task;
-import oursim.jobevents.ComputableElementEventDispatcher;
+import oursim.jobevents.TaskEventDispatcher;
 
 public class PreemptedTaskEvent extends TaskTimedEvent {
 
@@ -13,7 +13,7 @@ public class PreemptedTaskEvent extends TaskTimedEvent {
 	protected void doAction() {
 		Task task = (Task) compElement;
 		task.preempt(time);
-		ComputableElementEventDispatcher.getInstance().dispatchPreempted(task);
+		TaskEventDispatcher.getInstance().dispatchTaskPreempted(task);
 	}
 
 }

@@ -29,6 +29,8 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 	private Job sourceJob;
 	private Peer targetPeer;
 
+	private TaskExecution taskExecution;
+
 	private int numberOfpreemptions;
 
 	public Task(long id, String executable, long duration, long submissionTime, Job sourceJob) {
@@ -115,7 +117,10 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 
 	@Override
 	public Long getEstimatedFinishTime() {
-		return this.getStartTime() + this.getDuration();
+		assert startTime != null;
+		// return this.getStartTime() + this.getDuration();
+		assert taskExecution != null;
+		return this.getStartTime() + taskExecution.getRemainingTimeToFinish();
 	}
 
 	@Override
@@ -147,8 +152,14 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 	public String toString() {
 		// [id, duration, submissionTime, startTime, finishTime,
 		// numberOfpreemptions]
-		return new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE).append("id", id).append("duration", duration).append("submissionTime", submissionTime)
-				.append("startTime", startTime).append("finishTime", finishTime).append("numberOfpreemptions", numberOfpreemptions).toString();
+		return new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE)
+		.append("id", id)
+		.append("duration", duration)
+		.append("submissionTime", submissionTime)
+		.append("startTime", startTime)
+		.append("finishTime", finishTime)
+		.append("numberOfpreemptions", numberOfpreemptions)
+		.toString();
 	}
 
 	@Override
@@ -167,6 +178,14 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 		} else {
 			return -5;
 		}
+	}
+
+	public TaskExecution getTaskExecution() {
+		return taskExecution;
+	}
+
+	public void setTaskExecution(TaskExecution taskExecution) {
+		this.taskExecution = taskExecution;
 	}
 
 }

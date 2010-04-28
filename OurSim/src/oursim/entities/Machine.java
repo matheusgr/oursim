@@ -53,5 +53,9 @@ public class Machine {
 		}
 		return numFreeProcessors;
 	}
+	
+	public Processor getDefaultProcessor(){
+		return processors.get(0);
+	}
 
 }

@@ -85,6 +85,11 @@ public class EventQueue {
 		assert finishTime > this.currentTime();
 		FinishTaskEvent finishJobEvent = new FinishTaskEvent(finishTime, task);
 		this.addEvent(finishJobEvent);
+		
+		if (task2FinishTaskEvent.containsKey(task)) {
+			this.task2FinishTaskEvent.remove(task).cancel();
+		}
+		
 		this.task2FinishTaskEvent.put(task, finishJobEvent);
 	}
 
@@ -154,14 +159,8 @@ public class EventQueue {
 				String runningTime = event.compElement.getRunningTime() + "";
 				String queuingTime = event.compElement.getQueueingTime() + "";
 
-				bw.append(type).append(" ")
-				  .append(time).append(" ")
-				  .append(taskId).append(" ")
-				  .append(jobId).append(" ")
-				  .append(peer).append(" ")
-				  .append(makespan).append(" ")
-				  .append(runningTime).append(" ")
-				  .append(queuingTime).append("\n");
+				bw.append(type).append(" ").append(time).append(" ").append(taskId).append(" ").append(jobId).append(" ").append(peer).append(" ").append(
+						makespan).append(" ").append(runningTime).append(" ").append(queuingTime).append("\n");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

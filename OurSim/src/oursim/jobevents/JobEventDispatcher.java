@@ -7,10 +7,10 @@ import oursim.entities.Job;
 
 public class JobEventDispatcher {
 
-	private List<JobEventListener> listeners;
-
 	private static JobEventDispatcher instance = null;
 
+	private List<JobEventListener> listeners;		
+	
 	private JobEventDispatcher() {
 		this.listeners = new ArrayList<JobEventListener>();
 	}
@@ -21,12 +21,12 @@ public class JobEventDispatcher {
 
 	public void addListener(JobEventListener listener) {
 		this.listeners.add(listener);
-	}
-
+	}	
+	
 	public void removeListener(JobEventListener listener) {
 		this.listeners.remove(listener);
-	}
-
+	}	
+	
 	public void dispatchJobFinished(Job job) {
 		JobEvent jobEvent = new JobEvent(job);
 		for (JobEventListener listener : listeners) {

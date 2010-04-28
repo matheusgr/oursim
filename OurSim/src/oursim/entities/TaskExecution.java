@@ -1,6 +1,6 @@
 package oursim.entities;
 
-class TaskExecution {
+public class TaskExecution {
 
 	/**
 	 * The size in Millions of Instructions (MI) of this task to be executed in
@@ -13,11 +13,14 @@ class TaskExecution {
 
 	private Task task;
 
-	public TaskExecution(Task task) {
+	private Processor processor;
+
+	public TaskExecution(Task task, Processor processor, long time) {
 		this.task = task;
+		this.processor = processor;
 		this.size = Processor.EC2_COMPUTE_UNIT.calculateAmountOfInstructionsProcessed(this.task.getDuration());
 		this.remainingSize = size;
-		this.previousTime = 0;
+		this.previousTime = time;
 	}
 
 	/**
@@ -25,21 +28,28 @@ class TaskExecution {
 	 * @param currentTime
 	 * @return The time lacking to this Task be finished in that processor.
 	 */
-	public long updateProcessing(Processor processor, long currentTime) {
+	public Long updateProcessing(long currentTime) {
 		assert currentTime > previousTime;
+		assert false;
 
 		// time since last update
 		long timeElapsed = currentTime - previousTime;
 
-		//TODO: verificar as consequências do remaining time negativo.
+		// TODO: verificar as consequências do remaining time negativo.
 		this.remainingSize -= processor.calculateAmountOfInstructionsProcessed(timeElapsed);
-
-		long estimatedTimeToFinish = (remainingSize <= 0) ? 0 : processor.calculateTimeToExecute(remainingSize);
 
 		this.previousTime = currentTime;
 
-		return estimatedTimeToFinish;
+		return (remainingSize <= 0) ? 0 : processor.calculateTimeToExecute(remainingSize);
 
+	}
+
+	public Long getRemainingTimeToFinish() {
+		return processor.calculateTimeToExecute(remainingSize);
+	}
+
+	public void setProcessor(Processor processor) {
+		this.processor = processor;
 	}
 
 }
