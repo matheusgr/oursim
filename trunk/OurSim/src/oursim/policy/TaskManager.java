@@ -48,7 +48,7 @@ public class TaskManager {
 	}
 
 	public void addTask(Task task, Machine resource) {
-		assert resource != null;
+		assert resource != null && !tasksInExecution.containsKey(task) && !machinesInExecution.containsKey(resource);
 
 		this.tasksInExecution.put(task, resource);
 		this.machinesInExecution.put(resource, task);
@@ -71,11 +71,7 @@ public class TaskManager {
 	}
 
 	public boolean remove(Task task) {
-		if (task.getSourcePeer() == peer) {
-			return removeLocalTask(task);
-		} else {
-			return removeForeignTask(task);
-		}
+		return (task.getSourcePeer() == peer) ? removeLocalTask(task) : removeForeignTask(task);
 	}
 
 	public List<Task> getAllTasksFromPeer(Peer chosen) {
@@ -140,7 +136,7 @@ public class TaskManager {
 	}
 
 	public Machine finishTask(Task task) {
-		assert this.tasksInExecution.containsKey(task);
+		assert this.tasksInExecution.containsKey(task) : task;
 		Machine machine = this.tasksInExecution.remove(task);
 		Task taskTemp = this.machinesInExecution.remove(machine);
 		boolean removed = this.remove(task);
@@ -172,6 +168,10 @@ public class TaskManager {
 
 	public boolean isInExecution(Machine machine) {
 		return this.machinesInExecution.containsKey(machine);
+	}
+
+	public boolean isInExecution(Task task) {
+		return this.tasksInExecution.containsKey(task);
 	}
 
 }

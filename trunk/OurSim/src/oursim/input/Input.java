@@ -2,10 +2,10 @@ package oursim.input;
 
 public interface Input<T> {
 
-	public abstract T peek();
+	T peek();
 
-	public abstract T poll();
+	T poll();
 
-	public abstract void close();
+	void close();
 
 }

@@ -3,8 +3,6 @@ package oursim.workerevents;
 import java.util.ArrayList;
 import java.util.List;
 
-import oursim.events.WorkerAvailableEvent;
-
 public class WorkerEventDispatcher {
 
 	private static WorkerEventDispatcher instance = null;

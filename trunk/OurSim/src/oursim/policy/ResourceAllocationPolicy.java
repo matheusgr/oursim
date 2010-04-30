@@ -9,9 +9,6 @@ import java.util.List;
 import oursim.entities.Machine;
 import oursim.entities.Peer;
 import oursim.entities.Task;
-import oursim.events.EventQueue;
-import oursim.workerevents.WorkerEvent;
-import oursim.workerevents.WorkerEventListenerAdapter;
 
 public class ResourceAllocationPolicy {
 
@@ -32,26 +29,6 @@ public class ResourceAllocationPolicy {
 		this.taskManager = taskManager;
 
 		this.resourceSharingPolicy = resourceSharingPolicy;
-
-	}
-
-	private Task chooseATaskToBePreempted(List<Peer> preemptablePeers) {
-		assert !preemptablePeers.isEmpty();
-
-		Peer chosen = preemptablePeers.get(preemptablePeers.size() - 1);
-
-		List<Task> tasks = this.taskManager.getAllTasksFromPeer(chosen);
-
-		// get recently started job first
-		// XXX Política para preemptar task por peer
-		Collections.sort(tasks, new Comparator<Task>() {
-			@Override
-			public int compare(Task t1, Task t2) {
-				return (int) (t2.getStartTime() - t1.getStartTime());
-			}
-		});
-
-		return tasks.get(0);
 
 	}
 
@@ -82,7 +59,28 @@ public class ResourceAllocationPolicy {
 			resource = this.taskManager.getMachine(chosen);
 			this.peer.preemptTask(chosen);
 		}
+		
 		return resource;
+	}
+
+	private Task chooseATaskToBePreempted(List<Peer> preemptablePeers) {
+		assert !preemptablePeers.isEmpty();
+
+		Peer chosen = preemptablePeers.get(preemptablePeers.size() - 1);
+
+		List<Task> tasks = this.taskManager.getAllTasksFromPeer(chosen);
+
+		// get recently started job first
+		// XXX Política para preemptar task por peer
+		Collections.sort(tasks, new Comparator<Task>() {
+			@Override
+			public int compare(Task t1, Task t2) {
+				return (int) (t2.getStartTime() - t1.getStartTime());
+			}
+		});
+
+		return tasks.get(0);
+
 	}
 
 }

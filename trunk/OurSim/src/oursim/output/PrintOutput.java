@@ -31,7 +31,7 @@ public class PrintOutput implements Output {
 		long id = job.getId();
 		long submissionTime = job.getSubmissionTime();
 		long numberOfpreemptions = job.getNumberOfpreemptions();
-		long runTimeDuration = job.getDuration();
+		long runTimeDuration = job.getRunningTime();
 
 		this.out.println("F:" + id + ":" + submissionTime + ":" + runTimeDuration + ":" + numberOfpreemptions);
 

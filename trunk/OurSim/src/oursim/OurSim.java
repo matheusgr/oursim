@@ -76,7 +76,7 @@ public class OurSim {
 
 		System.out.println("Starting Simulation...");
 
-		OurSimAPI.run(peers, workload, availability);
+		new OurSimAPI().run(peers, workload, availability);
 
 		System.out.println("# Total of  finished  jobs: " + FinishJobEvent.amountOfFinishedJobs);
 		System.out.println("# Total of preempted  jobs: " + OurGridScheduler.numberOfPreemptionsForAllJobs);

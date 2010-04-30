@@ -8,7 +8,13 @@ import oursim.entities.Peer;
 
 public class ResourceRequestPolicy {
 
-	public void request(Peer consumer, List<Peer> peers) {
+	private Peer peer;
+
+	public ResourceRequestPolicy(Peer peer) {
+		this.peer = peer;
+	}
+
+	public void request(List<Peer> peers) {
 		// // Getting best balance first
 		// Collections.sort(peers, new Comparator<Peer>() {
 		// @Override
@@ -21,13 +27,13 @@ public class ResourceRequestPolicy {
 		Collections.shuffle(peers, Parameters.RANDOM);
 		// Trying own resources first:
 		for (int i = 0; i < peers.size(); i++) {
-			if (peers.get(i) == consumer) {
+			if (peers.get(i) == peer) {
 				peers.set(i, peers.get(0));
-				peers.set(0, consumer);
+				peers.set(0, peer);
 				break;
 			}
 		}
-		assert (peers.get(0) == consumer);
+		assert (peers.get(0) == peer);
 	}
 
 }

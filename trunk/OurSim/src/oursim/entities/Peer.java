@@ -6,10 +6,13 @@ import java.util.List;
 import oursim.events.EventQueue;
 import oursim.policy.ResourceAllocationPolicy;
 import oursim.policy.ResourceManager;
+import oursim.policy.ResourceRequestPolicy;
 import oursim.policy.ResourceSharingPolicy;
 import oursim.policy.TaskManager;
 import oursim.workerevents.WorkerEvent;
 import oursim.workerevents.WorkerEventListenerAdapter;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 public class Peer extends WorkerEventListenerAdapter {
 
@@ -19,11 +22,13 @@ public class Peer extends WorkerEventListenerAdapter {
 
 	private ResourceAllocationPolicy resourceAllocationPolicy;
 
+	private ResourceSharingPolicy resourceSharingPolicy;
+
+	private ResourceRequestPolicy resourceRequestPolicy;
+
 	private ResourceManager resourceManager;
 
 	private TaskManager taskManager;
-
-	private ResourceSharingPolicy resourceSharingPolicy;
 
 	private static long nextMachineId = 0;
 
@@ -41,6 +46,8 @@ public class Peer extends WorkerEventListenerAdapter {
 
 		this.resourceSharingPolicy = resourceSharingPolicy;
 		this.resourceSharingPolicy.addPeer(this);
+
+		this.resourceRequestPolicy = new ResourceRequestPolicy(this);
 
 		this.resourceAllocationPolicy = new ResourceAllocationPolicy(this, resourceSharingPolicy, this.resourceManager, this.taskManager);
 
@@ -89,6 +96,7 @@ public class Peer extends WorkerEventListenerAdapter {
 	}
 
 	public void finishTask(Task task) {
+		assert this.taskManager.isInExecution(task) : task;
 		this.resourceManager.releaseResource(this.taskManager.finishTask(task));
 		this.resourceSharingPolicy.updateMutualBalance(this, task.getSourcePeer(), task);
 	}
@@ -118,7 +126,8 @@ public class Peer extends WorkerEventListenerAdapter {
 			this.resourceManager.makeResourceAvailable(machineName);
 		}
 
-		// TODO: deve-se escalonar os jobs agora pois tem recurso disponível
+		// TODO: deve-se reescalonar os jobs agora pois tem recurso disponível
+
 	}
 
 	@Override
@@ -132,6 +141,15 @@ public class Peer extends WorkerEventListenerAdapter {
 			}
 			this.resourceManager.makeResourceUnavailable(machineName);
 		}
+	}
+
+	public void prioritizeResourcesToConsume(List<Peer> peers) {
+		this.resourceRequestPolicy.request(peers);
+	}
+
+	@Override
+	public String toString() {
+		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("name", name).append("#resources", resources.size()).toString();
 	}
 
 }
