@@ -37,6 +37,14 @@ public class EventQueue {
 		return instance = (instance != null) ? instance : new EventQueue();
 	}
 
+	public void clear(){
+		pq = new PriorityQueue<TimedEvent>();
+		job2FinishJobEvent = new HashMap<Job, FinishJobEvent>();
+		task2FinishTaskEvent = new HashMap<Task, FinishTaskEvent>();
+		time = -1;
+		amountOfEvents = 0;
+	}
+	
 	private void addEvent(TimedEvent event) {
 		assert event.getTime() >= time : event.getTime() + ">=" + time;
 		amountOfEvents++;
@@ -83,18 +91,19 @@ public class EventQueue {
 
 	public void addFinishTaskEvent(long finishTime, Task task) {
 		assert finishTime > this.currentTime();
-		FinishTaskEvent finishJobEvent = new FinishTaskEvent(finishTime, task);
-		this.addEvent(finishJobEvent);
+		
+		FinishTaskEvent finishTaskEvent = new FinishTaskEvent(finishTime, task);
+		this.addEvent(finishTaskEvent);
 
 		if (task2FinishTaskEvent.containsKey(task)) {
 			this.task2FinishTaskEvent.remove(task).cancel();
 		}
 
-		this.task2FinishTaskEvent.put(task, finishJobEvent);
+		this.task2FinishTaskEvent.put(task, finishTaskEvent);
 	}
 
 	public void addWorkerAvailableEvent(String machineName, long time, long duration) {
-		assert duration > 0;
+		assert duration > 0 && time >= 0;
 		addEvent(new WorkerAvailableEvent(time, machineName));
 		addEvent(new WorkerUnavailableEvent(time + duration, machineName));
 	}
@@ -175,7 +184,7 @@ public class EventQueue {
 
 	@Override
 	public String toString() {
-		return "TimeQueue [pq=" + pq + ", time=" + time + "]";
+		return "TimeQueue [pq=" + pq.size() + ", time=" + time + "]";
 	}
 
 }

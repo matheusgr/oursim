@@ -13,6 +13,7 @@ import oursim.events.EventQueue;
 import oursim.jobevents.JobEvent;
 import oursim.jobevents.JobEventListenerAdapter;
 import oursim.jobevents.TaskEvent;
+import oursim.workerevents.WorkerEvent;
 
 public class OurGridScheduler extends JobEventListenerAdapter implements JobSchedulerPolicy {
 
@@ -24,8 +25,6 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 
 	private List<Peer> peers;
 	private HashMap<String, Peer> peersMap;
-
-	private ResourceRequestPolicy resourceRequestPolicy;
 
 	public static int numberOfPreemptionsForAllJobs = 0;
 
@@ -51,8 +50,6 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 			peersMap.put(p.getName(), p);
 		}
 
-		this.resourceRequestPolicy = new ResourceRequestPolicy();
-
 	}
 
 	@Override
@@ -66,6 +63,7 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 
 	@Override
 	public void addJob(Job job) {
+		assert !job.getTasks().isEmpty();
 		this.submittedJobs.add(job);
 		this.submittedTasks.addAll(job.getTasks());
 	}
@@ -81,7 +79,7 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 	}
 
 	@Override
-	public void scheduleJobs() {
+	public void scheduleTasks() {
 
 		HashMap<Peer, HashSet<Peer>> triedPeers = new HashMap<Peer, HashSet<Peer>>(peersMap.size());
 
@@ -94,8 +92,7 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 
 			Peer consumer = task.getSourcePeer();
 
-			// efeito colateral: reordena os peers
-			resourceRequestPolicy.request(consumer, peers);
+			consumer.prioritizeResourcesToConsume(peers);
 
 			for (Peer provider : peers) {
 
@@ -126,6 +123,7 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 	}
 
 	private void updateTaskState(Task task, Peer provider, long startTime) {
+		assert task.getTargetPeer() == null;
 		task.setStartTime(startTime);
 		task.setTargetPeer(provider);
 		eventQueue.addStartedTaskEvent(task);
@@ -169,6 +167,31 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 	@Override
 	public void taskStarted(TaskEvent taskEvent) {
 		// nothing to do
+	}
+
+	@Override
+	public void workerAvailable(WorkerEvent workerEvent) {
+		scheduleTasks();
+	}
+
+	@Override
+	public void workerDown(WorkerEvent workerEvent) {
+	}
+
+	@Override
+	public void workerIdle(WorkerEvent workerEvent) {
+	}
+
+	@Override
+	public void workerRunning(WorkerEvent workerEvent) {
+	}
+
+	@Override
+	public void workerUnavailable(WorkerEvent workerEvent) {
+	}
+
+	@Override
+	public void workerUp(WorkerEvent workerEvent) {
 	}
 
 }

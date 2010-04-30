@@ -9,8 +9,8 @@ public class TaskEventDispatcher {
 
 	private static TaskEventDispatcher instance = null;
 
-	private List<TaskEventListener> listeners;	
-	
+	private List<TaskEventListener> listeners;
+
 	private TaskEventDispatcher() {
 		this.listeners = new ArrayList<TaskEventListener>();
 	}
@@ -18,11 +18,13 @@ public class TaskEventDispatcher {
 	public static TaskEventDispatcher getInstance() {
 		return instance = (instance != null) ? instance : new TaskEventDispatcher();
 	}
-	
+
 	public void addListener(TaskEventListener listener) {
-		this.listeners.add(listener);
-	}	
-	
+		if (!this.listeners.contains(listener)) {
+			this.listeners.add(listener);
+		}
+	}
+
 	public void removeListener(TaskEventListener listener) {
 		this.listeners.remove(listener);
 	}

@@ -41,6 +41,7 @@ public class ResourceManager {
 	}
 
 	public void releaseResource(Machine resource) {
+		assert resource != null;
 		this.releaseResource(resource.getName());
 	}
 

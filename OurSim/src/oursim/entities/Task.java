@@ -24,7 +24,7 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 
 	private final long submissionTime;
 	private Long startTime = null;
-	private Long finishTime;
+	private Long finishTime = null;
 
 	private Job sourceJob;
 	private Peer targetPeer;
@@ -70,6 +70,7 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 
 	@Override
 	public void setTargetPeer(Peer targetPeer) {
+		assert this.targetPeer == null;
 		this.targetPeer = targetPeer;
 	}
 
@@ -90,6 +91,7 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 
 	@Override
 	public void finish(long time) {
+		assert this.finishTime == null;
 		this.finishTime = time;
 	}
 
@@ -149,20 +151,6 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 	}
 
 	@Override
-	public String toString() {
-		// [id, duration, submissionTime, startTime, finishTime,
-		// numberOfpreemptions]
-		return new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE)
-		.append("id", id)
-		.append("duration", duration)
-		.append("submissionTime", submissionTime)
-		.append("startTime", startTime)
-		.append("finishTime", finishTime)
-		.append("numberOfpreemptions", numberOfpreemptions)
-		.toString();
-	}
-
-	@Override
 	public int compareTo(Task t) {
 		long diffTime = this.submissionTime - t.getSubmissionTime();
 		if (diffTime == 0) {
@@ -186,6 +174,27 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 
 	public void setTaskExecution(TaskExecution taskExecution) {
 		this.taskExecution = taskExecution;
+	}
+
+	@Override
+	public String toString() {
+		// [id, duration, submissionTime, startTime, finishTime,
+		// numberOfpreemptions]
+		// return new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE)
+		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+			.append("id", id)
+			.append("sourceJob", sourceJob.getId())
+			.append("sourcePeer", getSourcePeer().getName())
+			.append("duration", duration)
+//			.append("executable", executable)
+//			.append("inputs",inputs)
+//			.append("outputs", outputs)
+			.append("submissionTime", submissionTime)
+			.append("startTime", startTime)
+			.append("finishTime", finishTime)
+			.append("targetPeer", targetPeer.getName())
+			.append("numberOfpreemptions", numberOfpreemptions)
+			.toString();
 	}
 
 }

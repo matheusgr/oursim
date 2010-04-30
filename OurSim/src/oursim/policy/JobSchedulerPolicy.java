@@ -3,8 +3,9 @@ package oursim.policy;
 import oursim.entities.Job;
 import oursim.jobevents.JobEventListener;
 import oursim.jobevents.TaskEventListener;
+import oursim.workerevents.WorkerEventListener;
 
-public interface JobSchedulerPolicy extends JobEventListener, TaskEventListener {
+public interface JobSchedulerPolicy extends JobEventListener, TaskEventListener, WorkerEventListener {
 
 	/**
 	 * Simply Adds the job to this scheduler.
@@ -18,7 +19,7 @@ public interface JobSchedulerPolicy extends JobEventListener, TaskEventListener 
 	 * Performs efectivelly the scheduling of the jobs enqueued in this
 	 * scheduler.
 	 */
-	void scheduleJobs();
+	void scheduleTasks();
 
 	/**
 	 * Performs a rescheduling of the job. This job already has been schedulled

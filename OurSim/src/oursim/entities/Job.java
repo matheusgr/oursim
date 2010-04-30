@@ -61,8 +61,12 @@ public class Job extends ComputableElementAbstract implements ComputableElement,
 
 	@Override
 	public void finish(long time) {
+		// TODO: no esquema atual esse método não tem serventia, pois um job só
+		// termina quando todas as suas tasks tiverem terminado.
 		for (Task task : tasks) {
-			task.finish(time);
+			if (!task.isFinished()) {
+				task.finish(time);
+			}
 		}
 	}
 
@@ -154,7 +158,8 @@ public class Job extends ComputableElementAbstract implements ComputableElement,
 		long lastFinishTime = Long.MIN_VALUE;
 		boolean allTasksAreFinished = true;
 		for (Task task : tasks) {
-			if (allTasksAreFinished &= task.isFinished()) {
+			// TODO:if (allTasksAreFinished &= task.isFinished()) {
+			if (allTasksAreFinished && task.isFinished()) {
 				lastFinishTime = Math.max(lastFinishTime, task.getFinishTime());
 			} else {
 				return null;

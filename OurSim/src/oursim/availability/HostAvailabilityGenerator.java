@@ -39,8 +39,11 @@ public abstract class HostAvailabilityGenerator {
 			StateModel stateModel = (StateModel) observation.value;
 			Long duracao = stateModel.getDuracao();
 			if (recordAll || stateModel.isAvailability()) {
-				sb.append(machineName).append(TAB).append(time).append(TAB).append(duracao).append(TAB).append(stateModel.getType()).append(TAB).append(
-						stateModel).append(EOL);
+				sb.append(machineName).append(TAB)
+				.append(time).append(TAB)
+				.append(duracao).append(TAB)
+				.append(stateModel.getType()).append(TAB)
+				.append(stateModel).append(EOL);
 			}
 			time += duracao;
 		}
