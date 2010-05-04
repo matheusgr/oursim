@@ -5,16 +5,15 @@ import java.util.List;
 import oursim.availability.AvailabilityRecord;
 import oursim.entities.Job;
 import oursim.entities.Peer;
-import oursim.entities.Task;
 import oursim.events.EventQueue;
-import oursim.events.FinishTaskEvent;
-import oursim.events.TimedEvent;
 import oursim.input.Input;
 import oursim.jobevents.JobEventDispatcher;
 import oursim.jobevents.TaskEventDispatcher;
 import oursim.policy.JobSchedulerPolicy;
 import oursim.policy.OurGridScheduler;
+import oursim.workerevents.WorkerEvent;
 import oursim.workerevents.WorkerEventDispatcher;
+import oursim.workerevents.WorkerEventFilter;
 
 public class OurSimAPI {
 
@@ -45,14 +44,7 @@ public class OurSimAPI {
 		EventQueue eq = EventQueue.getInstance();
 		JobSchedulerPolicy sp = new OurGridScheduler(eq, peers);
 
-		JobEventDispatcher.getInstance().addListener(sp);
-		TaskEventDispatcher.getInstance().addListener(sp);
-
-		for (Peer peer : peers) {
-			WorkerEventDispatcher.getInstance().addListener(peer);
-		}
-
-		WorkerEventDispatcher.getInstance().addListener(sp);
+		prepareListeners(peers, workload, availability, eq, sp);
 
 		scheduleJobEvents(eq, workload);
 		scheduleWorkerEvents(eq, availability);
@@ -61,13 +53,38 @@ public class OurSimAPI {
 			long time = eq.peek().getTime();
 			while (eq.peek() != null && eq.peek().getTime() == time) {
 				eq.poll().action();
-
 			}
 			sp.scheduleTasks();
 		}
 
 		eq.close();
 
+		clearListeners(peers, sp);
+
+	}
+
+	private void prepareListeners(List<Peer> peers, Input<Job> workload, Input<AvailabilityRecord> availability, EventQueue eq, JobSchedulerPolicy sp) {
+		JobEventDispatcher.getInstance().addListener(sp);
+		TaskEventDispatcher.getInstance().addListener(sp);
+
+		for (final Peer peer : peers) {
+			WorkerEventDispatcher.getInstance().addListener(peer, new WorkerEventFilter() {
+
+				@Override
+				public boolean accept(WorkerEvent workerEvent) {
+					String machineName = (String) workerEvent.getSource();
+					return peer.hasResource(machineName);
+				}
+
+			});
+			scheduleJobEvents(eq, peer.getWorkload());
+		}
+
+		WorkerEventDispatcher.getInstance().addListener(sp);
+
+	}
+
+	private void clearListeners(List<Peer> peers, JobSchedulerPolicy sp) {
 		JobEventDispatcher.getInstance().removeListener(sp);
 		TaskEventDispatcher.getInstance().removeListener(sp);
 
@@ -76,7 +93,6 @@ public class OurSimAPI {
 		}
 
 		WorkerEventDispatcher.getInstance().removeListener(sp);
-
 	}
 
 }

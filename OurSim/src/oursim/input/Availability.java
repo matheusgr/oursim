@@ -40,4 +40,9 @@ public class Availability implements Input<AvailabilityRecord> {
 		return avRecords.pollFirst();
 	}
 
+	@Override
+	public long length() {
+		return avRecords.size();
+	}
+
 }

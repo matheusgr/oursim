@@ -7,5 +7,7 @@ public interface Input<T> {
 	T poll();
 
 	void close();
+	
+	long length();
 
 }

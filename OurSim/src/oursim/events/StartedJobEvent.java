@@ -3,6 +3,7 @@ package oursim.events;
 import oursim.entities.Job;
 import oursim.jobevents.JobEventDispatcher;
 
+@Deprecated
 public class StartedJobEvent extends JobTimedEvent {
 
 	StartedJobEvent(Job job) {

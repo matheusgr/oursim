@@ -2,7 +2,6 @@ package oursim.workerevents;
 
 import java.util.EventListener;
 
-
 public interface WorkerEventListener extends EventListener {
 
 	void workerUp(WorkerEvent workerEvent);

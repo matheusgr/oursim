@@ -56,6 +56,7 @@ public class EventQueue {
 		this.addEvent(new SubmitJobEvent(submitTime, job));
 	}
 
+	@Deprecated
 	public void addStartedJobEvent(Job job) {
 		this.addEvent(new StartedJobEvent(job));
 		this.addFinishJobEvent(job.getEstimatedFinishTime(), job);

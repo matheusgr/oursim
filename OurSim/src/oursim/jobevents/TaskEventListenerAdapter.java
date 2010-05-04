@@ -1,6 +1,5 @@
 package oursim.jobevents;
 
-import java.util.EventListener;
 
 public class TaskEventListenerAdapter implements TaskEventListener {
 

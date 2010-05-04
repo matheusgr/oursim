@@ -1,17 +1,12 @@
 package oursim.input;
 
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
-import java.util.LinkedList;
 import java.util.List;
 
 import oursim.Parameters;
 import oursim.entities.Job;
 import oursim.entities.Peer;
 
-public class SyntheticWorkload implements Workload {
-
-	private LinkedList<Job> jobs = new LinkedList<Job>();
+public class SyntheticWorkload extends WorkloadAbstract {
 
 	public SyntheticWorkload(int runTime, int runTimeVar, int submissionInterval, int numJobs, int numTasksByJob, List<Peer> peers) {
 
@@ -35,33 +30,15 @@ public class SyntheticWorkload implements Workload {
 				job.addTask("", runTimeDuration);
 			}
 
-			jobs.add(job);
+			inputs.add(job);
 
 		}
 
 	}
 
 	@Override
-	public void close() {
+	public void setUp() {
 		// nothing to do
-	}
-
-	@Override
-	public Job peek() {
-		return jobs.peekFirst();
-	}
-
-	@Override
-	public Job poll() {
-		return jobs.pollFirst();
-	}
-
-	public void save(String fileName) throws FileNotFoundException {
-		PrintStream out = new PrintStream(fileName);
-		for (Job job : jobs) {
-			out.printf("%s %s %s %s\n", job.getId(), job.getSourcePeer().getName(), job.getDuration(), job.getSubmissionTime());
-		}
-		out.close();
 	}
 
 }
