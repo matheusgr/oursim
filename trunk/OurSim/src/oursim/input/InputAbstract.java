@@ -25,6 +25,12 @@ public abstract class InputAbstract<T> implements Input<T> {
 
 	public void close() {
 		// nothing to do!
+		throw new UnsupportedOperationException("Operantion not implemented yet");
+	}
+
+	@Override
+	public long length() {
+		return inputs.size();
 	}
 
 	@Override

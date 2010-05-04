@@ -1,7 +1,6 @@
 package oursim.policy;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
@@ -54,10 +53,12 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 
 	@Override
 	public void rescheduleJob(Job job) {
+		// Utilizado quando um job é preemptada.
 		eventQueue.addSubmitJobEvent(eventQueue.currentTime(), job);
 	}
 
-	public void rescheduleTask(Task task) {
+	private void rescheduleTask(Task task) {
+		// Utilizado quando uma task é preemptada.
 		eventQueue.addSubmitTaskEvent(eventQueue.currentTime(), task);
 	}
 
@@ -81,50 +82,24 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 	@Override
 	public void scheduleTasks() {
 
-		HashMap<Peer, HashSet<Peer>> triedPeers = new HashMap<Peer, HashSet<Peer>>(peersMap.size());
-
-		int originalSize = submittedTasks.size();
-
-		Iterator<Task> it = submittedTasks.iterator();
-		for (int i = 0; i < originalSize; i++) {
-
-			Task task = it.next();
-
-			Peer consumer = task.getSourcePeer();
-
-			consumer.prioritizeResourcesToConsume(peers);
-
+		for (Iterator<Task> iterator = submittedTasks.iterator(); iterator.hasNext();) {
+			Task task = iterator.next();
+			task.getSourcePeer().prioritizeResourcesToConsume(peers);
 			for (Peer provider : peers) {
-
-				HashSet<Peer> providersTried = triedPeers.get(consumer);
-
-				if (providersTried != null && providersTried.contains(provider)) {
-					continue;
-				}
-
 				boolean isTaskRunning = provider.addTask(task);
-
 				if (isTaskRunning) {
-					assert task.getTaskExecution() != null;
-					updateTaskState(task, provider, eventQueue.currentTime());
-					it.remove();
+					updateTaskState(task, provider);
+					iterator.remove();
 					break;
-				} else {
-					if (providersTried == null) {
-						providersTried = new HashSet<Peer>(peers.size());
-						triedPeers.put(consumer, providersTried);
-					}
-					providersTried.add(provider);
 				}
-
 			}
 		}
 
 	}
 
-	private void updateTaskState(Task task, Peer provider, long startTime) {
+	private void updateTaskState(Task task, Peer provider) {
 		assert task.getTargetPeer() == null;
-		task.setStartTime(startTime);
+		task.setStartTime(eventQueue.currentTime());
 		task.setTargetPeer(provider);
 		eventQueue.addStartedTaskEvent(task);
 	}

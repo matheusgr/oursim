@@ -23,14 +23,23 @@ public class DefaultSharingPolicy implements ResourceSharingPolicy {
 	@Override
 	public List<Peer> getPreemptablePeers(final Peer provider, Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
 			final HashSet<? extends ComputableElement> runningElements) {
-		return new ArrayList<Peer>();
+		ArrayList<Peer> preemptablePeers = new ArrayList<Peer>();
+		if (consumer == provider) {
+			for (Peer peer : resourcesBeingConsumed.keySet()) {
+				if (peer != provider) { 
+					preemptablePeers.add(peer);
+				}
+			}
+		}
+		assert !preemptablePeers.contains(provider);
+		return preemptablePeers;
 	}
 
 	@Override
 	public long getBalance(Peer source, Peer target) {
 		return Long.MAX_VALUE;
-	}	
-	
+	}
+
 	@Override
 	public void addPeer(Peer peer) {
 	}

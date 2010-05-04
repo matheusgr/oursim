@@ -8,5 +8,8 @@
 	<classpathentry kind="lib" path="lib/jahmm-0.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/ssj.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/SegHidroUtils"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="/SegHidroUtils/dist/SegHidroUtils/lib/commons-lang-2.4.jar"/>
+	<classpathentry kind="lib" path="/SegHidroUtils/dist/SegHidroUtils/lib/log4j.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

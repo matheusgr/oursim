@@ -3,7 +3,11 @@ package oursim.entities;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+
 import oursim.events.EventQueue;
+import oursim.input.Workload;
 import oursim.policy.ResourceAllocationPolicy;
 import oursim.policy.ResourceManager;
 import oursim.policy.ResourceRequestPolicy;
@@ -11,8 +15,6 @@ import oursim.policy.ResourceSharingPolicy;
 import oursim.policy.TaskManager;
 import oursim.workerevents.WorkerEvent;
 import oursim.workerevents.WorkerEventListenerAdapter;
-import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.commons.lang.builder.ToStringBuilder;
 
 public class Peer extends WorkerEventListenerAdapter {
 
@@ -29,6 +31,10 @@ public class Peer extends WorkerEventListenerAdapter {
 	private ResourceManager resourceManager;
 
 	private TaskManager taskManager;
+
+	private Workload workload;
+
+	private List<Job> jobs = new ArrayList<Job>();
 
 	private static long nextMachineId = 0;
 
@@ -119,32 +125,41 @@ public class Peer extends WorkerEventListenerAdapter {
 		return resources;
 	}
 
+	public boolean hasResource(String machineName) {
+		return this.resourceManager.hasResource(machineName);
+	}
+
 	@Override
 	public void workerAvailable(WorkerEvent workerEvent) {
 		String machineName = (String) workerEvent.getSource();
-		if (this.resourceManager.hasResource(machineName)) {
-			this.resourceManager.makeResourceAvailable(machineName);
-		}
-
+		this.resourceManager.makeResourceAvailable(machineName);
 		// TODO: deve-se reescalonar os jobs agora pois tem recurso disponível
-
 	}
 
 	@Override
 	public void workerUnavailable(WorkerEvent workerEvent) {
 		String machineName = (String) workerEvent.getSource();
-		if (this.resourceManager.hasResource(machineName)) {
-			if (this.resourceManager.isAllocated(machineName)) {
-				Machine resource = this.resourceManager.getResource(machineName);
-				Task task = this.taskManager.getTask(resource);
-				preemptTask(task);
-			}
-			this.resourceManager.makeResourceUnavailable(machineName);
+		if (this.resourceManager.isAllocated(machineName)) {
+			Machine resource = this.resourceManager.getResource(machineName);
+			Task task = this.taskManager.getTask(resource);
+			preemptTask(task);
 		}
+		this.resourceManager.makeResourceUnavailable(machineName);
 	}
 
 	public void prioritizeResourcesToConsume(List<Peer> peers) {
 		this.resourceRequestPolicy.request(peers);
+	}
+
+	public void setWorkload(Workload workload) {
+		assert this.workload == null;
+		this.workload = workload;
+		this.jobs.addAll(workload.clone());
+	}
+
+	public Workload getWorkload() {
+		assert this.workload != null;
+		return workload;
 	}
 
 	@Override
