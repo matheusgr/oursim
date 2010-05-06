@@ -1,12 +1,13 @@
 package oursim;
 
+import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.time.StopWatch;
 
 import oursim.availability.HostAvailabilityGenerator;
 import oursim.availability.HostAvailabilityGeneratorImp;
-import br.edu.ufcg.lsd.seghidro.util.file.FileUtil;
 
 public class GenerateAvailabilityFile {
 
@@ -27,7 +28,7 @@ public class GenerateAvailabilityFile {
 			ma.generateAvailabilityObservations();
 		}
 
-		FileUtil.saveToFile(outputFileName, sb.toString());
+		FileUtils.writeStringToFile(new File(outputFileName), outputFileName, sb.toString());
 
 	}
 
@@ -51,7 +52,7 @@ public class GenerateAvailabilityFile {
 
 		System.out.println(sb);
 
-		FileUtil.saveToFile(outputFileName, sb.toString());
+		FileUtils.writeStringToFile(new File(outputFileName), sb.toString());
 	}
 
 	public static void main(String[] args) throws IOException {
