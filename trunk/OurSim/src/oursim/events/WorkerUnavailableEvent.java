@@ -4,7 +4,7 @@ import oursim.workerevents.WorkerEventDispatcher;
 
 public class WorkerUnavailableEvent extends TimedEventAbstract<String> {
 
-	public WorkerUnavailableEvent(long time, String machineName) {
+	WorkerUnavailableEvent(long time, String machineName) {
 		super(time, 2, machineName);
 	}
 
