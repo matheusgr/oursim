@@ -7,16 +7,16 @@ public abstract class TimedEventAbstract<T> extends TimedEvent {
 
 	protected T content;
 
-	public TimedEventAbstract(long time, int priority) {
+	TimedEventAbstract(long time, int priority) {
 		super(time, priority);
 	}
 
-	public TimedEventAbstract(long time, T content) {
+	TimedEventAbstract(long time, T content) {
 		super(time);
 		this.content = content;
 	}
 
-	public TimedEventAbstract(long time, int priority, T content) {
+	TimedEventAbstract(long time, int priority, T content) {
 		super(time, priority);
 		this.content = content;
 	}

@@ -7,7 +7,7 @@ import oursim.entities.Task;
 
 public abstract class TaskTimedEvent extends ComputableElementTimedEvent {
 
-	public TaskTimedEvent(long time, int priority, Task task) {
+	TaskTimedEvent(long time, int priority, Task task) {
 		super(time, priority, task);
 	}
 

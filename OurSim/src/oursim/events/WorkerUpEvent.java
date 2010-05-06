@@ -4,7 +4,7 @@ import oursim.workerevents.WorkerEventDispatcher;
 
 public class WorkerUpEvent extends TimedEventAbstract<String> {
 
-	public WorkerUpEvent(long time, String machineName) {
+	WorkerUpEvent(long time, String machineName) {
 		super(time, 1, machineName);
 	}
 
