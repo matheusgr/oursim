@@ -74,16 +74,16 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 
 			// If peers share the same balance and same resource use, put the
 			// peer with the most recently job last
-			long mostRecentlyStartTime = Long.MAX_VALUE;
+			long mostRecentlyStartTime = -1;
 			Peer p = peer1;
 
 			for (ComputableElement j : runningElements) {
 				if (j.getSourcePeer() == peer1
-						&& j.getStartTime() < mostRecentlyStartTime) {
+						&& j.getStartTime() > mostRecentlyStartTime) {
 					p = peer1;
 					mostRecentlyStartTime = j.getStartTime();
 				} else if (j.getSourcePeer() == peer2
-						&& j.getStartTime() < mostRecentlyStartTime) {
+						&& j.getStartTime() > mostRecentlyStartTime) {
 					p = peer2;
 					mostRecentlyStartTime = j.getStartTime();
 				}
@@ -231,7 +231,11 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 				}
 
 				resourcesForPeer = (int) (share * resourcesToShare);
-
+				
+				if (remoteConsumer == provider) {
+					resourcesForPeer = resourcesLeft;
+				}
+				
 				startLenientSharing = startLenientSharing && resourcesForPeer == 0;
 				
 				int resourcesInUse = resourcesBeingConsumedClone
@@ -248,7 +252,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 			}
 			
 			if (startLenientSharing) {
-				for (Peer p : receivedResources.keySet()) {
+				for (Peer p : resourcesBeingConsumedClone.keySet()) {
 					if (resourcesLeft == 0) {
 						break;
 					}
