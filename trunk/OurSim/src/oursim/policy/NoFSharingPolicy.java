@@ -8,12 +8,89 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Map.Entry;
 
 import oursim.entities.ComputableElement;
 import oursim.entities.Peer;
 import oursim.entities.Task;
 
 public class NoFSharingPolicy implements ResourceSharingPolicy {
+
+	/**
+	 * NoFComparator order Peers using the NoF sharing policy. Peers with a
+	 * greater share of remote resources come first.
+	 */
+	private class NoFComparator implements Comparator<Peer> {
+
+		private Peer provider;
+		private HashSet<? extends ComputableElement> runningElements;
+		private HashMap<Peer, Integer> resourcesBeingConsumed;
+
+		public NoFComparator(Peer provider,
+				HashMap<Peer, Integer> resourcesBeingConsumed,
+				HashSet<? extends ComputableElement> runningElements) {
+			this.provider = provider;
+			this.resourcesBeingConsumed = resourcesBeingConsumed;
+			this.runningElements = runningElements;
+		}
+
+		@Override
+		public int compare(Peer peer1, Peer peer2) {
+
+			// Test to match a search in a TreeMap
+			if (peer1 == peer2) {
+				return 0;
+			}
+
+			// Local peer first (never preempt from yourself)
+			if (peer1 == provider) {
+				return -4;
+			}
+
+			// Best balance first
+			long balanceDiff = getBalance(provider, peer1)
+					- getBalance(provider, peer2);
+
+			if (balanceDiff != 0) {
+				return balanceDiff > 0 ? -3 : 3;
+			}
+
+			// Peers with same balance but using less resources first
+			int p1Consumer = resourcesBeingConsumed.containsKey(peer1) ? resourcesBeingConsumed
+					.get(peer1)
+					: 0;
+
+			int p2Consumer = resourcesBeingConsumed.containsKey(peer2) ? resourcesBeingConsumed
+					.get(peer2)
+					: 0;
+
+			int usingDiff = p1Consumer - p2Consumer;
+
+			if (usingDiff != 0) {
+				return usingDiff > 0 ? -2 : 2;
+			}
+
+			assert (p2Consumer != 0 || p1Consumer != 0);
+
+			// If peers share the same balance and same resource use, put the
+			// peer with the most recently job last
+			long mostRecentlyStartTime = Long.MAX_VALUE;
+			Peer p = peer1;
+
+			for (ComputableElement j : runningElements) {
+				if (j.getSourcePeer() == peer1
+						&& j.getStartTime() < mostRecentlyStartTime) {
+					p = peer1;
+					mostRecentlyStartTime = j.getStartTime();
+				} else if (j.getSourcePeer() == peer2
+						&& j.getStartTime() < mostRecentlyStartTime) {
+					p = peer2;
+					mostRecentlyStartTime = j.getStartTime();
+				}
+			}
+			return p == peer1 ? 1 : -1;
+		}
+	}
 
 	private Map<Peer, HashMap<Peer, Long>> allBalances;
 
@@ -24,7 +101,8 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 	}
 
 	public static NoFSharingPolicy getInstance() {
-		return instance = (instance != null) ? instance : new NoFSharingPolicy();
+		return instance = (instance != null) ? instance
+				: new NoFSharingPolicy();
 	}
 
 	@Override
@@ -79,139 +157,128 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 	}
 
 	@Override
-	public List<Peer> getPreemptablePeers(final Peer provider, Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
+	public List<Peer> getPreemptablePeers(final Peer provider, Peer consumer,
+			final HashMap<Peer, Integer> resourcesBeingConsumed,
 			final HashSet<? extends ComputableElement> runningElements) {
 
-		List<Peer> peersByPriorityOfPreemption = sortPeersByPriorityOfPreemption(provider, consumer, resourcesBeingConsumed, runningElements);
+		List<Peer> peersByPriorityOfPreemption = sortPeersByPriorityOfPreemption(
+				provider, consumer, resourcesBeingConsumed, runningElements);
 		peersByPriorityOfPreemption.remove(consumer);
 		return peersByPriorityOfPreemption;
 	}
 
-	private List<Peer> sortPeersByPriorityOfPreemption(final Peer provider, Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
+	private List<Peer> sortPeersByPriorityOfPreemption(final Peer provider,
+			Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
 			final HashSet<? extends ComputableElement> runningElements) {
 		assert allBalances.containsKey(provider);
 
+		// Provider's balance
 		HashMap<Peer, Long> balances = allBalances.get(provider);
-
-		long resourcesToShare = provider.getAmountOfResourcesToShare();
-
-		// a soma dos balances de todos os peers neste provedor
-		int totalBalance = 0;
 
 		// quanto cada peer merece neste provedor, ordenado pelos criterios de
 		// desempate.
-		TreeMap<Peer, Long> preemptablePeers = new TreeMap<Peer, Long>(new Comparator<Peer>() {
-			@Override
-			public int compare(Peer peer1, Peer peer2) {
-
-				if (peer1 == peer2) {
-					return 0;
-				}
-
-				// Local first
-				if (peer1 == provider) {
-					return -4;
-				}
-
-				// Best balance first
-				long balanceDiff = getBalance(provider, peer1) - getBalance(provider, peer2);
-				if (balanceDiff != 0) {
-					return balanceDiff > 0 ? -3 : 3;
-				}
-				int p1Consumer = resourcesBeingConsumed.containsKey(peer1) ? resourcesBeingConsumed.get(peer1) : 0;
-				int p2Consumer = resourcesBeingConsumed.containsKey(peer2) ? resourcesBeingConsumed.get(peer2) : 0;
-				int usingDiff = p1Consumer - p2Consumer;
-
-				// Consuming size second
-				if (usingDiff != 0) {
-					return usingDiff > 0 ? -2 : 2;
-				}
-
-				assert (p2Consumer != 0 || p1Consumer != 0);
-
-				long older = Long.MAX_VALUE;
-				Peer p = peer1;
-
-				// Recently job last
-				for (ComputableElement j : runningElements) {
-					if (j.getSourcePeer() == peer1 && j.getStartTime() < older) {
-						p = peer1;
-						older = j.getStartTime();
-					} else if (j.getSourcePeer() == peer2 && j.getStartTime() < older) {
-						p = peer2;
-						older = j.getStartTime();
-					}
-				}
-				return p == peer1 ? -1 : 1;
-			}
-		});
-
-		HashMap<Peer, Integer> resourcesBeingConsumedClone = new HashMap<Peer, Integer>(resourcesBeingConsumed);
+		TreeMap<Peer, Integer> resourcesBeingConsumedClone = new TreeMap<Peer, Integer>(
+				new NoFComparator(provider, resourcesBeingConsumed,
+						runningElements));
+		resourcesBeingConsumedClone.putAll(resourcesBeingConsumed);
 
 		// If this peer is not consuming, put in this map.
 		if (!resourcesBeingConsumedClone.containsKey(consumer)) {
-			resourcesBeingConsumedClone.put(consumer, 0);
+			resourcesBeingConsumedClone.put(consumer, 1);
+		} else {
+			resourcesBeingConsumedClone.put(consumer,
+					resourcesBeingConsumedClone.get(consumer) + 1);
 		}
 
-		for (Peer remoteConsumer : resourcesBeingConsumedClone.keySet()) {
-			totalBalance += getBalance(remoteConsumer, balances);
-		}
+		long resourcesLeft = provider.getAmountOfResourcesToShare();
 
-		long resourcesLeft = resourcesToShare;
+		while (resourcesLeft > 0) {
 
-		// quantidade de peers que já estão consumindo neste provedor
-		int numConsumingPeers = resourcesBeingConsumedClone.size();
+			// Consumers to share resources left
+			int numConsumingPeers = resourcesBeingConsumedClone.size();
 
-		// Set minimum resources allowed for each peer
-		for (Peer remoteConsumer : resourcesBeingConsumedClone.keySet()) {
-			long resourcesForPeer = 0;
-			double share;
-			if (totalBalance == 0) {
-				share = (1.0d / numConsumingPeers);
-			} else {
-				share = ((double) getBalance(remoteConsumer, balances)) / totalBalance;
+			// Sum of balances
+			int totalBalance = 0;
+
+			for (Peer remoteConsumer : resourcesBeingConsumedClone.keySet()) {
+				totalBalance += getBalance(remoteConsumer, balances);
 			}
-			resourcesForPeer = (int) (share * resourcesToShare);
-			int resourcesInUse = resourcesBeingConsumedClone.get(remoteConsumer);
-			// If consuming is using more resources than allowed
-			if (consumer == remoteConsumer) { // Resource want one more
-				// machine
-				if (resourcesInUse + 1 > resourcesForPeer) {
-					preemptablePeers.put(remoteConsumer, resourcesForPeer);
-					return new ArrayList<Peer>(preemptablePeers.keySet());
+
+			// Store resources received during this share
+			HashMap<Peer, Long> receivedResources = new HashMap<Peer, Long>();
+
+			long resourcesToShare = resourcesLeft;
+
+			boolean startLenientSharing = true;
+			
+			// Set minimum resources allowed for each peer and remove satisfied
+			// consumers for the sharing of resources left
+			for (Iterator<Peer> iterator = resourcesBeingConsumedClone.keySet()
+					.iterator(); iterator.hasNext();) {
+				Peer remoteConsumer = iterator.next();
+
+				// Amount of resources received
+				long resourcesForPeer = 0;
+
+				// Allowed share
+				double share;
+
+				if (totalBalance == 0) {
+					share = (1.0d / numConsumingPeers);
+				} else {
+					share = ((double) getBalance(remoteConsumer, balances))
+							/ totalBalance;
+				}
+
+				resourcesForPeer = (int) (share * resourcesToShare);
+
+				startLenientSharing = startLenientSharing && resourcesForPeer == 0;
+				
+				int resourcesInUse = resourcesBeingConsumedClone
+						.get(remoteConsumer);
+
+				if (resourcesInUse <= resourcesForPeer) {
+					iterator.remove(); // Satisfied consumer, will not be
+					// preempted
+				} else {
+					receivedResources.put(remoteConsumer, resourcesForPeer);
+				}
+
+				resourcesLeft -= Math.min(resourcesInUse, resourcesForPeer);
+			}
+			
+			if (startLenientSharing) {
+				for (Peer p : receivedResources.keySet()) {
+					if (resourcesLeft == 0) {
+						break;
+					}
+					receivedResources.put(p, 1l);
+					resourcesLeft--;
 				}
 			}
-			if (Math.min(resourcesInUse, resourcesForPeer) > resourcesForPeer) {
-				preemptablePeers.put(remoteConsumer, resourcesForPeer);
+			
+			for (Entry<Peer, Long> entry : receivedResources.entrySet()) {
+				long currentUsedResources = resourcesBeingConsumedClone
+						.get(entry.getKey());
+				long allowedResources = entry.getValue();
+				long finalResourceUse = currentUsedResources - allowedResources;
+				assert finalResourceUse >= 0;
+				if (finalResourceUse == 0) {
+					resourcesBeingConsumedClone.remove(entry.getKey());
+				} else {
+					resourcesBeingConsumedClone.put(entry.getKey(),
+						(int) (finalResourceUse));
+				}
 			}
-			resourcesLeft -= resourcesInUse;
+
 		}
 
 		// consumer will not get any resource from this provider
-		if (preemptablePeers.containsKey(consumer)) {
-			return new ArrayList<Peer>(preemptablePeers.keySet());
+		if (resourcesBeingConsumedClone.containsKey(consumer)) {
+			return new ArrayList<Peer>();
 		}
 
-		// distribute resources left using reluctant strategy
-		while (resourcesLeft > 0) {
-			for (Iterator<Peer> iterator = preemptablePeers.keySet().iterator(); iterator.hasNext();) {
-				Peer peer = iterator.next();
-				if (resourcesBeingConsumedClone.get(peer) < preemptablePeers.get(peer)) {
-					preemptablePeers.put(peer, preemptablePeers.get(peer) + 1);
-					resourcesLeft--;
-					if (preemptablePeers.get(peer) >= resourcesBeingConsumedClone.get(peer)) {
-						iterator.remove();
-					}
-				}
-				if (resourcesLeft == 0) {
-					break;
-				}
-			}
-		}
-
-		assert (resourcesLeft == 0);
-
-		return new ArrayList<Peer>(preemptablePeers.keySet());
+		return new ArrayList<Peer>(resourcesBeingConsumedClone.keySet());
 	}
 
 }
