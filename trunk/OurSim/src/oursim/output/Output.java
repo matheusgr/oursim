@@ -1,6 +1,6 @@
 package oursim.output;
 
-import oursim.jobevents.JobEventListener;
+import oursim.dispatchableevents.jobevents.JobEventListener;
 
 public interface Output extends JobEventListener {
 

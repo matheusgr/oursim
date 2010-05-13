@@ -15,7 +15,7 @@ import oursim.entities.Peer;
 import oursim.entities.Processor;
 import oursim.entities.Task;
 import oursim.entities.TaskExecution;
-import oursim.events.EventQueue;
+import oursim.simulationevents.EventQueue;
 
 public class TaskManager {
 

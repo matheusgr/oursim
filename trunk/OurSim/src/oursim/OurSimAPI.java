@@ -3,17 +3,17 @@ package oursim;
 import java.util.List;
 
 import oursim.availability.AvailabilityRecord;
+import oursim.dispatchableevents.jobevents.JobEventDispatcher;
+import oursim.dispatchableevents.taskevents.TaskEventDispatcher;
+import oursim.dispatchableevents.workerevents.WorkerEvent;
+import oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
+import oursim.dispatchableevents.workerevents.WorkerEventFilter;
 import oursim.entities.Job;
 import oursim.entities.Peer;
-import oursim.events.EventQueue;
 import oursim.input.Input;
-import oursim.jobevents.JobEventDispatcher;
-import oursim.jobevents.TaskEventDispatcher;
 import oursim.policy.JobSchedulerPolicy;
 import oursim.policy.OurGridScheduler;
-import oursim.workerevents.WorkerEvent;
-import oursim.workerevents.WorkerEventDispatcher;
-import oursim.workerevents.WorkerEventFilter;
+import oursim.simulationevents.EventQueue;
 
 public class OurSimAPI {
 

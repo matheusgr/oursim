@@ -6,15 +6,15 @@ import java.util.List;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-import oursim.events.EventQueue;
+import oursim.dispatchableevents.workerevents.WorkerEvent;
+import oursim.dispatchableevents.workerevents.WorkerEventListenerAdapter;
 import oursim.input.Workload;
 import oursim.policy.ResourceAllocationPolicy;
 import oursim.policy.ResourceManager;
 import oursim.policy.ResourceRequestPolicy;
 import oursim.policy.ResourceSharingPolicy;
 import oursim.policy.TaskManager;
-import oursim.workerevents.WorkerEvent;
-import oursim.workerevents.WorkerEventListenerAdapter;
+import oursim.simulationevents.EventQueue;
 
 public class Peer extends WorkerEventListenerAdapter {
 

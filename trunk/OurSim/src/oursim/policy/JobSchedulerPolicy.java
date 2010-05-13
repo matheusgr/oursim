@@ -1,9 +1,9 @@
 package oursim.policy;
 
+import oursim.dispatchableevents.jobevents.JobEventListener;
+import oursim.dispatchableevents.taskevents.TaskEventListener;
+import oursim.dispatchableevents.workerevents.WorkerEventListener;
 import oursim.entities.Job;
-import oursim.jobevents.JobEventListener;
-import oursim.jobevents.TaskEventListener;
-import oursim.workerevents.WorkerEventListener;
 
 public interface JobSchedulerPolicy extends JobEventListener, TaskEventListener, WorkerEventListener {
 

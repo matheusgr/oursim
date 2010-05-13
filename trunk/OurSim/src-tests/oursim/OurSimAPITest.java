@@ -11,19 +11,19 @@ import oursim.availability.AvailabilityRecord;
 import oursim.entities.Job;
 import oursim.entities.Machine;
 import oursim.entities.Peer;
-import oursim.events.EventQueue;
-import oursim.events.FinishJobEvent;
-import oursim.events.FinishTaskEvent;
-import oursim.events.StartedTaskEvent;
-import oursim.events.SubmitJobEvent;
-import oursim.events.WorkerAvailableEvent;
-import oursim.events.WorkerUnavailableEvent;
 import oursim.input.Input;
 import oursim.input.InputAbstract;
 import oursim.input.Workload;
 import oursim.input.WorkloadAbstract;
 import oursim.policy.DefaultSharingPolicy;
 import oursim.policy.OurGridScheduler;
+import oursim.simulationevents.EventQueue;
+import oursim.simulationevents.FinishJobEvent;
+import oursim.simulationevents.FinishTaskEvent;
+import oursim.simulationevents.StartedTaskEvent;
+import oursim.simulationevents.SubmitJobEvent;
+import oursim.simulationevents.WorkerAvailableEvent;
+import oursim.simulationevents.WorkerUnavailableEvent;
 
 public class OurSimAPITest extends TestCase {
 
