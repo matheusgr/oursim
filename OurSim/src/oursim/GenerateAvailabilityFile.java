@@ -65,7 +65,7 @@ public class GenerateAvailabilityFile {
 
 		generateAvailabilityFile(quantMachines, periodoDeObservacaoEmHoras, outputFileName);
 
-		generateMachinesDescription(quantMachines, "machinesDescription");
+		generateMachinesDescription(quantMachines, "machinesDescription.txt");
 
 		c.stop();
 		System.out.println(c);

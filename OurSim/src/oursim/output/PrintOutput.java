@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
+import oursim.dispatchableevents.jobevents.JobEvent;
 import oursim.entities.Job;
-import oursim.jobevents.JobEvent;
 
 public class PrintOutput implements Output {
 

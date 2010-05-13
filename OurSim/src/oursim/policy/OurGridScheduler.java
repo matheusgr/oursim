@@ -5,16 +5,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
+import oursim.dispatchableevents.jobevents.JobEvent;
+import oursim.dispatchableevents.taskevents.TaskEvent;
+import oursim.dispatchableevents.workerevents.WorkerEvent;
+import oursim.dispatchableevents.workerevents.WorkerEventListenerAdapter;
 import oursim.entities.Job;
 import oursim.entities.Peer;
 import oursim.entities.Task;
-import oursim.events.EventQueue;
-import oursim.jobevents.JobEvent;
-import oursim.jobevents.JobEventListenerAdapter;
-import oursim.jobevents.TaskEvent;
-import oursim.workerevents.WorkerEvent;
+import oursim.simulationevents.EventQueue;
 
-public class OurGridScheduler extends JobEventListenerAdapter implements JobSchedulerPolicy {
+public class OurGridScheduler extends WorkerEventListenerAdapter implements JobSchedulerPolicy {
 
 	private EventQueue eventQueue;
 
@@ -118,6 +118,16 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 	}
 
 	@Override
+	public void jobFinished(JobEvent jobEvent) {
+		// nothing to do
+	}
+
+	@Override
+	public void jobStarted(JobEvent jobEvent) {
+		// nothing to do
+	}
+
+	@Override
 	public void taskFinished(TaskEvent taskEvent) {
 		Task task = (Task) taskEvent.getSource();
 		task.getTargetPeer().finishTask(task);
@@ -147,26 +157,6 @@ public class OurGridScheduler extends JobEventListenerAdapter implements JobSche
 	@Override
 	public void workerAvailable(WorkerEvent workerEvent) {
 		scheduleTasks();
-	}
-
-	@Override
-	public void workerDown(WorkerEvent workerEvent) {
-	}
-
-	@Override
-	public void workerIdle(WorkerEvent workerEvent) {
-	}
-
-	@Override
-	public void workerRunning(WorkerEvent workerEvent) {
-	}
-
-	@Override
-	public void workerUnavailable(WorkerEvent workerEvent) {
-	}
-
-	@Override
-	public void workerUp(WorkerEvent workerEvent) {
 	}
 
 }
