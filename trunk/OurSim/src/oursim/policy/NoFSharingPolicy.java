@@ -16,6 +16,10 @@ import oursim.entities.Task;
 
 public class NoFSharingPolicy implements ResourceSharingPolicy {
 
+	private Map<Peer, HashMap<Peer, Long>> allBalances;
+
+	private static NoFSharingPolicy instance = null;
+
 	/**
 	 * NoFComparator order Peers using the NoF sharing policy. Peers with a
 	 * greater share of remote resources come first.
@@ -26,9 +30,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 		private HashSet<? extends ComputableElement> runningElements;
 		private HashMap<Peer, Integer> resourcesBeingConsumed;
 
-		public NoFComparator(Peer provider,
-				HashMap<Peer, Integer> resourcesBeingConsumed,
-				HashSet<? extends ComputableElement> runningElements) {
+		public NoFComparator(Peer provider, HashMap<Peer, Integer> resourcesBeingConsumed, HashSet<? extends ComputableElement> runningElements) {
 			this.provider = provider;
 			this.resourcesBeingConsumed = resourcesBeingConsumed;
 			this.runningElements = runningElements;
@@ -48,21 +50,16 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 			}
 
 			// Best balance first
-			long balanceDiff = getBalance(provider, peer1)
-					- getBalance(provider, peer2);
+			long balanceDiff = getBalance(provider, peer1) - getBalance(provider, peer2);
 
 			if (balanceDiff != 0) {
 				return balanceDiff > 0 ? -3 : 3;
 			}
 
 			// Peers with same balance but using less resources first
-			int p1Consumer = resourcesBeingConsumed.containsKey(peer1) ? resourcesBeingConsumed
-					.get(peer1)
-					: 0;
+			int p1Consumer = resourcesBeingConsumed.containsKey(peer1) ? resourcesBeingConsumed.get(peer1) : 0;
 
-			int p2Consumer = resourcesBeingConsumed.containsKey(peer2) ? resourcesBeingConsumed
-					.get(peer2)
-					: 0;
+			int p2Consumer = resourcesBeingConsumed.containsKey(peer2) ? resourcesBeingConsumed.get(peer2) : 0;
 
 			int usingDiff = p1Consumer - p2Consumer;
 
@@ -78,12 +75,10 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 			Peer p = peer1;
 
 			for (ComputableElement j : runningElements) {
-				if (j.getSourcePeer() == peer1
-						&& j.getStartTime() > mostRecentlyStartTime) {
+				if (j.getSourcePeer() == peer1 && j.getStartTime() > mostRecentlyStartTime) {
 					p = peer1;
 					mostRecentlyStartTime = j.getStartTime();
-				} else if (j.getSourcePeer() == peer2
-						&& j.getStartTime() > mostRecentlyStartTime) {
+				} else if (j.getSourcePeer() == peer2 && j.getStartTime() > mostRecentlyStartTime) {
 					p = peer2;
 					mostRecentlyStartTime = j.getStartTime();
 				}
@@ -92,17 +87,12 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 		}
 	}
 
-	private Map<Peer, HashMap<Peer, Long>> allBalances;
-
-	private static NoFSharingPolicy instance = null;
-
 	private NoFSharingPolicy() {
 		allBalances = new HashMap<Peer, HashMap<Peer, Long>>();
 	}
 
 	public static NoFSharingPolicy getInstance() {
-		return instance = (instance != null) ? instance
-				: new NoFSharingPolicy();
+		return instance = (instance != null) ? instance : new NoFSharingPolicy();
 	}
 
 	@Override
@@ -157,18 +147,15 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 	}
 
 	@Override
-	public List<Peer> getPreemptablePeers(final Peer provider, Peer consumer,
-			final HashMap<Peer, Integer> resourcesBeingConsumed,
+	public List<Peer> getPreemptablePeers(final Peer provider, Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
 			final HashSet<? extends ComputableElement> runningElements) {
 
-		List<Peer> peersByPriorityOfPreemption = sortPeersByPriorityOfPreemption(
-				provider, consumer, resourcesBeingConsumed, runningElements);
+		List<Peer> peersByPriorityOfPreemption = sortPeersByPriorityOfPreemption(provider, consumer, resourcesBeingConsumed, runningElements);
 		peersByPriorityOfPreemption.remove(consumer);
 		return peersByPriorityOfPreemption;
 	}
 
-	private List<Peer> sortPeersByPriorityOfPreemption(final Peer provider,
-			Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
+	private List<Peer> sortPeersByPriorityOfPreemption(final Peer provider, Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
 			final HashSet<? extends ComputableElement> runningElements) {
 		assert allBalances.containsKey(provider);
 
@@ -177,17 +164,14 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 
 		// quanto cada peer merece neste provedor, ordenado pelos criterios de
 		// desempate.
-		TreeMap<Peer, Integer> resourcesBeingConsumedClone = new TreeMap<Peer, Integer>(
-				new NoFComparator(provider, resourcesBeingConsumed,
-						runningElements));
+		TreeMap<Peer, Integer> resourcesBeingConsumedClone = new TreeMap<Peer, Integer>(new NoFComparator(provider, resourcesBeingConsumed, runningElements));
 		resourcesBeingConsumedClone.putAll(resourcesBeingConsumed);
 
 		// If this peer is not consuming, put in this map.
 		if (!resourcesBeingConsumedClone.containsKey(consumer)) {
 			resourcesBeingConsumedClone.put(consumer, 1);
 		} else {
-			resourcesBeingConsumedClone.put(consumer,
-					resourcesBeingConsumedClone.get(consumer) + 1);
+			resourcesBeingConsumedClone.put(consumer, resourcesBeingConsumedClone.get(consumer) + 1);
 		}
 
 		long resourcesLeft = provider.getAmountOfResourcesToShare();
@@ -210,11 +194,10 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 			long resourcesToShare = resourcesLeft;
 
 			boolean startLenientSharing = true;
-			
+
 			// Set minimum resources allowed for each peer and remove satisfied
 			// consumers for the sharing of resources left
-			for (Iterator<Peer> iterator = resourcesBeingConsumedClone.keySet()
-					.iterator(); iterator.hasNext();) {
+			for (Iterator<Peer> iterator = resourcesBeingConsumedClone.keySet().iterator(); iterator.hasNext();) {
 				Peer remoteConsumer = iterator.next();
 
 				// Amount of resources received
@@ -226,20 +209,18 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 				if (totalBalance == 0) {
 					share = (1.0d / numConsumingPeers);
 				} else {
-					share = ((double) getBalance(remoteConsumer, balances))
-							/ totalBalance;
+					share = ((double) getBalance(remoteConsumer, balances)) / totalBalance;
 				}
 
 				resourcesForPeer = (int) (share * resourcesToShare);
-				
+
 				if (remoteConsumer == provider) {
 					resourcesForPeer = resourcesLeft;
 				}
-				
+
 				startLenientSharing = startLenientSharing && resourcesForPeer == 0;
-				
-				int resourcesInUse = resourcesBeingConsumedClone
-						.get(remoteConsumer);
+
+				int resourcesInUse = resourcesBeingConsumedClone.get(remoteConsumer);
 
 				if (resourcesInUse <= resourcesForPeer) {
 					iterator.remove(); // Satisfied consumer, will not be
@@ -250,7 +231,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 
 				resourcesLeft -= Math.min(resourcesInUse, resourcesForPeer);
 			}
-			
+
 			if (startLenientSharing) {
 				for (Peer p : resourcesBeingConsumedClone.keySet()) {
 					if (resourcesLeft == 0) {
@@ -260,18 +241,16 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 					resourcesLeft--;
 				}
 			}
-			
+
 			for (Entry<Peer, Long> entry : receivedResources.entrySet()) {
-				long currentUsedResources = resourcesBeingConsumedClone
-						.get(entry.getKey());
+				long currentUsedResources = resourcesBeingConsumedClone.get(entry.getKey());
 				long allowedResources = entry.getValue();
 				long finalResourceUse = currentUsedResources - allowedResources;
 				assert finalResourceUse >= 0;
 				if (finalResourceUse == 0) {
 					resourcesBeingConsumedClone.remove(entry.getKey());
 				} else {
-					resourcesBeingConsumedClone.put(entry.getKey(),
-						(int) (finalResourceUse));
+					resourcesBeingConsumedClone.put(entry.getKey(), (int) (finalResourceUse));
 				}
 			}
 

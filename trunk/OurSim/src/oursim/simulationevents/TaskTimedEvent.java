@@ -1,8 +1,5 @@
 package oursim.simulationevents;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-
 import oursim.entities.Task;
 
 public abstract class TaskTimedEvent extends TimedEventAbstract<Task> {
@@ -13,7 +10,24 @@ public abstract class TaskTimedEvent extends TimedEventAbstract<Task> {
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("task", (Task) content).toString();
+		StringBuilder sb = new StringBuilder();
+		String type = this.getType();
+		String time = Long.toString(this.getTime());
+		String peer = this.content.getSourcePeer().getName();
+		String taskId = Long.toString(this.content.getId());
+		String jobId = Long.toString(this.content.getSourceJob().getId());
+		String makespan = this.content.getMakeSpan() + "";
+		String runningTime = this.content.getRunningTime() + "";
+		String queuingTime = this.content.getQueueingTime() + "";
+		sb.append(type).append(" ")
+		  .append(time).append(" ")
+		  .append(taskId).append(" ")
+		  .append(jobId).append(" ")
+		  .append(peer).append(" ")
+		  .append(makespan).append(" ")
+		  .append(runningTime).append(" ")
+		  .append(queuingTime);
+		return sb.toString();
 	}
 
 }

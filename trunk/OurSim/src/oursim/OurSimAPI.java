@@ -1,5 +1,6 @@
 package oursim;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import oursim.availability.AvailabilityRecord;
@@ -9,8 +10,10 @@ import oursim.dispatchableevents.workerevents.WorkerEvent;
 import oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
 import oursim.dispatchableevents.workerevents.WorkerEventFilter;
 import oursim.entities.Job;
+import oursim.entities.Machine;
 import oursim.entities.Peer;
 import oursim.input.Input;
+import oursim.input.InputAbstract;
 import oursim.policy.JobSchedulerPolicy;
 import oursim.policy.OurGridScheduler;
 import oursim.simulationevents.EventQueue;
@@ -63,6 +66,30 @@ public class OurSimAPI {
 
 	}
 
+	public void run(List<Peer> peers, Input<Job> workload) {
+		Input<AvailabilityRecord> defaultResourceAvailability = generateDefaultResourceAvailability(peers);
+		run(peers, workload, defaultResourceAvailability);
+	}
+
+	private Input<AvailabilityRecord> generateDefaultResourceAvailability(final List<Peer> peers) {
+
+		Input<AvailabilityRecord> availability = new InputAbstract<AvailabilityRecord>() {
+			@Override
+			protected void setUp() {
+				this.inputs = new LinkedList<AvailabilityRecord>();
+				long timestamp = 0;
+				long duration = Long.MAX_VALUE;
+				for (Peer peer : peers) {
+					for (Machine machine : peer.getResources()) {
+						this.inputs.add(new AvailabilityRecord(machine.getName(), timestamp, duration));
+					}
+				}
+
+			}
+		};
+		return availability;
+	}
+
 	private void prepareListeners(List<Peer> peers, Input<Job> workload, Input<AvailabilityRecord> availability, EventQueue eq, JobSchedulerPolicy sp) {
 		JobEventDispatcher.getInstance().addListener(sp);
 		TaskEventDispatcher.getInstance().addListener(sp);
@@ -77,7 +104,9 @@ public class OurSimAPI {
 				}
 
 			});
-			scheduleJobEvents(eq, peer.getWorkload());
+			if (peer.getWorkload() != null) {
+				scheduleJobEvents(eq, peer.getWorkload());
+			}
 		}
 
 		WorkerEventDispatcher.getInstance().addListener(sp);
