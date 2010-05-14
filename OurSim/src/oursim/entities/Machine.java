@@ -18,11 +18,11 @@ public class Machine {
 	// generally assumed that all processor have the same rating.
 	private List<Processor> processors;
 
-	public Machine(String name, int processorSpeed) {
+	public Machine(String name, long processorSpeed) {
 		this(name, processorSpeed, 1);
 	}
 
-	public Machine(String name, int processorSpeed, int numProcessor) {
+	public Machine(String name, long processorSpeed, int numProcessor) {
 
 		this.name = name;
 		this.processors = new ArrayList<Processor>();
@@ -33,7 +33,7 @@ public class Machine {
 
 	}
 
-	public void addProcessor(int speed) {
+	public void addProcessor(long speed) {
 		int processorId = this.processors.size();
 		this.processors.add(new Processor(processorId, speed));
 	}
@@ -53,11 +53,11 @@ public class Machine {
 		}
 		return numFreeProcessors;
 	}
-	
-	public Processor getDefaultProcessor(){
+
+	public Processor getDefaultProcessor() {
 		return processors.get(0);
 	}
-	
+
 	@Override
 	public String toString() {
 		return name;

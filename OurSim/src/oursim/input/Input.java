@@ -8,6 +8,4 @@ public interface Input<T> {
 
 	void close();
 	
-	long length();
-
 }

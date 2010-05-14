@@ -11,26 +11,49 @@ import oursim.Parameters;
 import oursim.entities.Job;
 import oursim.entities.Task;
 
+/**
+ * 
+ * The data structure responsible for deal with the simulation events.
+ * 
+ * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
+ * @author Matheus G. do Rêgo, matheusgr@lsd.ufcg.edu.br
+ * @since 14/05/2010
+ * 
+ */
 public class EventQueue {
 
 	private long time = -1;
 
 	private PriorityQueue<TimedEvent> pq;
 
-	private static EventQueue instance = null;
-
 	public static long amountOfEvents = 0;
 
-	// for cache purpose
+	/**
+	 * For cache purpose: when a task or job has been preempted its respective
+	 * {@link FinishTaskEvent} and {@link FinishJobEvent} must be canceled, and
+	 * for this purpose there are these present cache.
+	 */
 	private Map<Job, FinishJobEvent> job2FinishJobEvent;
 	private Map<Task, FinishTaskEvent> task2FinishTaskEvent;
 
+	/**
+	 * To trace the events added to this {@link EventQueue}.
+	 */
 	private BufferedWriter bw;
+
+	private static EventQueue instance = null;
 
 	private EventQueue() {
 		pq = new PriorityQueue<TimedEvent>();
 		job2FinishJobEvent = new HashMap<Job, FinishJobEvent>();
 		task2FinishTaskEvent = new HashMap<Task, FinishTaskEvent>();
+		if (Parameters.LOG) {
+			try {
+				bw = new BufferedWriter(new FileWriter("events_oursim.txt"));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public static EventQueue getInstance() {
@@ -48,7 +71,15 @@ public class EventQueue {
 	private void addEvent(TimedEvent event) {
 		assert event.getTime() >= time : event.getTime() + ">=" + time;
 		amountOfEvents++;
-		// printEvent(event);
+		// TODO: Verificar a necessidade desse método
+		if (Parameters.LOG) {
+			try {
+				bw.append(event.toString()).append("\n");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
 		pq.add(event);
 	}
 
@@ -113,6 +144,10 @@ public class EventQueue {
 		pq.remove(event);
 	}
 
+	public TimedEvent peek() {
+		return pq.peek();
+	}
+
 	public TimedEvent poll() {
 		if (pq.peek() != null) {
 			if (!pq.peek().isCancelled()) {
@@ -127,6 +162,11 @@ public class EventQueue {
 		return pq.poll();
 	}
 
+	public long currentTime() {
+		return this.time;
+	}
+
+	// TODO: Verificar a necessidade desse método
 	public void close() {
 		try {
 			if (bw != null) {
@@ -134,59 +174,6 @@ public class EventQueue {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-	}
-
-	public long currentTime() {
-		return this.time;
-	}
-
-	public TimedEvent peek() {
-		return pq.peek();
-	}
-
-	public int size() {
-		return pq.toArray().length;
-	}
-
-	private void printEvent(TimedEvent ev) {
-
-		if (Parameters.LOG) {
-			try {
-				if (bw == null) {
-					bw = new BufferedWriter(new FileWriter("events_oursim.txt"));
-				}
-
-				String taskId = null;
-				String jobId = null;
-				if (ev instanceof TaskTimedEvent) {
-					TaskTimedEvent event = (TaskTimedEvent) ev;
-					String type = event.getType();
-					String time = Long.toString(event.getTime());
-					String peer = event.content.getSourcePeer().getName();
-					taskId = Long.toString(event.content.getId());
-					jobId = Long.toString(event.content.getSourceJob().getId());
-					String makespan = event.content.getMakeSpan() + "";
-					String runningTime = event.content.getRunningTime() + "";
-					String queuingTime = event.content.getQueueingTime() + "";
-					bw.append(type).append(" ").append(time).append(" ").append(taskId).append(" ").append(jobId).append(" ").append(peer).append(" ").append(
-							makespan).append(" ").append(runningTime).append(" ").append(queuingTime).append("\n");
-				} else if (ev instanceof JobTimedEvent) {
-					JobTimedEvent event = (JobTimedEvent) ev;
-					jobId = Long.toString(event.content.getId());
-					String type = event.getType();
-					String time = Long.toString(event.getTime());
-					String peer = event.content.getSourcePeer().getName();
-					String makespan = event.content.getMakeSpan() + "";
-					String runningTime = event.content.getRunningTime() + "";
-					String queuingTime = event.content.getQueueingTime() + "";
-					bw.append(type).append(" ").append(time).append(" ").append(taskId).append(" ").append(jobId).append(" ").append(peer).append(" ").append(
-							makespan).append(" ").append(runningTime).append(" ").append(queuingTime).append("\n");
-				}
-
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
 	}
 

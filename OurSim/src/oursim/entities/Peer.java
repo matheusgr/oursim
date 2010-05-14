@@ -34,11 +34,13 @@ public class Peer extends WorkerEventListenerAdapter {
 
 	private Workload workload;
 
-	private List<Job> jobs = new ArrayList<Job>();
-
 	private static long nextMachineId = 0;
 
-	public Peer(String name, int amountOfResources, int nodeMIPSRating, ResourceSharingPolicy resourceSharingPolicy) {
+	public Peer(String name, int amountOfResources, ResourceSharingPolicy resourceSharingPolicy) {
+		this(name, amountOfResources, Processor.EC2_COMPUTE_UNIT.getSpeed(), resourceSharingPolicy);
+	}
+
+	public Peer(String name, int amountOfResources, long nodeMIPSRating, ResourceSharingPolicy resourceSharingPolicy) {
 		this.name = name;
 
 		this.resources = new ArrayList<Machine>(amountOfResources);
@@ -59,7 +61,7 @@ public class Peer extends WorkerEventListenerAdapter {
 
 	}
 
-	private void addMachine(int nodeMIPSRating) {
+	private void addMachine(long nodeMIPSRating) {
 		this.resources.add(new Machine("m_" + nextMachineId, nodeMIPSRating));
 		nextMachineId++;
 	}
@@ -153,8 +155,8 @@ public class Peer extends WorkerEventListenerAdapter {
 
 	public void setWorkload(Workload workload) {
 		assert this.workload == null;
+		// TODO: Verificar a adequabilidade desse tratamento com o workload
 		this.workload = workload;
-		this.jobs.addAll(workload.clone());
 	}
 
 	public Workload getWorkload() {

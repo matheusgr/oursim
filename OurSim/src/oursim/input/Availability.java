@@ -9,7 +9,7 @@ import oursim.availability.AvailabilityRecord;
 
 public class Availability implements Input<AvailabilityRecord> {
 
-	private LinkedList<AvailabilityRecord> avRecords;;
+	private LinkedList<AvailabilityRecord> avRecords;
 
 	public Availability(String fileName) throws FileNotFoundException {
 		this.avRecords = new LinkedList<AvailabilityRecord>();
@@ -38,11 +38,6 @@ public class Availability implements Input<AvailabilityRecord> {
 	@Override
 	public AvailabilityRecord poll() {
 		return avRecords.pollFirst();
-	}
-
-	@Override
-	public long length() {
-		return avRecords.size();
 	}
 
 }

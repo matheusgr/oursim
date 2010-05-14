@@ -6,7 +6,7 @@ public class Parameters {
 
 	public static final boolean USE_NOF = false;
 
-	public static final boolean LOG = true;
+	public static final boolean LOG = false;
 
 	public static Random RANDOM = new Random(9354269l);
 

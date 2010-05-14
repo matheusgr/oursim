@@ -1,12 +1,17 @@
 package oursim;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import oursim.availability.AvailabilityRecord;
 import oursim.entities.Job;
 import oursim.entities.Machine;
@@ -25,7 +30,7 @@ import oursim.simulationevents.SubmitJobEvent;
 import oursim.simulationevents.WorkerAvailableEvent;
 import oursim.simulationevents.WorkerUnavailableEvent;
 
-public class OurSimAPITest extends TestCase {
+public class OurSimAPITest {
 
 	OurSimAPI oursim;
 
@@ -53,9 +58,9 @@ public class OurSimAPITest extends TestCase {
 
 	long nextJobId = 0;
 
-	@Override
 	@SuppressWarnings("unchecked")
-	protected void setUp() throws Exception {
+	@Before
+	public void setUp() throws Exception {
 
 		oursim = new OurSimAPI();
 
@@ -80,8 +85,8 @@ public class OurSimAPITest extends TestCase {
 
 	}
 
-	@Override
-	protected void tearDown() throws Exception {
+	@After
+	public void tearDown() throws Exception {
 
 		EventQueue.getInstance().clear();
 		FinishJobEvent.amountOfFinishedJobs = 0;
@@ -102,6 +107,7 @@ public class OurSimAPITest extends TestCase {
 	 * necessário (i.e. a duração especificada para cada job) e que todos os
 	 * jobs sejam executados no próprio peer de origem.
 	 */
+	@Test
 	public void testRun_1() {
 
 		// Define as demandas para cada peer
@@ -149,6 +155,7 @@ public class OurSimAPITest extends TestCase {
 	 * concluídos no tempo mínimo esperado (i.e. a duração especificado para
 	 * cada job) e que todos os jobs sejam executados no próprio peer de origem.
 	 */
+	@Test
 	public void testRun_2() {
 
 		final int NUMBER_OF_OVERLOADED_PEERS = NUMBER_OF_PEERS / 2;

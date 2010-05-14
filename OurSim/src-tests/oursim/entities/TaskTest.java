@@ -1,9 +1,12 @@
 package oursim.entities;
 
-import junit.framework.*;
+import static org.junit.Assert.assertTrue;
 
-public class TaskTest extends TestCase {
+import org.junit.Test;
 
+public class TaskTest {
+
+	@Test
 	public void testUpdateProcessing() {
 
 		Task task = new Task(0, "executavel.exe", 30, 0, null);
