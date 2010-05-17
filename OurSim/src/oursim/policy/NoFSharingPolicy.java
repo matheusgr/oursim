@@ -174,7 +174,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 			resourcesBeingConsumedClone.put(consumer, resourcesBeingConsumedClone.get(consumer) + 1);
 		}
 
-		long resourcesLeft = provider.getAmountOfResourcesToShare();
+		long resourcesLeft = provider.getNumberOfResourcesToShare();
 
 		while (resourcesLeft > 0) {
 

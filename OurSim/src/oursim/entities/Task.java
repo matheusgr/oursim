@@ -1,16 +1,18 @@
 package oursim.entities;
 
-import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.commons.lang.builder.ToStringBuilder;
 
-public class Task extends ComputableElementAbstract implements ComputableElement, Comparable<Task> {
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+
+public class Task extends ComputableElement implements Comparable<Task> {
 
 	/**
-	 * The duration of this task in seconds on a reference machine.
+	 * The duration in unit of simulation (seconds) of this Task, considered
+	 * when executed in an reference machine.
 	 * 
 	 * TODO: specify what a reference machine is.
+	 * 
 	 */
 	private final long duration;
 
@@ -20,9 +22,6 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 
 	private List<File> outputs;
 
-	private final long id;
-
-	private final long submissionTime;
 	private Long startTime = null;
 	private Long finishTime = null;
 
@@ -34,10 +33,9 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 	private int numberOfpreemptions;
 
 	public Task(long id, String executable, long duration, long submissionTime, Job sourceJob) {
-		this.id = id;
+		super(id, submissionTime);
 		this.executable = new File(executable, -1);
 		this.duration = duration;
-		this.submissionTime = submissionTime;
 		this.sourceJob = sourceJob;
 	}
 
@@ -62,13 +60,6 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 	}
 
 	@Override
-	public List<Peer> getTargetPeers() {
-		List<Peer> targetPeers = new ArrayList<Peer>();
-		targetPeers.add(targetPeer);
-		return targetPeers;
-	}
-
-	@Override
 	public void setTargetPeer(Peer targetPeer) {
 		assert this.targetPeer == null;
 		this.targetPeer = targetPeer;
@@ -77,16 +68,6 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 	@Override
 	public long getDuration() {
 		return duration;
-	}
-
-	@Override
-	public long getSubmissionTime() {
-		return submissionTime;
-	}
-
-	@Override
-	public long getId() {
-		return id;
 	}
 
 	@Override
@@ -105,7 +86,7 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 		assert this.startTime != null;
 		this.numberOfpreemptions++;
 		this.startTime = null;
-		this.setTargetPeer(null);
+		this.targetPeer = null;
 	}
 
 	@Override
@@ -113,16 +94,15 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 		this.startTime = startTime;
 	}
 
-	public long getWaitedTime() {
-		return this.finishTime - (this.submissionTime + this.duration);
-	}
-
 	@Override
 	public Long getEstimatedFinishTime() {
 		assert startTime != null;
-		// return this.getStartTime() + this.getDuration();
 		assert taskExecution != null;
-		return this.getStartTime() + taskExecution.getRemainingTimeToFinish();
+		if (startTime != null) {
+			return this.getStartTime() + taskExecution.getRemainingTimeToFinish();
+		} else {
+			return null;
+		}
 	}
 
 	@Override

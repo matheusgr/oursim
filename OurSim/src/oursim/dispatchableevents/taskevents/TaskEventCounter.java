@@ -2,13 +2,13 @@ package oursim.dispatchableevents.taskevents;
 
 public class TaskEventCounter extends TaskEventListenerAdapter {
 
-	private int amountOfFinishedTasks = 0;
+	private int numberOfFinishedTasks = 0;
 
 	private int numberOfPreemptionsForAllTasks = 0;
 
 	@Override
 	public void taskFinished(TaskEvent taskEvent) {
-		this.amountOfFinishedTasks++;
+		this.numberOfFinishedTasks++;
 	}
 
 	@Override
@@ -16,8 +16,8 @@ public class TaskEventCounter extends TaskEventListenerAdapter {
 		this.numberOfPreemptionsForAllTasks++;
 	}
 
-	public int getAmountOfFinishedTasks() {
-		return amountOfFinishedTasks;
+	public int getNumberOfFinishedTasks() {
+		return numberOfFinishedTasks;
 	}
 
 	public int getNumberOfPreemptionsForAllTasks() {

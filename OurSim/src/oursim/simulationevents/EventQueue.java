@@ -26,7 +26,7 @@ public class EventQueue {
 
 	private PriorityQueue<TimedEvent> pq;
 
-	public static long amountOfEvents = 0;
+	public static long totalNumberOfEvents = 0;
 
 	/**
 	 * For cache purpose: when a task or job has been preempted its respective
@@ -65,12 +65,12 @@ public class EventQueue {
 		job2FinishJobEvent = new HashMap<Job, FinishJobEvent>();
 		task2FinishTaskEvent = new HashMap<Task, FinishTaskEvent>();
 		time = -1;
-		amountOfEvents = 0;
+		totalNumberOfEvents = 0;
 	}
 
 	private void addEvent(TimedEvent event) {
 		assert event.getTime() >= time : event.getTime() + ">=" + time;
-		amountOfEvents++;
+		totalNumberOfEvents++;
 		// TODO: Verificar a necessidade desse método
 		if (Parameters.LOG) {
 			try {

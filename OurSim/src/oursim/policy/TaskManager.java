@@ -27,14 +27,14 @@ public class TaskManager {
 	private Peer peer;
 
 	// a quantidade de recursos que o peer remoto está consumindo neste site
-	private HashMap<Peer, Integer> amountOfAllocatedResourcesByPeer;
+	private HashMap<Peer, Integer> numberOfAllocatedResourcesByPeer;
 
 	public TaskManager(Peer peer) {
 		this.peer = peer;
 		this.tasksInExecution = new BidirectionalMap<Task,Machine>();
 		this.foreignTasks = new HashSet<Task>();
 		this.localTasks = new HashSet<Task>();
-		this.amountOfAllocatedResourcesByPeer = new HashMap<Peer, Integer>();
+		this.numberOfAllocatedResourcesByPeer = new HashMap<Peer, Integer>();
 	}
 
 	public HashSet<Task> getForeignTasks() {
@@ -59,10 +59,10 @@ public class TaskManager {
 		} else {
 			foreignTasks.add(task);
 			int consumedResources = 0;
-			if (this.amountOfAllocatedResourcesByPeer.containsKey(sourcePeer)) {
-				consumedResources = this.amountOfAllocatedResourcesByPeer.get(sourcePeer);
+			if (this.numberOfAllocatedResourcesByPeer.containsKey(sourcePeer)) {
+				consumedResources = this.numberOfAllocatedResourcesByPeer.get(sourcePeer);
 			}
-			this.amountOfAllocatedResourcesByPeer.put(sourcePeer, consumedResources + 1);
+			this.numberOfAllocatedResourcesByPeer.put(sourcePeer, consumedResources + 1);
 		}
 
 	}
@@ -108,17 +108,17 @@ public class TaskManager {
 	}
 
 	public Set<Peer> getForeignConsumingPeers() {
-		return this.amountOfAllocatedResourcesByPeer.keySet();
+		return this.numberOfAllocatedResourcesByPeer.keySet();
 	}
 
 	private boolean removeForeignTask(Task task) {
 		assert this.foreignTasks.contains(task);
 		Peer sourcePeer = task.getSourcePeer();
-		int resourcesBeingConsumedByPeer = this.amountOfAllocatedResourcesByPeer.get(sourcePeer) - 1;
+		int resourcesBeingConsumedByPeer = this.numberOfAllocatedResourcesByPeer.get(sourcePeer) - 1;
 		if (resourcesBeingConsumedByPeer == 0) {
-			this.amountOfAllocatedResourcesByPeer.remove(sourcePeer);
+			this.numberOfAllocatedResourcesByPeer.remove(sourcePeer);
 		} else {
-			this.amountOfAllocatedResourcesByPeer.put(sourcePeer, resourcesBeingConsumedByPeer);
+			this.numberOfAllocatedResourcesByPeer.put(sourcePeer, resourcesBeingConsumedByPeer);
 		}
 
 		return this.foreignTasks.remove(task);
@@ -141,11 +141,11 @@ public class TaskManager {
 		return machine;
 	}
 
-	public HashMap<Peer, Integer> getAmountOfAllocatedResourcesByPeer() {
-		return amountOfAllocatedResourcesByPeer;
+	public HashMap<Peer, Integer> getNumberOfAllocatedResourcesByPeer() {
+		return numberOfAllocatedResourcesByPeer;
 	}
 
-	public int getAmountOfLocallyConsumedResources() {
+	public int getNumberOfLocallyConsumedResources() {
 		return this.localTasks.size();
 	}
 

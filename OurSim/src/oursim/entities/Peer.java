@@ -34,18 +34,22 @@ public class Peer extends WorkerEventListenerAdapter {
 
 	private Workload workload;
 
+	private List<Job> jobs;
+
 	private static long nextMachineId = 0;
 
-	public Peer(String name, int amountOfResources, ResourceSharingPolicy resourceSharingPolicy) {
-		this(name, amountOfResources, Processor.EC2_COMPUTE_UNIT.getSpeed(), resourceSharingPolicy);
+	public Peer(String name, int numberOfResources, ResourceSharingPolicy resourceSharingPolicy) {
+		this(name, numberOfResources, Processor.EC2_COMPUTE_UNIT.getSpeed(), resourceSharingPolicy);
 	}
 
-	public Peer(String name, int amountOfResources, long nodeMIPSRating, ResourceSharingPolicy resourceSharingPolicy) {
+	public Peer(String name, int numberOfResources, long nodeMIPSRating, ResourceSharingPolicy resourceSharingPolicy) {
 		this.name = name;
 
-		this.resources = new ArrayList<Machine>(amountOfResources);
+		this.resources = new ArrayList<Machine>(numberOfResources);
 
-		for (int i = 0; i < amountOfResources; i++) {
+		this.jobs = new ArrayList<Job>();
+
+		for (int i = 0; i < numberOfResources; i++) {
 			addMachine(nodeMIPSRating);
 		}
 
@@ -74,7 +78,7 @@ public class Peer extends WorkerEventListenerAdapter {
 		this.taskManager.updateTime(currentTime);
 	}
 
-	public int getAmountOfResources() {
+	public int getNumberOfResources() {
 		return this.resources.size();
 	}
 
@@ -87,8 +91,18 @@ public class Peer extends WorkerEventListenerAdapter {
 	 * 
 	 * @return
 	 */
-	public long getAmountOfResourcesToShare() {
-		return this.resourceManager.getAmountOfResources() - this.taskManager.getAmountOfLocallyConsumedResources();
+	public long getNumberOfResourcesToShare() {
+		return this.resourceManager.getNumberOfResources() - this.taskManager.getNumberOfLocallyConsumedResources();
+	}
+
+	boolean addJob(Job job) {
+		assert job.getSourcePeer() == this;
+		if (job.getSourcePeer() == this) {
+			this.jobs.add(job);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	public boolean addJob(Job job, Peer consumer) {
@@ -115,12 +129,12 @@ public class Peer extends WorkerEventListenerAdapter {
 		EventQueue.getInstance().addPreemptedTaskEvent(task, EventQueue.getInstance().getCurrentTime());
 	}
 
-	public int getAmountOfAvailableResources() {
-		return this.resourceManager.getAmountOfAvailableResources();
+	public int getNumberOfAvailableResources() {
+		return this.resourceManager.getNumberOfAvailableResources();
 	}
 
 	public double getUtilization() {
-		return ((double) (this.getAmountOfResources() - this.getAmountOfAvailableResources())) / this.getAmountOfResources();
+		return ((double) (this.getNumberOfResources() - this.getNumberOfAvailableResources())) / this.getNumberOfResources();
 	}
 
 	public List<Machine> getResources() {

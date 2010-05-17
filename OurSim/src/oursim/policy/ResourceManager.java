@@ -89,12 +89,12 @@ public class ResourceManager {
 		return !this.free.isEmpty();
 	}
 
-	public int getAmountOfAvailableResources() {
+	public int getNumberOfAvailableResources() {
 		return free.size();
 	}
 
-	public int getAmountOfResources() {
-		return this.peer.getAmountOfResources();
+	public int getNumberOfResources() {
+		return this.peer.getNumberOfResources();
 	}
 
 	public Machine getResource(String machineName) {

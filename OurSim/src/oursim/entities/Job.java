@@ -5,58 +5,114 @@ import java.util.List;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-public class Job extends ComputableElementAbstract implements ComputableElement, Comparable<Job> {
+public class Job extends ComputableElement implements Comparable<Job> {
 
-	private final long id;
-
-	private final long submissionTime;
-
+	/**
+	 * The peer to which this job belongs. The sourcePeer remains unchanged
+	 * during its lifetime.
+	 */
 	private final Peer sourcePeer;
 
+	/**
+	 * The collection of tasks that compose this job.
+	 */
 	private final List<Task> tasks;
 
+	/**
+	 * Field to assure the uniqueness of the id of each task.
+	 */
 	private static long nextTaskId = 0;
 
+	/**
+	 * 
+	 * An ordinary constructor for a job. Important: Using this constructor the
+	 * tasks must be added by calling the method {@link Job#addTask(Task)} or
+	 * {@link Job#addTask(String, long)} to fulfill the creation of a job.
+	 * 
+	 * @param id
+	 *            The identifier of this Job. The job ID is a positive long. The
+	 *            job ID must be unique and remains unchanged during its
+	 *            lifetime.
+	 * @param submissionTime
+	 *            The instant at which this job must be submitted.
+	 * @param sourcePeer
+	 *            The peer to which this job belongs.
+	 */
 	public Job(long id, long submissionTime, Peer sourcePeer) {
-
-		this.id = id;
-		this.submissionTime = submissionTime;
+		super(id, submissionTime);
 		this.sourcePeer = sourcePeer;
+
+		sourcePeer.addJob(this);
 
 		this.tasks = new ArrayList<Task>();
 
 	}
 
-	public Job(long id, long submissionTime, long runTimeDuration, Peer sourcePeer) {
+	/**
+	 * 
+	 * Constructor intended for jobs with only one task. In this special case,
+	 * the only task in this job share with it its id.
+	 * 
+	 * @param id
+	 *            The identifier of this Job. The job ID is a positive long. The
+	 *            job ID must be unique and remains unchanged during its
+	 *            lifetime.
+	 * @param submissionTime
+	 *            The instant at which this job must be submitted.
+	 * @param sourcePeer
+	 *            The peer to which this job belongs.
+	 * @param duration
+	 *            The duration in unit of simulation (seconds) of the only task
+	 *            contained in this job, considered when executed in an
+	 *            reference machine.
+	 */
+	public Job(long id, long submissionTime, long duration, Peer sourcePeer) {
 		this(id, submissionTime, sourcePeer);
 
-		this.tasks.add(new Task(this.id, "executable.exe", runTimeDuration, this.submissionTime, this));
+		this.tasks.add(new Task(this.id, "executable.exe", duration, this.submissionTime, this));
 
 	}
 
-	@Override
-	public long getId() {
-		return id;
-	}
-
-	public void addTask(Task task) {
+	/**
+	 * Adds a task to this job. The task to be added mustn't belong to any other
+	 * job.
+	 * 
+	 * @param task
+	 *            The task to be added.
+	 */
+	public boolean addTask(Task task) {
 		assert task.getSourceJob() == null;
-		task.setSourceJob(this);
-		this.tasks.add(task);
+		if (task.getSourceJob() == null) {
+			task.setSourceJob(this);
+			this.tasks.add(task);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
+	/**
+	 * Adds a task to this job by the information of its executing parameters.
+	 * 
+	 * @param executable
+	 *            The name of the executable of the task.
+	 * @param duration
+	 *            The duration in unit of simulation (seconds) of the task to be
+	 *            added, considered when executed in an reference machine.
+	 */
 	public void addTask(String executable, long duration) {
 		this.tasks.add(new Task(nextTaskId, executable, duration, submissionTime, this));
 		nextTaskId++;
 	}
 
+	/**
+	 * 
+	 * Gets the tasks that compound this job.
+	 * 
+	 * @return the tasks that compound this job.
+	 */
 	public List<Task> getTasks() {
 		return tasks;
-	}
-
-	@Override
-	public long getSubmissionTime() {
-		return submissionTime;
 	}
 
 	@Override
@@ -109,7 +165,12 @@ public class Job extends ComputableElementAbstract implements ComputableElement,
 		return sourcePeer;
 	}
 
-	@Override
+	/**
+	 * 
+	 * Gets all the peers that are running tasks from this job.
+	 * 
+	 * @return all the peers that are running tasks from this job.
+	 */
 	public List<Peer> getTargetPeers() {
 		List<Peer> targetPeers = new ArrayList<Peer>();
 		for (Task task : tasks) {
@@ -125,6 +186,11 @@ public class Job extends ComputableElementAbstract implements ComputableElement,
 		}
 	}
 
+	/**
+	 * Performs a preemption in all the tasks that compound this job.
+	 * 
+	 * @see oursim.entities.ComputableElement#preempt(long)
+	 */
 	@Override
 	public void preempt(long time) {
 		for (Task task : tasks) {
@@ -157,8 +223,8 @@ public class Job extends ComputableElementAbstract implements ComputableElement,
 	public Long getFinishTime() {
 		long lastFinishTime = Long.MIN_VALUE;
 		boolean allTasksAreFinished = true;
+		// TODO verificar se isFinished() antes
 		for (Task task : tasks) {
-			// TODO:if (allTasksAreFinished &= task.isFinished()) {
 			if (allTasksAreFinished && task.isFinished()) {
 				lastFinishTime = Math.max(lastFinishTime, task.getFinishTime());
 			} else {
@@ -168,6 +234,11 @@ public class Job extends ComputableElementAbstract implements ComputableElement,
 		return lastFinishTime;
 	}
 
+	/**
+	 * Gets the sum of the preemptions in all tasks that compound this job.
+	 * 
+	 * @see oursim.entities.ComputableElement#getNumberOfpreemptions()
+	 */
 	@Override
 	public long getNumberOfpreemptions() {
 		long totalOfPreemptions = 0;
