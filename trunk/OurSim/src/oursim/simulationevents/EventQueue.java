@@ -79,7 +79,6 @@ public class EventQueue {
 				e.printStackTrace();
 			}
 		}
-
 		pq.add(event);
 	}
 
@@ -100,7 +99,7 @@ public class EventQueue {
 	}
 
 	public void addFinishJobEvent(long finishTime, Job job) {
-		assert finishTime >= this.currentTime();
+		assert finishTime >= this.getCurrentTime();
 		FinishJobEvent finishJobEvent = new FinishJobEvent(finishTime, job);
 		this.addEvent(finishJobEvent);
 		this.job2FinishJobEvent.put(job, finishJobEvent);
@@ -122,7 +121,7 @@ public class EventQueue {
 	}
 
 	public void addFinishTaskEvent(long finishTime, Task task) {
-		assert finishTime > this.currentTime();
+		assert finishTime > this.getCurrentTime();
 
 		FinishTaskEvent finishTaskEvent = new FinishTaskEvent(finishTime, task);
 		this.addEvent(finishTaskEvent);
@@ -162,7 +161,7 @@ public class EventQueue {
 		return pq.poll();
 	}
 
-	public long currentTime() {
+	public long getCurrentTime() {
 		return this.time;
 	}
 

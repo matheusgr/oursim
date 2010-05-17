@@ -37,7 +37,7 @@ public class OurSimAPI {
 
 		while (availability.peek() != null) {
 			AvailabilityRecord av = availability.poll();
-			eq.addWorkerAvailableEvent(av.machineName, av.time, av.duration);
+			eq.addWorkerAvailableEvent(av.getMachineName(), av.getTime(), av.getDuration());
 		}
 
 	}

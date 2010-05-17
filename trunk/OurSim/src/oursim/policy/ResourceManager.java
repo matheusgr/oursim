@@ -7,8 +7,20 @@ import java.util.Map;
 import oursim.entities.Machine;
 import oursim.entities.Peer;
 
+/**
+ * 
+ * Responsible for manage the resources belonged to a {@link Peer}, holding the
+ * status of the resources.
+ * 
+ * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
+ * @since 14/05/2010
+ * 
+ */
 public class ResourceManager {
 
+	/**
+	 * The peer 
+	 */
 	private Peer peer;
 
 	private Map<String, Machine> allocated;
@@ -77,7 +89,7 @@ public class ResourceManager {
 		return !this.free.isEmpty();
 	}
 
-	public int getAvailableResources() {
+	public int getAmountOfAvailableResources() {
 		return free.size();
 	}
 

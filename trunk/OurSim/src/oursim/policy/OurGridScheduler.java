@@ -25,10 +25,6 @@ public class OurGridScheduler extends WorkerEventListenerAdapter implements JobS
 	private List<Peer> peers;
 	private HashMap<String, Peer> peersMap;
 
-	public static int numberOfPreemptionsForAllJobs = 0;
-
-	public static long numberOfPreemptionsForAllTasks = 0;
-
 	public OurGridScheduler(EventQueue eventQueue, List<Peer> peers) {
 		this(eventQueue, peers, new TreeSet<Job>());
 	}
@@ -54,12 +50,12 @@ public class OurGridScheduler extends WorkerEventListenerAdapter implements JobS
 	@Override
 	public void rescheduleJob(Job job) {
 		// Utilizado quando um job é preemptada.
-		eventQueue.addSubmitJobEvent(eventQueue.currentTime(), job);
+		eventQueue.addSubmitJobEvent(eventQueue.getCurrentTime(), job);
 	}
 
 	private void rescheduleTask(Task task) {
 		// Utilizado quando uma task é preemptada.
-		eventQueue.addSubmitTaskEvent(eventQueue.currentTime(), task);
+		eventQueue.addSubmitTaskEvent(eventQueue.getCurrentTime(), task);
 	}
 
 	@Override
@@ -99,7 +95,7 @@ public class OurGridScheduler extends WorkerEventListenerAdapter implements JobS
 
 	private void updateTaskState(Task task, Peer provider) {
 		assert task.getTargetPeer() == null;
-		task.setStartTime(eventQueue.currentTime());
+		task.setStartTime(eventQueue.getCurrentTime());
 		task.setTargetPeer(provider);
 		eventQueue.addStartedTaskEvent(task);
 	}
@@ -112,7 +108,6 @@ public class OurGridScheduler extends WorkerEventListenerAdapter implements JobS
 
 	@Override
 	public void jobPreempted(JobEvent jobEvent) {
-		numberOfPreemptionsForAllJobs++;
 		Job job = (Job) jobEvent.getSource();
 		this.rescheduleJob(job);
 	}
@@ -132,7 +127,7 @@ public class OurGridScheduler extends WorkerEventListenerAdapter implements JobS
 		Task task = (Task) taskEvent.getSource();
 		task.getTargetPeer().finishTask(task);
 		if (task.getSourceJob().isFinished()) {
-			eventQueue.addFinishJobEvent(eventQueue.currentTime(), task.getSourceJob());
+			eventQueue.addFinishJobEvent(eventQueue.getCurrentTime(), task.getSourceJob());
 		}
 	}
 
@@ -144,7 +139,6 @@ public class OurGridScheduler extends WorkerEventListenerAdapter implements JobS
 
 	@Override
 	public void taskPreempted(TaskEvent taskEvent) {
-		numberOfPreemptionsForAllTasks++;
 		Task task = (Task) taskEvent.getSource();
 		this.rescheduleTask(task);
 	}

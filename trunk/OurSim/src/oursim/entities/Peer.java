@@ -112,11 +112,11 @@ public class Peer extends WorkerEventListenerAdapter {
 	public void preemptTask(Task task) {
 		this.resourceManager.releaseResource(this.taskManager.finishTask(task));
 		this.resourceSharingPolicy.updateMutualBalance(this, task.getSourcePeer(), task);
-		EventQueue.getInstance().addPreemptedTaskEvent(task, EventQueue.getInstance().currentTime());
+		EventQueue.getInstance().addPreemptedTaskEvent(task, EventQueue.getInstance().getCurrentTime());
 	}
 
 	public int getAmountOfAvailableResources() {
-		return this.resourceManager.getAvailableResources();
+		return this.resourceManager.getAmountOfAvailableResources();
 	}
 
 	public double getUtilization() {

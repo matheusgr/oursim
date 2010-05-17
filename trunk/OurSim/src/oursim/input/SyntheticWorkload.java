@@ -36,9 +36,4 @@ public class SyntheticWorkload extends WorkloadAbstract {
 
 	}
 
-	@Override
-	public void setUp() {
-		// nothing to do
-	}
-
 }

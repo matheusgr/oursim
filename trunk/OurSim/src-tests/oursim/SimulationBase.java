@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -108,6 +109,10 @@ public class SimulationBase {
 		@Override
 		public boolean merge(Workload other) {
 			return false;
+		}
+
+		@Override
+		public void save(String fileName) throws FileNotFoundException {
 		}
 
 	}
