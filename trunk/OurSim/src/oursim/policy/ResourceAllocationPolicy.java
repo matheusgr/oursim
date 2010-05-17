@@ -48,7 +48,7 @@ public class ResourceAllocationPolicy {
 
 		Machine resource = null;
 
-		HashMap<Peer, Integer> allocatedResourcesByPeer = this.taskManager.getAmountOfAllocatedResourcesByPeer();
+		HashMap<Peer, Integer> allocatedResourcesByPeer = this.taskManager.getNumberOfAllocatedResourcesByPeer();
 		HashSet<Task> foreignTasks = this.taskManager.getForeignTasks();
 		Peer consumer = task.getSourcePeer();
 		List<Peer> preemptablePeers = resourceSharingPolicy.getPreemptablePeers(peer, consumer, allocatedResourcesByPeer, foreignTasks);

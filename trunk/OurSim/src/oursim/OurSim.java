@@ -18,11 +18,8 @@ import oursim.input.SyntheticWorkload;
 import oursim.input.Workload;
 import oursim.policy.DefaultSharingPolicy;
 import oursim.policy.NoFSharingPolicy;
-import oursim.policy.OurGridScheduler;
 import oursim.policy.ResourceSharingPolicy;
 import oursim.simulationevents.EventQueue;
-import oursim.simulationevents.FinishJobEvent;
-import oursim.simulationevents.FinishTaskEvent;
 
 public class OurSim {
 
@@ -88,22 +85,15 @@ public class OurSim {
 
 		new OurSimAPI().run(peers, workload, availability);
 
-		System.out.println("# Total of  finished  jobs: " + jobEventCounter.getAmountOfFinishedJobs());
+		System.out.println("# Total of  finished  jobs: " + jobEventCounter.getNumberOfFinishedJobs());
 		System.out.println("# Total of preempted  jobs: " + jobEventCounter.getNumberOfPreemptionsForAllJobs());
-		System.out.println("# Total of  finished tasks: " + taskEventCounter.getAmountOfFinishedTasks());
+		System.out.println("# Total of  finished tasks: " + taskEventCounter.getNumberOfFinishedTasks());
 		System.out.println("# Total of preempted tasks: " + taskEventCounter.getNumberOfPreemptionsForAllTasks());
-		System.out.println("# Total of          events: " + EventQueue.amountOfEvents);
+		System.out.println("# Total of          events: " + EventQueue.totalNumberOfEvents);
 
 		stopWatch.stop();
 		System.out.println(stopWatch);
 
 	}
 
-	/*
-	 * 
-	 * Starting Simulation... # Total of finished jobs: 100000 # Total of
-	 * preempted jobs: 0 # Total of finished tasks: 200000 # Total of preempted
-	 * tasks: 0 # Total of events: 600000 4:38:11.195
-	 * 
-	 */
 }

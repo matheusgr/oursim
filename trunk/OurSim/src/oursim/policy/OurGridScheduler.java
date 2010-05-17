@@ -49,7 +49,7 @@ public class OurGridScheduler extends WorkerEventListenerAdapter implements JobS
 
 	@Override
 	public void rescheduleJob(Job job) {
-		// Utilizado quando um job é preemptada.
+		// Utilizado quando um job é preemptado.
 		eventQueue.addSubmitJobEvent(eventQueue.getCurrentTime(), job);
 	}
 

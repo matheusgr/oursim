@@ -18,7 +18,7 @@ public class TaskExecution {
 	public TaskExecution(Task task, Processor processor, long time) {
 		this.task = task;
 		this.processor = processor;
-		this.size = Processor.EC2_COMPUTE_UNIT.calculateAmountOfInstructionsProcessed(this.task.getDuration());
+		this.size = Processor.EC2_COMPUTE_UNIT.calculateNumberOfInstructionsProcessed(this.task.getDuration());
 		this.remainingSize = size;
 		this.previousTime = time;
 	}
@@ -35,7 +35,7 @@ public class TaskExecution {
 		long timeElapsed = currentTime - previousTime;
 
 		// TODO: verificar as consequências do remaining time negativo.
-		this.remainingSize -= processor.calculateAmountOfInstructionsProcessed(timeElapsed);
+		this.remainingSize -= processor.calculateNumberOfInstructionsProcessed(timeElapsed);
 
 		this.previousTime = currentTime;
 

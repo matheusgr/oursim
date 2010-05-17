@@ -105,7 +105,7 @@ public class OurSimAPITest {
 		EventQueue.getInstance().clear();
 		JobEventDispatcher.getInstance().removeListener(jobEventCounter);
 		TaskEventDispatcher.getInstance().removeListener(taskEventCounter);
-		EventQueue.amountOfEvents = 0;
+		EventQueue.totalNumberOfEvents = 0;
 		nextJobId = 0;
 
 	}
@@ -141,11 +141,11 @@ public class OurSimAPITest {
 
 		int totalDeEventos = totalDeJobEvents + totalDeTaskEvents + totalDeWorkerEvents;
 
-		assertEquals(TOTAL_OF_JOBS, this.jobEventCounter.getAmountOfFinishedJobs());
+		assertEquals(TOTAL_OF_JOBS, this.jobEventCounter.getNumberOfFinishedJobs());
 		assertEquals(0, this.jobEventCounter.getNumberOfPreemptionsForAllJobs());
-		assertEquals(totalDeTasks, this.taskEventCounter.getAmountOfFinishedTasks());
+		assertEquals(totalDeTasks, this.taskEventCounter.getNumberOfFinishedTasks());
 		assertEquals(0, this.taskEventCounter.getNumberOfPreemptionsForAllTasks());
-		assertEquals(totalDeEventos, EventQueue.amountOfEvents);
+		assertEquals(totalDeEventos, EventQueue.totalNumberOfEvents);
 
 		for (Job job : jobs) {
 			// Espera-se que todos os jobs sejam concluídos no tempo mínimo
@@ -221,11 +221,11 @@ public class OurSimAPITest {
 
 		int totalDeEventos = totalDeJobEvents + totalDeTaskEvents + totalDeWorkerEvents;
 
-		assertEquals(totalDeJobs, this.jobEventCounter.getAmountOfFinishedJobs());
+		assertEquals(totalDeJobs, this.jobEventCounter.getNumberOfFinishedJobs());
 		assertEquals(0, this.jobEventCounter.getNumberOfPreemptionsForAllJobs());
-		assertEquals(totalDeTasks, this.taskEventCounter.getAmountOfFinishedTasks());
+		assertEquals(totalDeTasks, this.taskEventCounter.getNumberOfFinishedTasks());
 		assertEquals(0, this.taskEventCounter.getNumberOfPreemptionsForAllTasks());
-		assertEquals(totalDeEventos, EventQueue.amountOfEvents);
+		assertEquals(totalDeEventos, EventQueue.totalNumberOfEvents);
 
 		int numberOfJobsFromOverloadedPeersTimelyFinished = 0;
 		int numberOfEnqueuedJobsFromOverloadedPeers = 0;

@@ -50,15 +50,15 @@ public class Processor {
 		this.busy = false;
 	}
 
-	public long calculateAmountOfInstructionsProcessed(long duration) {
+	public long calculateNumberOfInstructionsProcessed(long duration) {
 		assert duration > 0;
 		return speed * duration;
 	}
 
-	public long calculateTimeToExecute(long amountOfInstruction) {
-		assert amountOfInstruction > 0;
+	public long calculateTimeToExecute(long numberOfInstruction) {
+		assert numberOfInstruction > 0;
 		// it must be casted to a double value because "/" truncates the result
-		double estimatedFinishTimeD = (double) amountOfInstruction / speed;
+		double estimatedFinishTimeD = (double) numberOfInstruction / speed;
 		long estimatedFinishTimeL = (long) estimatedFinishTimeD;
 		long adjustment = (estimatedFinishTimeL < estimatedFinishTimeD) ? 1 : 0;
 		return estimatedFinishTimeL + adjustment;
