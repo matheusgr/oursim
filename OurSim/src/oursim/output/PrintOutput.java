@@ -39,25 +39,20 @@ public class PrintOutput implements Output {
 
 	@Override
 	public void jobSubmitted(JobEvent jobEvent) {
-
 		Job job = (Job) jobEvent.getSource();
 		this.out.println("U:" + job.getSubmissionTime() + ":" + job.getId());
-
 	}
 
 	@Override
 	public void jobStarted(JobEvent jobEvent) {
-
 		Job job = (Job) jobEvent.getSource();
 		this.out.println("S:" + job.getStartTime() + ":" + job.getId());
-
 	}
 
 	@Override
 	public void jobPreempted(JobEvent jobEvent) {
 		Job job = (Job) jobEvent.getSource();
 		this.out.println("P:" + job.getStartTime() + ":" + job.getId() + ":" + jobEvent.getTime());
-
 	}
 
 	@Override

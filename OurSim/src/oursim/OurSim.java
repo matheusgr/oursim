@@ -7,8 +7,12 @@ import java.util.List;
 import org.apache.commons.lang.time.StopWatch;
 
 import oursim.availability.AvailabilityRecord;
+import oursim.dispatchableevents.jobevents.JobEventCounter;
+import oursim.dispatchableevents.jobevents.JobEventDispatcher;
+import oursim.dispatchableevents.taskevents.TaskEventCounter;
+import oursim.dispatchableevents.taskevents.TaskEventDispatcher;
 import oursim.entities.Peer;
-import oursim.input.Availability;
+import oursim.input.AvailabilityCharacterization;
 import oursim.input.Input;
 import oursim.input.SyntheticWorkload;
 import oursim.input.Workload;
@@ -22,7 +26,7 @@ import oursim.simulationevents.FinishTaskEvent;
 
 public class OurSim {
 
-	private static List<Peer> prepareGrid(int numPeers, int numNodesByPeer,int nodeMIPSRating, boolean useNoF) {
+	private static List<Peer> prepareGrid(int numPeers, int numNodesByPeer, int nodeMIPSRating, boolean useNoF) {
 
 		ArrayList<Peer> peers = new ArrayList<Peer>(numPeers);
 
@@ -70,18 +74,24 @@ public class OurSim {
 		// PrintOutput("oursim_trace.txt"));
 		// OutputManager.getInstance().addListener(new PrintOutput());
 
-		List<Peer> peers = prepareGrid(Parameters.NUM_PEERS, Parameters.NUM_RESOURCES_BY_PEER,Parameters.NODE_MIPS_RATING, Parameters.USE_NOF);
+		JobEventCounter jobEventCounter = new JobEventCounter();
+		JobEventDispatcher.getInstance().addListener(jobEventCounter);
+
+		TaskEventCounter taskEventCounter = new TaskEventCounter();
+		TaskEventDispatcher.getInstance().addListener(taskEventCounter);
+
+		List<Peer> peers = prepareGrid(Parameters.NUM_PEERS, Parameters.NUM_RESOURCES_BY_PEER, Parameters.NODE_MIPS_RATING, Parameters.USE_NOF);
 		Workload workload = prepareWorkload(peers);
-		Input<AvailabilityRecord> availability = new Availability("trace_mutka_100-machines_10-hours.txt");
+		Input<AvailabilityRecord> availability = new AvailabilityCharacterization("trace_mutka_100-machines_10-hours.txt");
 
 		System.out.println("Starting Simulation...");
 
 		new OurSimAPI().run(peers, workload, availability);
 
-		System.out.println("# Total of  finished  jobs: " + FinishJobEvent.amountOfFinishedJobs);
-		System.out.println("# Total of preempted  jobs: " + OurGridScheduler.numberOfPreemptionsForAllJobs);
-		System.out.println("# Total of  finished tasks: " + FinishTaskEvent.amountOfFinishedTasks);
-		System.out.println("# Total of preempted tasks: " + OurGridScheduler.numberOfPreemptionsForAllTasks);
+		System.out.println("# Total of  finished  jobs: " + jobEventCounter.getAmountOfFinishedJobs());
+		System.out.println("# Total of preempted  jobs: " + jobEventCounter.getNumberOfPreemptionsForAllJobs());
+		System.out.println("# Total of  finished tasks: " + taskEventCounter.getAmountOfFinishedTasks());
+		System.out.println("# Total of preempted tasks: " + taskEventCounter.getNumberOfPreemptionsForAllTasks());
 		System.out.println("# Total of          events: " + EventQueue.amountOfEvents);
 
 		stopWatch.stop();
@@ -90,14 +100,10 @@ public class OurSim {
 	}
 
 	/*
-	
-	Starting Simulation...
-	# Total of  finished  jobs: 100000
-	# Total of preempted  jobs: 0
-	# Total of  finished tasks: 200000
-	# Total of preempted tasks: 0
-	# Total of          events: 600000
-	4:38:11.195
-	
-	*/
+	 * 
+	 * Starting Simulation... # Total of finished jobs: 100000 # Total of
+	 * preempted jobs: 0 # Total of finished tasks: 200000 # Total of preempted
+	 * tasks: 0 # Total of events: 600000 4:38:11.195
+	 * 
+	 */
 }

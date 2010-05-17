@@ -9,7 +9,7 @@ import java.util.List;
  * @since 22/04/2010
  * 
  */
-public class Machine {
+public class Machine implements Comparable<Machine> {
 
 	private String name;
 
@@ -61,6 +61,12 @@ public class Machine {
 	@Override
 	public String toString() {
 		return name;
+	}
+
+	@Override
+	public int compareTo(Machine o) {
+		// TODO: definir critério de comparação.
+		return name.compareTo(o.getName());
 	}
 
 }

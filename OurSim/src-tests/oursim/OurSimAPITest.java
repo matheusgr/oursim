@@ -10,9 +10,14 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import oursim.availability.AvailabilityRecord;
+import oursim.dispatchableevents.jobevents.JobEventCounter;
+import oursim.dispatchableevents.jobevents.JobEventDispatcher;
+import oursim.dispatchableevents.taskevents.TaskEventCounter;
+import oursim.dispatchableevents.taskevents.TaskEventDispatcher;
 import oursim.entities.Job;
 import oursim.entities.Machine;
 import oursim.entities.Peer;
@@ -21,7 +26,6 @@ import oursim.input.InputAbstract;
 import oursim.input.Workload;
 import oursim.input.WorkloadAbstract;
 import oursim.policy.DefaultSharingPolicy;
-import oursim.policy.OurGridScheduler;
 import oursim.simulationevents.EventQueue;
 import oursim.simulationevents.FinishJobEvent;
 import oursim.simulationevents.FinishTaskEvent;
@@ -33,6 +37,10 @@ import oursim.simulationevents.WorkerUnavailableEvent;
 public class OurSimAPITest {
 
 	OurSimAPI oursim;
+	
+	JobEventCounter jobEventCounter;
+
+	TaskEventCounter taskEventCounter;
 
 	@SuppressWarnings("unchecked")
 	Set<Class> jobEvents;
@@ -63,6 +71,12 @@ public class OurSimAPITest {
 	public void setUp() throws Exception {
 
 		oursim = new OurSimAPI();
+		
+		jobEventCounter = new JobEventCounter();
+		JobEventDispatcher.getInstance().addListener(jobEventCounter);
+
+		taskEventCounter = new TaskEventCounter();
+		TaskEventDispatcher.getInstance().addListener(taskEventCounter);
 
 		jobEvents = new HashSet<Class>();
 		jobEvents.add(SubmitJobEvent.class);
@@ -89,10 +103,8 @@ public class OurSimAPITest {
 	public void tearDown() throws Exception {
 
 		EventQueue.getInstance().clear();
-		FinishJobEvent.amountOfFinishedJobs = 0;
-		OurGridScheduler.numberOfPreemptionsForAllJobs = 0;
-		FinishTaskEvent.amountOfFinishedTasks = 0;
-		OurGridScheduler.numberOfPreemptionsForAllTasks = 0;
+		JobEventDispatcher.getInstance().removeListener(jobEventCounter);
+		TaskEventDispatcher.getInstance().removeListener(taskEventCounter);
 		EventQueue.amountOfEvents = 0;
 		nextJobId = 0;
 
@@ -129,10 +141,10 @@ public class OurSimAPITest {
 
 		int totalDeEventos = totalDeJobEvents + totalDeTaskEvents + totalDeWorkerEvents;
 
-		assertEquals(TOTAL_OF_JOBS, FinishJobEvent.amountOfFinishedJobs);
-		assertEquals(0, OurGridScheduler.numberOfPreemptionsForAllJobs);
-		assertEquals(totalDeTasks, FinishTaskEvent.amountOfFinishedTasks);
-		assertEquals(0, OurGridScheduler.numberOfPreemptionsForAllTasks);
+		assertEquals(TOTAL_OF_JOBS, this.jobEventCounter.getAmountOfFinishedJobs());
+		assertEquals(0, this.jobEventCounter.getNumberOfPreemptionsForAllJobs());
+		assertEquals(totalDeTasks, this.taskEventCounter.getAmountOfFinishedTasks());
+		assertEquals(0, this.taskEventCounter.getNumberOfPreemptionsForAllTasks());
 		assertEquals(totalDeEventos, EventQueue.amountOfEvents);
 
 		for (Job job : jobs) {
@@ -209,10 +221,10 @@ public class OurSimAPITest {
 
 		int totalDeEventos = totalDeJobEvents + totalDeTaskEvents + totalDeWorkerEvents;
 
-		assertEquals(totalDeJobs, FinishJobEvent.amountOfFinishedJobs);
-		assertEquals(0, OurGridScheduler.numberOfPreemptionsForAllJobs);
-		assertEquals(totalDeTasks, FinishTaskEvent.amountOfFinishedTasks);
-		assertEquals(0, OurGridScheduler.numberOfPreemptionsForAllTasks);
+		assertEquals(totalDeJobs, this.jobEventCounter.getAmountOfFinishedJobs());
+		assertEquals(0, this.jobEventCounter.getNumberOfPreemptionsForAllJobs());
+		assertEquals(totalDeTasks, this.taskEventCounter.getAmountOfFinishedTasks());
+		assertEquals(0, this.taskEventCounter.getNumberOfPreemptionsForAllTasks());
 		assertEquals(totalDeEventos, EventQueue.amountOfEvents);
 
 		int numberOfJobsFromOverloadedPeersTimelyFinished = 0;
@@ -294,5 +306,5 @@ public class OurSimAPITest {
 
 		return allWorkloads;
 	}
-
+	
 }

@@ -14,7 +14,7 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 	 */
 	private final long duration;
 
-	private String executable;
+	private File executable;
 
 	private List<File> inputs;
 
@@ -35,7 +35,7 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 
 	public Task(long id, String executable, long duration, long submissionTime, Job sourceJob) {
 		this.id = id;
-		this.executable = executable;
+		this.executable = new File(executable, -1);
 		this.duration = duration;
 		this.submissionTime = submissionTime;
 		this.sourceJob = sourceJob;
@@ -150,6 +150,14 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 		return finishTime != null;
 	}
 
+	public TaskExecution getTaskExecution() {
+		return taskExecution;
+	}
+
+	public void setTaskExecution(TaskExecution taskExecution) {
+		this.taskExecution = taskExecution;
+	}
+
 	@Override
 	public int compareTo(Task t) {
 		long diffTime = this.submissionTime - t.getSubmissionTime();
@@ -168,33 +176,18 @@ public class Task extends ComputableElementAbstract implements ComputableElement
 		}
 	}
 
-	public TaskExecution getTaskExecution() {
-		return taskExecution;
-	}
-
-	public void setTaskExecution(TaskExecution taskExecution) {
-		this.taskExecution = taskExecution;
-	}
-
 	@Override
 	public String toString() {
 		// [id, duration, submissionTime, startTime, finishTime,
 		// numberOfpreemptions]
 		// return new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE)
-		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-			.append("id", id)
-			.append("sourceJob", sourceJob.getId())
-			.append("sourcePeer", getSourcePeer().getName())
-			.append("duration", duration)
-//			.append("executable", executable)
-//			.append("inputs",inputs)
-//			.append("outputs", outputs)
-			.append("submissionTime", submissionTime)
-			.append("startTime", startTime)
-			.append("finishTime", finishTime)
-			.append("targetPeer", targetPeer.getName())
-			.append("numberOfpreemptions", numberOfpreemptions)
-			.toString();
+		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("id", id).append("sourceJob", sourceJob.getId()).append("sourcePeer",
+				getSourcePeer().getName()).append("duration", duration)
+		// .append("executable", executable)
+				// .append("inputs",inputs)
+				// .append("outputs", outputs)
+				.append("submissionTime", submissionTime).append("startTime", startTime).append("finishTime", finishTime).append("targetPeer",
+						targetPeer != null ? targetPeer.getName() : "").append("numberOfpreemptions", numberOfpreemptions).toString();
 	}
 
 }

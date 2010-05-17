@@ -13,7 +13,9 @@ public abstract class InputAbstract<T> implements Input<T> {
 		setUp();
 	}
 
-	protected abstract void setUp();
+	protected void setUp() {
+		// to be overrided by inner class
+	}
 
 	public T peek() {
 		return this.inputs.peek();

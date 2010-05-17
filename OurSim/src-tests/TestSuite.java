@@ -14,12 +14,12 @@ import oursim.policy.NoFSharingPolicyTest;
 
 @RunWith(Suite.class)
 @SuiteClasses( { ProcessorTest.class, TaskTest.class, NoFSharingPolicyTest.class, OurSimAPITest.class, })
-public class SuiteDeTestes {
+public class TestSuite {
 
 	static class Compatibility {
 
 		static Test suite() throws IOException {
-			return new JUnit4TestAdapter(SuiteDeTestes.class);
+			return new JUnit4TestAdapter(TestSuite.class);
 		}
 	}
 

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
@@ -16,11 +15,11 @@ import oursim.entities.Processor;
 import oursim.entities.Task;
 import oursim.entities.TaskExecution;
 import oursim.simulationevents.EventQueue;
+import oursim.util.BidirectionalMap;
 
 public class TaskManager {
 
-	private Map<Task, Machine> tasksInExecution;
-	private Map<Machine, Task> machinesInExecution;
+	private BidirectionalMap<Task,Machine> tasksInExecution;
 
 	private HashSet<Task> localTasks;
 	private HashSet<Task> foreignTasks;
@@ -32,8 +31,7 @@ public class TaskManager {
 
 	public TaskManager(Peer peer) {
 		this.peer = peer;
-		this.tasksInExecution = new HashMap<Task, Machine>();
-		this.machinesInExecution = new HashMap<Machine, Task>();
+		this.tasksInExecution = new BidirectionalMap<Task,Machine>();
 		this.foreignTasks = new HashSet<Task>();
 		this.localTasks = new HashSet<Task>();
 		this.amountOfAllocatedResourcesByPeer = new HashMap<Peer, Integer>();
@@ -48,11 +46,10 @@ public class TaskManager {
 	}
 
 	public void addTask(Task task, Machine resource) {
-		assert resource != null && !tasksInExecution.containsKey(task) && !machinesInExecution.containsKey(resource);
+		assert resource != null && !tasksInExecution.containsKey(task);
 
 		this.tasksInExecution.put(task, resource);
-		this.machinesInExecution.put(resource, task);
-		long currentTime = EventQueue.getInstance().currentTime();
+		long currentTime = EventQueue.getInstance().getCurrentTime();
 		Processor defaultProcessor = resource.getDefaultProcessor();
 		task.setTaskExecution(new TaskExecution(task, defaultProcessor, currentTime));
 
@@ -70,7 +67,7 @@ public class TaskManager {
 
 	}
 
-	public boolean remove(Task task) {
+	private boolean remove(Task task) {
 		return (task.getSourcePeer() == peer) ? removeLocalTask(task) : removeForeignTask(task);
 	}
 
@@ -91,11 +88,11 @@ public class TaskManager {
 	}
 
 	public void updateTime(long currentTime) {
-		for (Entry<Task, Machine> taskAndMachine : tasksInExecution.entrySet()) {
+			for (Entry<Task, Machine> taskAndMachine : tasksInExecution.entrySet()) {
 			Task task = taskAndMachine.getKey();
 			Long estimatedFinishTime = task.getTaskExecution().updateProcessing(currentTime);
 			if (estimatedFinishTime != null) {
-				long finishTime = EventQueue.getInstance().currentTime() + estimatedFinishTime;
+				long finishTime = EventQueue.getInstance().getCurrentTime() + estimatedFinishTime;
 				// TODO:Verificar se tem como evitar essa chamada nessa classe
 				EventQueue.getInstance().addFinishTaskEvent(finishTime, task);
 			}
@@ -137,10 +134,10 @@ public class TaskManager {
 
 	public Machine finishTask(Task task) {
 		assert this.tasksInExecution.containsKey(task) : task;
+		
 		Machine machine = this.tasksInExecution.remove(task);
-		Task taskTemp = this.machinesInExecution.remove(machine);
 		boolean removed = this.remove(task);
-		assert removed && machine != null && taskTemp != null;
+		assert removed && machine != null;
 		return machine;
 	}
 
@@ -157,17 +154,18 @@ public class TaskManager {
 	}
 
 	public Task getTask(Machine resource) {
-		return this.machinesInExecution.get(resource);
+
+		return this.tasksInExecution.getKey(resource);
 	}
 
 	public void finishTask(Machine resource) {
-		assert this.machinesInExecution.containsKey(resource);
+		assert this.tasksInExecution.containsValue(resource);
 		Task task = this.getTask(resource);
 		finishTask(task);
 	}
 
 	public boolean isInExecution(Machine machine) {
-		return this.machinesInExecution.containsKey(machine);
+		return this.tasksInExecution.containsValue(machine);
 	}
 
 	public boolean isInExecution(Task task) {

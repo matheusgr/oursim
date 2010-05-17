@@ -2,8 +2,6 @@ package oursim.input;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import java.util.Collection;
-import java.util.List;
 
 import oursim.entities.Job;
 
@@ -19,11 +17,6 @@ public abstract class WorkloadAbstract extends InputAbstract<Job> implements Wor
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
-	public Collection<? extends Job> clone() {
-		return (List<Job>) this.inputs.clone();
-	}
-
 	public void save(String fileName) throws FileNotFoundException {
 		PrintStream out = new PrintStream(fileName);
 		for (Job job : inputs) {
@@ -31,4 +24,5 @@ public abstract class WorkloadAbstract extends InputAbstract<Job> implements Wor
 		}
 		out.close();
 	}
+	
 }

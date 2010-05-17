@@ -28,7 +28,7 @@ public class HostAvailabilityGeneratorImp extends HostAvailabilityGenerator {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected Hmm<ObservationDiscrete> buildHmm() {
+	protected Hmm buildHmm() {
 
 		Hmm<ObservationDiscrete<StateModelImp>> hmm = new Hmm<ObservationDiscrete<StateModelImp>>(StateModelImp.numOfStates(),
 				new OpdfDiscreteFactory<StateModelImp>(StateModelImp.class));
@@ -151,7 +151,7 @@ public class HostAvailabilityGeneratorImp extends HostAvailabilityGenerator {
 		hmm.setAij(StateModelImp.NA_LONG_FROM_AV_LONG.getIndex(), StateModelImp.NA_SHORT_FROM_AV_LONG.getIndex(), _00);
 		hmm.setAij(StateModelImp.NA_LONG_FROM_AV_LONG.getIndex(), StateModelImp.NA_LONG_FROM_AV_LONG.getIndex(), _00);
 
-		return (Hmm<ObservationDiscrete>) hmm;
+		return hmm;
 
 	}
 

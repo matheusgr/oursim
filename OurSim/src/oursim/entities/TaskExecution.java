@@ -30,7 +30,6 @@ public class TaskExecution {
 	 */
 	public Long updateProcessing(long currentTime) {
 		assert currentTime > previousTime;
-		assert false;
 
 		// time since last update
 		long timeElapsed = currentTime - previousTime;
