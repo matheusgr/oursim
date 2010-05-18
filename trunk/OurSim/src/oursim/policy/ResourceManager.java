@@ -3,7 +3,6 @@ package oursim.policy;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import oursim.entities.Machine;
@@ -59,6 +58,7 @@ public class ResourceManager {
 		assert this.hasAvailableResource();
 		LinkedList<Machine> freeResources = new LinkedList<Machine>(free.values());
 		task.prioritizeResourcesToConsume(freeResources);
+		// TODO: considerar o caso em que nenhuma máquina satisfaz a task.
 		Machine chosen = freeResources.getFirst();
 		assert this.free.containsValue(chosen);
 		this.free.remove(chosen.getName());
@@ -136,6 +136,14 @@ public class ResourceManager {
 		}
 	}
 
+	/**
+	 * Indicates that there are a new resource added to the peer, so, this
+	 * ResourceManager must update its internal date structures to make sense of
+	 * this resource addition.
+	 * 
+	 * @param machine
+	 *            The machine that was added to the peer.
+	 */
 	public void update(Machine machine) {
 		// update if no one of the collection holds the machine.
 		if (!this.unavailable.containsValue(machine) && !this.allocated.containsValue(machine) && !this.free.containsValue(machine)) {

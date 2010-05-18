@@ -6,14 +6,28 @@ import java.util.List;
 import oursim.Parameters;
 import oursim.entities.Peer;
 
-public class PeerRequestPolicy extends RequestPolicy<Peer, Peer> {
+/**
+ * 
+ * A policy to prioritize the peers from which the resources will be consumed.
+ * 
+ * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
+ * @since 18/05/2010
+ * 
+ */
+public class PeerRankingPolicy extends RankingPolicy<Peer, Peer> {
 
-	public PeerRequestPolicy(Peer requester) {
-		super(requester);
+	/**
+	 * An ordinary constructor.
+	 * 
+	 * @param peer
+	 *            the peer who are are requesting.
+	 */
+	public PeerRankingPolicy(Peer peer) {
+		super(peer);
 	}
 
 	@Override
-	public void prioritize(List<Peer> peers) {
+	public void rank(List<Peer> peers) {
 		// // Getting best balance first
 		// Collections.sort(peers, new Comparator<Peer>() {
 		// @Override

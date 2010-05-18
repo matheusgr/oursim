@@ -3,14 +3,13 @@ package oursim.policy;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-import oursim.entities.ComputableElement;
 import oursim.entities.Peer;
 import oursim.entities.Task;
 
@@ -34,13 +33,13 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 	private class NoFComparator implements Comparator<Peer> {
 
 		private Peer provider;
-		private HashSet<? extends ComputableElement> runningElements;
-		private HashMap<Peer, Integer> resourcesBeingConsumed;
+		private Set<Task> runningTasks;
+		private Map<Peer, Integer> resourcesBeingConsumed;
 
-		public NoFComparator(Peer provider, HashMap<Peer, Integer> resourcesBeingConsumed, HashSet<? extends ComputableElement> runningElements) {
+		public NoFComparator(Peer provider, Map<Peer, Integer> resourcesBeingConsumed, Set<Task> runningElements) {
 			this.provider = provider;
 			this.resourcesBeingConsumed = resourcesBeingConsumed;
-			this.runningElements = runningElements;
+			this.runningTasks = runningElements;
 		}
 
 		@Override
@@ -81,13 +80,13 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 			long mostRecentlyStartTime = -1;
 			Peer p = peer1;
 
-			for (ComputableElement j : runningElements) {
-				if (j.getSourcePeer() == peer1 && j.getStartTime() > mostRecentlyStartTime) {
+			for (Task task : runningTasks) {
+				if (task.getSourcePeer() == peer1 && task.getStartTime() > mostRecentlyStartTime) {
 					p = peer1;
-					mostRecentlyStartTime = j.getStartTime();
-				} else if (j.getSourcePeer() == peer2 && j.getStartTime() > mostRecentlyStartTime) {
+					mostRecentlyStartTime = task.getStartTime();
+				} else if (task.getSourcePeer() == peer2 && task.getStartTime() > mostRecentlyStartTime) {
 					p = peer2;
-					mostRecentlyStartTime = j.getStartTime();
+					mostRecentlyStartTime = task.getStartTime();
 				}
 			}
 			return p == peer1 ? 1 : -1;
@@ -154,16 +153,15 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 	}
 
 	@Override
-	public List<Peer> getPreemptablePeers(final Peer provider, Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
-			final HashSet<? extends ComputableElement> runningElements) {
+	public List<Peer> getPreemptablePeers(final Peer provider, Peer consumer, final Map<Peer, Integer> resourcesBeingConsumed, final Set<Task> runningTasks) {
 
-		List<Peer> peersByPriorityOfPreemption = sortPeersByPriorityOfPreemption(provider, consumer, resourcesBeingConsumed, runningElements);
+		List<Peer> peersByPriorityOfPreemption = sortPeersByPriorityOfPreemption(provider, consumer, resourcesBeingConsumed, runningTasks);
 		peersByPriorityOfPreemption.remove(consumer);
 		return peersByPriorityOfPreemption;
 	}
 
-	private List<Peer> sortPeersByPriorityOfPreemption(final Peer provider, Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
-			final HashSet<? extends ComputableElement> runningElements) {
+	private List<Peer> sortPeersByPriorityOfPreemption(final Peer provider, Peer consumer, final Map<Peer, Integer> resourcesBeingConsumed,
+			final Set<Task> runningTasks) {
 		assert allBalances.containsKey(provider);
 
 		// Provider's balance
@@ -171,7 +169,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 
 		// quanto cada peer merece neste provedor, ordenado pelos criterios de
 		// desempate.
-		TreeMap<Peer, Integer> resourcesBeingConsumedClone = new TreeMap<Peer, Integer>(new NoFComparator(provider, resourcesBeingConsumed, runningElements));
+		TreeMap<Peer, Integer> resourcesBeingConsumedClone = new TreeMap<Peer, Integer>(new NoFComparator(provider, resourcesBeingConsumed, runningTasks));
 		resourcesBeingConsumedClone.putAll(resourcesBeingConsumed);
 
 		// If this peer is not consuming, put in this map.

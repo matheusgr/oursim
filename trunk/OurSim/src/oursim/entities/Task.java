@@ -168,7 +168,7 @@ public class Task extends ComputableElement implements Comparable<Task> {
 	}
 
 	public void prioritizeResourcesToConsume(List<Machine> resources) {
-		this.getSourceJob().getResourceRequestPolicy().prioritize(resources);
+		this.getSourceJob().getResourceRequestPolicy().rank(resources);
 	}
 
 	@Override

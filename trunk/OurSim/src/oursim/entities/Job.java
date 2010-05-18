@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import oursim.policy.ResourceRequestPolicy;
+import oursim.policy.ResourceRankingPolicy;
 
 /**
  * 
@@ -31,7 +31,7 @@ public class Job extends ComputableElement implements Comparable<Job> {
 	 */
 	private final List<Task> tasks;
 
-	private final ResourceRequestPolicy resourceRequestPolicy;
+	private final ResourceRankingPolicy resourceRankingPolicy;
 	
 	/**
 	 * Field to assure the uniqueness of the id of each task.
@@ -61,7 +61,7 @@ public class Job extends ComputableElement implements Comparable<Job> {
 
 		this.tasks = new ArrayList<Task>();
 		
-		this.resourceRequestPolicy = new ResourceRequestPolicy(this);
+		this.resourceRankingPolicy = new ResourceRankingPolicy(this);
 
 	}
 
@@ -294,8 +294,8 @@ public class Job extends ComputableElement implements Comparable<Job> {
 				sourcePeer.getName()).append("#tasks", tasks.size()).toString();
 	}
 
-	public ResourceRequestPolicy getResourceRequestPolicy() {
-		return resourceRequestPolicy;
+	public ResourceRankingPolicy getResourceRequestPolicy() {
+		return resourceRankingPolicy;
 	}
 
 }

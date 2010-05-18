@@ -1,13 +1,21 @@
 package oursim.policy;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import oursim.entities.ComputableElement;
 import oursim.entities.Peer;
 import oursim.entities.Task;
 
+/**
+ * 
+ * An policy to determine how the resources will be shared between the
+ * participating peers in the grid.
+ * 
+ * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
+ * @since 18/05/2010
+ * 
+ */
 public interface ResourceSharingPolicy {
 
 	void addPeer(Peer peer);
@@ -21,16 +29,15 @@ public interface ResourceSharingPolicy {
 	void updateMutualBalance(Peer provider, Peer consumer, Task task);
 
 	/**
-	 * TODO: O nome desse método não tá legal! O que ele faz é definir os peers
-	 * que podem ser preemptados.
+	 * Gets an collection of peers sorted in a way that prioritize the peer with
+	 * better balances, that is,
 	 * 
 	 * @param resourcesBeingConsumed
 	 *            a quantidade de recursos que cada peer remoto está consumindo
 	 *            neste site
-	 * @param runningElements
-	 *            todos os jobs não locais que estão rodando neste site
+	 * @param runningTasks
+	 *            todas as tasks não locais que estão rodando neste site
 	 */
-	List<Peer> getPreemptablePeers(Peer provider, Peer consumer, HashMap<Peer, Integer> resourcesBeingConsumed,
-			HashSet<? extends ComputableElement> runningElements);
+	List<Peer> getPreemptablePeers(Peer provider, Peer consumer, Map<Peer, Integer> resourcesBeingConsumed, Set<Task> runningTasks);
 
 }
