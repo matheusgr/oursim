@@ -2,6 +2,8 @@ package oursim.entities;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -9,11 +11,13 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import oursim.dispatchableevents.workerevents.WorkerEvent;
 import oursim.dispatchableevents.workerevents.WorkerEventListenerAdapter;
 import oursim.input.Workload;
-import oursim.policy.PeerRequestPolicy;
+import oursim.policy.PeerRankingPolicy;
 import oursim.policy.ResourceAllocationPolicy;
 import oursim.policy.ResourceManager;
+import oursim.policy.ResourceRankingPolicy;
 import oursim.policy.ResourceSharingPolicy;
 import oursim.policy.TaskManager;
+import oursim.policy.TaskPreemptionRankingPolicy;
 import oursim.simulationevents.EventQueue;
 
 /**
@@ -21,7 +25,7 @@ import oursim.simulationevents.EventQueue;
  * Represents a peer in a Peer-to-Peer grid. A peer is a administrative domain
  * that holds and manages a collection of resources. The management is based in
  * a group of policies represented by {@link ResourceAllocationPolicy},
- * {@link ResourceSharingPolicy} and {@link ResourceRequestPolicy}.
+ * {@link ResourceSharingPolicy} and {@link ResourceRankingPolicy}.
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @since 18/05/2010
@@ -43,7 +47,9 @@ public class Peer extends WorkerEventListenerAdapter {
 
 	private final ResourceSharingPolicy resourceSharingPolicy;
 
-	private final PeerRequestPolicy resourceRequestPolicy;
+	private final PeerRankingPolicy resourceRequestPolicy;
+
+	private final TaskPreemptionRankingPolicy taskPreemptionRankingPolicy;
 
 	private final ResourceManager resourceManager;
 
@@ -144,10 +150,12 @@ public class Peer extends WorkerEventListenerAdapter {
 		this.resourceSharingPolicy = resourceSharingPolicy;
 		this.resourceSharingPolicy.addPeer(this);
 
-		this.resourceRequestPolicy = new PeerRequestPolicy(this);
+		this.resourceRequestPolicy = new PeerRankingPolicy(this);
 
 		this.resourceManager = new ResourceManager(this);
-		this.resourceAllocationPolicy = new ResourceAllocationPolicy(this, resourceSharingPolicy, this.resourceManager, this.taskManager);
+		this.resourceAllocationPolicy = new ResourceAllocationPolicy(this, this.resourceManager, this.taskManager);
+
+		this.taskPreemptionRankingPolicy = new TaskPreemptionRankingPolicy(this);
 
 	}
 
@@ -190,7 +198,13 @@ public class Peer extends WorkerEventListenerAdapter {
 	 *            The instante at which the update refers to.
 	 */
 	public void updateTime(long currentTime) {
-		this.taskManager.updateTime(currentTime);
+		for (Task task : this.taskManager.getRunningTasks()) {
+			Long estimatedFinishTime = task.getTaskExecution().updateProcessing(currentTime);
+			if (estimatedFinishTime != null) {
+				long finishTime = EventQueue.getInstance().getCurrentTime() + estimatedFinishTime;
+				EventQueue.getInstance().addFinishTaskEvent(finishTime, task);
+			}
+		}
 	}
 
 	/**
@@ -238,7 +252,17 @@ public class Peer extends WorkerEventListenerAdapter {
 	 *         executed, <code>false</code> otherwise.
 	 */
 	public boolean executeTask(Task task) {
-		return this.resourceAllocationPolicy.allocateTask(task);
+		Machine allocatedMachine = this.resourceAllocationPolicy.allocateTask(task);
+		if (allocatedMachine != null) {
+			long currentTime = EventQueue.getInstance().getCurrentTime();
+			Processor defaultProcessor = allocatedMachine.getDefaultProcessor();
+			task.setTaskExecution(new TaskExecution(task, defaultProcessor, currentTime));
+			task.setStartTime(currentTime);
+			task.setTargetPeer(this);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -270,7 +294,8 @@ public class Peer extends WorkerEventListenerAdapter {
 	public void preemptTask(Task task) throws IllegalArgumentException {
 		assert this.taskManager.isInExecution(task) : task;
 		if (this.taskManager.isInExecution(task)) {
-			this.resourceManager.releaseResource(this.taskManager.finishTask(task));
+			// this.resourceManager.releaseResource(this.taskManager.finishTask(task));
+			this.resourceAllocationPolicy.deallocateTask(task);
 			this.resourceSharingPolicy.updateMutualBalance(this, task.getSourcePeer(), task);
 			EventQueue.getInstance().addPreemptedTaskEvent(task, EventQueue.getInstance().getCurrentTime());
 		} else {
@@ -341,7 +366,24 @@ public class Peer extends WorkerEventListenerAdapter {
 	 *            the peers available to be consumed.
 	 */
 	public void prioritizePeersToConsume(List<Peer> peers) {
-		this.resourceRequestPolicy.prioritize(peers);
+		this.resourceRequestPolicy.rank(peers);
+	}
+
+	/**
+	 * Sorts the collection of tasks in a way that the preferable tasks to
+	 * preemption are firstly accessed.
+	 * 
+	 * @param tasks
+	 *            the tasks candidates to preemption.
+	 */
+	public void prioritizeTasksToPreemption(List<Task> tasks) {
+		this.taskPreemptionRankingPolicy.rank(tasks);
+	}
+
+	public List<Peer> prioritizePeersToPreemptionOnBehalfOf(Peer consumer) {
+		Map<Peer, Integer> allocatedResourcesByPeer = this.resourceAllocationPolicy.getNumberOfAllocatedResourcesByPeer();
+		Set<Task> foreignTasks = this.taskManager.getForeignTasks();
+		return this.resourceSharingPolicy.getPreemptablePeers(this, consumer, allocatedResourcesByPeer, foreignTasks);
 	}
 
 	/**

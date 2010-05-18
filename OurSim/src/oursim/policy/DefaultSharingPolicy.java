@@ -1,11 +1,10 @@
 package oursim.policy;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import oursim.entities.ComputableElement;
 import oursim.entities.Peer;
 import oursim.entities.Task;
 
@@ -21,12 +20,11 @@ public class DefaultSharingPolicy implements ResourceSharingPolicy {
 	}
 
 	@Override
-	public List<Peer> getPreemptablePeers(final Peer provider, Peer consumer, final HashMap<Peer, Integer> resourcesBeingConsumed,
-			final HashSet<? extends ComputableElement> runningElements) {
+	public List<Peer> getPreemptablePeers(Peer provider, Peer consumer, Map<Peer, Integer> resourcesBeingConsumed, Set<Task> runningTasks) {
 		ArrayList<Peer> preemptablePeers = new ArrayList<Peer>();
 		if (consumer == provider) {
 			for (Peer peer : resourcesBeingConsumed.keySet()) {
-				if (peer != provider) { 
+				if (peer != provider) {
 					preemptablePeers.add(peer);
 				}
 			}

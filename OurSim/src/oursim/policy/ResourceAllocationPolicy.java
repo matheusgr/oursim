@@ -1,10 +1,9 @@
 package oursim.policy;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import oursim.entities.Machine;
 import oursim.entities.Peer;
@@ -14,13 +13,18 @@ public class ResourceAllocationPolicy {
 
 	private Peer peer;
 
-	private ResourceSharingPolicy resourceSharingPolicy;
-
 	private ResourceManager resourceManager;
 
 	private TaskManager taskManager;
 
-	public ResourceAllocationPolicy(Peer peer, ResourceSharingPolicy resourceSharingPolicy, ResourceManager resourceManager, TaskManager taskManager) {
+	/**
+	 * The number of resources that each foreign peer is consuming in this site.
+	 * 
+	 * numberOfAllocatedResourcesByPeer
+	 */
+	private Map<Peer, Integer> numOfAllocResByPeer;
+
+	public ResourceAllocationPolicy(Peer peer, ResourceManager resourceManager, TaskManager taskManager) {
 
 		this.peer = peer;
 
@@ -28,59 +32,81 @@ public class ResourceAllocationPolicy {
 
 		this.taskManager = taskManager;
 
-		this.resourceSharingPolicy = resourceSharingPolicy;
+		this.numOfAllocResByPeer = new HashMap<Peer, Integer>();
 
 	}
 
-	public boolean allocateTask(Task task) {
+	public Machine allocateTask(Task task) {
 		Machine resource = this.resourceManager.hasAvailableResource() ? this.resourceManager.allocateResourceToTask(task) : forceAPreemptionOnBehalfOf(task);
 
 		if (resource != null) {
 			this.taskManager.addTask(task, resource);
-			return true;
-		} else {
-			return false;
+			increaseAccounting(task);
 		}
 
+		return resource;
+
+	}
+
+	public boolean deallocateTask(Task task) {
+		this.resourceManager.releaseResource(this.taskManager.finishTask(task));
+		decreaseAccounting(task);
+		return true;
 	}
 
 	private Machine forceAPreemptionOnBehalfOf(Task task) {
 
-		Machine resource = null;
+		Machine releasedResource = null;
 
-		HashMap<Peer, Integer> allocatedResourcesByPeer = this.taskManager.getNumberOfAllocatedResourcesByPeer();
-		HashSet<Task> foreignTasks = this.taskManager.getForeignTasks();
 		Peer consumer = task.getSourcePeer();
-		List<Peer> preemptablePeers = resourceSharingPolicy.getPreemptablePeers(peer, consumer, allocatedResourcesByPeer, foreignTasks);
+		List<Peer> preemptablePeers = peer.prioritizePeersToPreemptionOnBehalfOf(consumer);
 
-		// Consumer is not preemptable: so it can preempt someone.
 		if (!preemptablePeers.isEmpty()) {
-			Task chosen = chooseATaskToBePreempted(preemptablePeers);
-			resource = this.taskManager.getMachine(chosen);
-			this.peer.preemptTask(chosen);
+			Task doomed = chooseATaskToBePreempted(preemptablePeers);
+			releasedResource = this.taskManager.getMachine(doomed);
+			this.peer.preemptTask(doomed);
 		}
-		
-		return resource;
+
+		return releasedResource;
 	}
 
 	private Task chooseATaskToBePreempted(List<Peer> preemptablePeers) {
 		assert !preemptablePeers.isEmpty();
 
 		Peer chosen = preemptablePeers.get(preemptablePeers.size() - 1);
-
 		List<Task> tasks = this.taskManager.getAllTasksFromPeer(chosen);
 
-		// get recently started job first
-		// XXX Política para preemptar task por peer
-		Collections.sort(tasks, new Comparator<Task>() {
-			@Override
-			public int compare(Task t1, Task t2) {
-				return (int) (t2.getStartTime() - t1.getStartTime());
-			}
-		});
-
+		this.peer.prioritizeTasksToPreemption(tasks);
 		return tasks.get(0);
 
+	}
+
+	private void increaseAccounting(Task task) {
+		Peer sourcePeer = task.getSourcePeer();
+		if (sourcePeer != peer) {
+			int consumedResources = this.numOfAllocResByPeer.containsKey(sourcePeer) ? this.numOfAllocResByPeer.get(sourcePeer) : 0;
+			this.numOfAllocResByPeer.put(sourcePeer, consumedResources + 1);
+		}
+	}
+
+	private void decreaseAccounting(Task task) {
+		Peer sourcePeer = task.getSourcePeer();
+		if (sourcePeer != peer) {
+			int resourcesBeingConsumedByPeer = this.numOfAllocResByPeer.get(sourcePeer) - 1;
+			if (resourcesBeingConsumedByPeer == 0) {
+				this.numOfAllocResByPeer.remove(sourcePeer);
+			} else {
+				this.numOfAllocResByPeer.put(sourcePeer, resourcesBeingConsumedByPeer);
+			}
+		}
+	}
+
+	public Set<Peer> getForeignConsumingPeers() {
+		return this.numOfAllocResByPeer.keySet();
+	}
+
+	public Map<Peer, Integer> getNumberOfAllocatedResourcesByPeer() {
+		return this.numOfAllocResByPeer;
 	}
 
 }
