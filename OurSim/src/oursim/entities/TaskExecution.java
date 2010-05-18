@@ -15,12 +15,12 @@ public class TaskExecution {
 
 	private Processor processor;
 
-	public TaskExecution(Task task, Processor processor, long time) {
+	public TaskExecution(Task task, Processor processor, long startTime) {
 		this.task = task;
 		this.processor = processor;
 		this.size = Processor.EC2_COMPUTE_UNIT.calculateNumberOfInstructionsProcessed(this.task.getDuration());
 		this.remainingSize = size;
-		this.previousTime = time;
+		this.previousTime = startTime;
 	}
 
 	/**

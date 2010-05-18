@@ -1,5 +1,16 @@
 package oursim.entities;
 
+/**
+ * 
+ * An abstraction to an element that could be computed in a grid. Ultimately,
+ * this abstraction represents an task, but it represents an uniform interface
+ * to treat both a {@link Task} as a {@link Job}.
+ * 
+ * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
+ * @since 18/05/2010
+ * @see Job
+ * @see Task
+ */
 public abstract class ComputableElement {
 
 	/**
@@ -94,8 +105,7 @@ public abstract class ComputableElement {
 	public abstract long getDuration();
 
 	/**
-	 * @return The instant at which this ComputableElement started its
-	 *         computation.
+	 * @return The instant at which this ComputableElement started running.
 	 */
 	public abstract Long getStartTime();
 
@@ -153,7 +163,7 @@ public abstract class ComputableElement {
 	 *         ComputableElement.
 	 */
 	public abstract long getNumberOfpreemptions();
-	
+
 	/**
 	 * Performs a preemption in this ComputableElement. This means the subjacent
 	 * resources in which this Computable Element was being executed, whatever
@@ -163,6 +173,7 @@ public abstract class ComputableElement {
 	 * 
 	 * @param preemptionTime
 	 *            The instant at which the preemption has been occured.
+	 * @see {@link ComputableElement#finish(long)}
 	 */
 	public abstract void preempt(long preemptionTime);
 
@@ -174,6 +185,7 @@ public abstract class ComputableElement {
 	 * 
 	 * @param finishTime
 	 *            The time at which this ComputableElement has been finished.
+	 * @see {@link ComputableElement#preempt(long)}
 	 */
 	public abstract void finish(long finishTime);
 

@@ -14,6 +14,13 @@ import oursim.entities.ComputableElement;
 import oursim.entities.Peer;
 import oursim.entities.Task;
 
+/**
+ * 
+ * @author Matheus G. do Rêgo, matheusgr@lsd.ufcg.edu.br
+ * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
+ * @since 18/05/2010
+ * 
+ */
 public class NoFSharingPolicy implements ResourceSharingPolicy {
 
 	private Map<Peer, HashMap<Peer, Long>> allBalances;

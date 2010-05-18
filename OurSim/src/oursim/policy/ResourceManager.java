@@ -19,7 +19,7 @@ import oursim.entities.Peer;
 public class ResourceManager {
 
 	/**
-	 * The peer 
+	 * The peer
 	 */
 	private Peer peer;
 
@@ -109,6 +109,24 @@ public class ResourceManager {
 
 	public boolean hasResource(String machineName) {
 		return this.free.containsKey(machineName) || this.allocated.containsKey(machineName) || this.unavailable.containsKey(machineName);
+	}
+
+	/**
+	 * Indicates that there are new resources added to the peer, so, this
+	 * ResourceManager must update its internal date structures to make sense of
+	 * this resource addition.
+	 */
+	public void update() {
+		for (Machine machine : this.peer.getResources()) {
+			update(machine);
+		}
+	}
+
+	public void update(Machine machine) {
+		// update if no one of the collection holds the machine.
+		if (!this.unavailable.containsValue(machine) && !this.allocated.containsValue(machine) && !this.free.containsValue(machine)) {
+			this.unavailable.put(machine.getName(), machine);
+		}
 	}
 
 }

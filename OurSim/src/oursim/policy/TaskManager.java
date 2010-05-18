@@ -19,7 +19,7 @@ import oursim.util.BidirectionalMap;
 
 public class TaskManager {
 
-	private BidirectionalMap<Task,Machine> tasksInExecution;
+	private BidirectionalMap<Task, Machine> tasksInExecution;
 
 	private HashSet<Task> localTasks;
 	private HashSet<Task> foreignTasks;
@@ -31,7 +31,7 @@ public class TaskManager {
 
 	public TaskManager(Peer peer) {
 		this.peer = peer;
-		this.tasksInExecution = new BidirectionalMap<Task,Machine>();
+		this.tasksInExecution = new BidirectionalMap<Task, Machine>();
 		this.foreignTasks = new HashSet<Task>();
 		this.localTasks = new HashSet<Task>();
 		this.numberOfAllocatedResourcesByPeer = new HashMap<Peer, Integer>();
@@ -52,6 +52,8 @@ public class TaskManager {
 		long currentTime = EventQueue.getInstance().getCurrentTime();
 		Processor defaultProcessor = resource.getDefaultProcessor();
 		task.setTaskExecution(new TaskExecution(task, defaultProcessor, currentTime));
+		task.setStartTime(currentTime);
+		task.setTargetPeer(peer);
 
 		Peer sourcePeer = task.getSourcePeer();
 		if (sourcePeer == peer) {
@@ -87,8 +89,14 @@ public class TaskManager {
 		return tasks;
 	}
 
+	/**
+	 * Update the status of the all tasks being executed.
+	 * 
+	 * @param currentTime
+	 *            The instante at which the update refers to.
+	 */
 	public void updateTime(long currentTime) {
-			for (Entry<Task, Machine> taskAndMachine : tasksInExecution.entrySet()) {
+		for (Entry<Task, Machine> taskAndMachine : tasksInExecution.entrySet()) {
 			Task task = taskAndMachine.getKey();
 			Long estimatedFinishTime = task.getTaskExecution().updateProcessing(currentTime);
 			if (estimatedFinishTime != null) {
@@ -134,7 +142,7 @@ public class TaskManager {
 
 	public Machine finishTask(Task task) {
 		assert this.tasksInExecution.containsKey(task) : task;
-		
+
 		Machine machine = this.tasksInExecution.remove(task);
 		boolean removed = this.remove(task);
 		assert removed && machine != null;
