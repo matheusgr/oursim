@@ -11,7 +11,9 @@ import static org.junit.Assert.assertTrue;
 
 import oursim.entities.Job;
 import oursim.entities.Peer;
+import oursim.entities.Processor;
 import oursim.entities.Task;
+import oursim.entities.TaskExecution;
 import oursim.policy.NoFSharingPolicy;
 
 public class NoFSharingPolicyTest {
@@ -42,6 +44,7 @@ public class NoFSharingPolicyTest {
 		job.setStartTime(10);
 		for (int id = 0; id < 10; id++) {
 			Task task = new Task(id, "", 10, 10, job);
+			task.setTaskExecution(new TaskExecution(task,null,10));
 			task.setStartTime(10);
 			runningElements.add(task);
 		}
@@ -70,6 +73,7 @@ public class NoFSharingPolicyTest {
 		job.setStartTime(10);
 		for (int id = 0; id < 4; id++) {
 			Task task = new Task(id, "", 10, 10, job);
+			task.setTaskExecution(new TaskExecution(task,null,10));
 			task.setStartTime(10);
 			runningElements.add(task);
 		}
@@ -78,6 +82,7 @@ public class NoFSharingPolicyTest {
 		job.setStartTime(10);
 		for (int id = 0; id < 6; id++) {
 			Task task = new Task(id, "", 10, 10, job);
+			task.setTaskExecution(new TaskExecution(task,null,10));
 			task.setStartTime(10);
 			runningElements.add(task);
 		}
@@ -106,6 +111,7 @@ public class NoFSharingPolicyTest {
 		job.setStartTime(10);
 		for (int id = 0; id < 5; id++) {
 			Task task = new Task(id, "", 10, 10, job);
+			task.setTaskExecution(new TaskExecution(task,null,10));
 			task.setStartTime(10);
 			runningElements.add(task);
 		}
@@ -114,11 +120,13 @@ public class NoFSharingPolicyTest {
 		job.setStartTime(10);
 		for (int id = 0; id < 4; id++) {
 			Task task = new Task(id, "", 10, 10, job);
+			task.setTaskExecution(new TaskExecution(task,null,10));
 			task.setStartTime(10);
 			runningElements.add(task);
 		}
 
 		Task task = new Task(4, "", 10, 10, job);
+		task.setTaskExecution(new TaskExecution(task,null,10));
 		task.setStartTime(20);
 		runningElements.add(task);
 
@@ -141,6 +149,7 @@ public class NoFSharingPolicyTest {
 		Job job = new Job(0, 10, p1);
 
 		Task task = new Task(4, "", 10, 0, job);
+		task.setTaskExecution(new TaskExecution(task,null,0));
 		task.setStartTime(0);
 		task.finish(10);
 
@@ -150,6 +159,7 @@ public class NoFSharingPolicyTest {
 		job.setStartTime(10);
 		for (int id = 0; id < 5; id++) {
 			task = new Task(id, "", 10, 10, job);
+			task.setTaskExecution(new TaskExecution(task,null,10));
 			task.setStartTime(10);
 			runningElements.add(task);
 		}
@@ -158,6 +168,7 @@ public class NoFSharingPolicyTest {
 		job.setStartTime(10);
 		for (int id = 0; id < 5; id++) {
 			task = new Task(id, "", 10, 10, job);
+			task.setTaskExecution(new TaskExecution(task,null,10));
 			task.setStartTime(10);
 			runningElements.add(task);
 		}
@@ -181,6 +192,7 @@ public class NoFSharingPolicyTest {
 		Job job = new Job(0, 10, p1);
 
 		Task task = new Task(4, "", 10, 0, job);
+		task.setTaskExecution(new TaskExecution(task,null,10));
 		task.setStartTime(0);
 		task.finish(10);
 
@@ -191,6 +203,7 @@ public class NoFSharingPolicyTest {
 		job.setStartTime(10);
 		for (int id = 0; id < 5; id++) {
 			task = new Task(id, "", 10, 10, job);
+			task.setTaskExecution(new TaskExecution(task,null,10));
 			task.setStartTime(10);
 			runningElements.add(task);
 		}
@@ -199,6 +212,7 @@ public class NoFSharingPolicyTest {
 		job.setStartTime(10);
 		for (int id = 0; id < 5; id++) {
 			task = new Task(id, "", 10, 10, job);
+			task.setTaskExecution(new TaskExecution(task,null,10));
 			task.setStartTime(10);
 			runningElements.add(task);
 		}

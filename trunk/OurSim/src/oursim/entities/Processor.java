@@ -18,11 +18,19 @@ public class Processor {
 	 */
 	static Processor EC2_COMPUTE_UNIT = new Processor(0, 3000);
 
-	private int id;
+	/**
+	 * the identifier of this processor.
+	 */
+	private final int id;
 
-	// private int MIPSRating_; // in SPEC MIPS or LINPACK MFLOPS
-	private long speed; // in SPEC MIPS or LINPACK MFLOPS
+	/**
+	 * The rating in SPEC MIPS or LINPACK MFLOPS of this processor (MIPSRating).
+	 */
+	private final long speed;
 
+	/**
+	 * Flag indicating of this processor is busy.
+	 */
 	private boolean busy = false;
 
 	Processor(int id, long speed) {
@@ -38,25 +46,69 @@ public class Processor {
 		return speed;
 	}
 
+	/**
+	 * Verifies if this processor is busy.
+	 * 
+	 * @return <code>true</true> if this processor is busy, <code>false</code> otherwise.
+	 */
 	public boolean isBusy() {
 		return busy;
 	}
 
+	/**
+	 * Indicates that this processor is busy.
+	 */
 	public void busy() {
 		this.busy = true;
 	}
 
+	/**
+	 * Indicates that this processor is free.
+	 */
 	public void free() {
 		this.busy = false;
 	}
 
-	public long calculateNumberOfInstructionsProcessed(long duration) {
+	/**
+	 * Calculate the number of instructions that could be processed by this
+	 * processor in a given amount of time.This method could be seem as the
+	 * opposite of {@link #calculateTimeToExecute(long).
+	 * 
+	 * @param duration
+	 *            the amount of time in which is going to be calculated the
+	 *            number of instructions.
+	 * @return the number of instructions that could be processed by this
+	 *         processor in a given amount of time.
+	 * @throws IllegalArgumentException
+	 *             if <code>duration < 1</code>.
+	 * @see {@link #calculateTimeToExecute(long)}
+	 */
+	public long calculateNumberOfInstructionsProcessed(long duration) throws IllegalArgumentException {
 		assert duration > 0;
+		if (duration < 1) {
+			throw new IllegalArgumentException("duration must be at least 1.");
+		}
 		return speed * duration;
 	}
 
-	public long calculateTimeToExecute(long numberOfInstruction) {
+	/**
+	 * Calculate the amount of time needed to processed a given number of
+	 * instructions. This method could be seem as the opposite of
+	 * {@link #calculateNumberOfInstructionsProcessed(long)}.
+	 * 
+	 * @param numberOfInstruction
+	 *            the number of instructions to be processed.
+	 * @return the amount of time needed to processed a given number of
+	 *         instructions.
+	 * @throws IllegalArgumentException
+	 *             if <code>numberOfInstruction < 1</code>.
+	 * @see {@link #calculateNumberOfInstructionsProcessed(long)}
+	 */
+	public long calculateTimeToExecute(long numberOfInstruction) throws IllegalArgumentException {
 		assert numberOfInstruction > 0;
+		if (numberOfInstruction < 1) {
+			throw new IllegalArgumentException("numberOfInstruction must be at least 1.");
+		}
 		// it must be casted to a double value because "/" truncates the result
 		double estimatedFinishTimeD = (double) numberOfInstruction / speed;
 		long estimatedFinishTimeL = (long) estimatedFinishTimeD;

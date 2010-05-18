@@ -5,6 +5,17 @@ import java.util.List;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+/**
+ * 
+ * This class represents an Job, as usually treated in a bag of task (bot)
+ * application. A Job is compound by a collection of independent {@link Task}
+ * and its state is actually derived by the state of its internal tasks.
+ * 
+ * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
+ * @since 18/05/2010
+ * @see Task
+ * 
+ */
 public class Job extends ComputableElement implements Comparable<Job> {
 
 	/**

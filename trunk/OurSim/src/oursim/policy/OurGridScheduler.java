@@ -82,22 +82,15 @@ public class OurGridScheduler extends WorkerEventListenerAdapter implements JobS
 			Task task = iterator.next();
 			task.getSourcePeer().prioritizeResourcesToConsume(peers);
 			for (Peer provider : peers) {
-				boolean isTaskRunning = provider.addTask(task);
+				boolean isTaskRunning = provider.executeTask(task);
 				if (isTaskRunning) {
-					updateTaskState(task, provider);
+					eventQueue.addStartedTaskEvent(task);
 					iterator.remove();
 					break;
 				}
 			}
 		}
 
-	}
-
-	private void updateTaskState(Task task, Peer provider) {
-		assert task.getTargetPeer() == null;
-		task.setStartTime(eventQueue.getCurrentTime());
-		task.setTargetPeer(provider);
-		eventQueue.addStartedTaskEvent(task);
 	}
 
 	@Override
