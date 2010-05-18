@@ -80,7 +80,7 @@ public class OurGridScheduler extends WorkerEventListenerAdapter implements JobS
 
 		for (Iterator<Task> iterator = submittedTasks.iterator(); iterator.hasNext();) {
 			Task task = iterator.next();
-			task.getSourcePeer().prioritizeResourcesToConsume(peers);
+			task.getSourcePeer().prioritizePeersToConsume(peers);
 			for (Peer provider : peers) {
 				boolean isTaskRunning = provider.executeTask(task);
 				if (isTaskRunning) {

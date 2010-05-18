@@ -2,10 +2,13 @@ package oursim.policy;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import oursim.entities.Machine;
 import oursim.entities.Peer;
+import oursim.entities.Task;
 
 /**
  * 
@@ -48,6 +51,17 @@ public class ResourceManager {
 		Iterator<Machine> it = free.values().iterator();
 		Machine chosen = it.next();
 		it.remove();
+		this.allocated.put(chosen.getName(), chosen);
+		return chosen;
+	}
+
+	public Machine allocateResourceToTask(Task task) {
+		assert this.hasAvailableResource();
+		LinkedList<Machine> freeResources = new LinkedList<Machine>(free.values());
+		task.prioritizeResourcesToConsume(freeResources);
+		Machine chosen = freeResources.getFirst();
+		assert this.free.containsValue(chosen);
+		this.free.remove(chosen.getName());
 		this.allocated.put(chosen.getName(), chosen);
 		return chosen;
 	}

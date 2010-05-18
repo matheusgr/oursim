@@ -1,6 +1,7 @@
 package oursim;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,7 +55,7 @@ public class OurSim {
 
 		try {
 			workload.save("workload_oursim.txt");
-		} catch (FileNotFoundException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 

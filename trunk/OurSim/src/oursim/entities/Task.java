@@ -1,6 +1,7 @@
 package oursim.entities;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -164,6 +165,10 @@ public class Task extends ComputableElement implements Comparable<Task> {
 	 */
 	public void setTaskExecution(TaskExecution taskExecution) {
 		this.taskExecution = taskExecution;
+	}
+
+	public void prioritizeResourcesToConsume(List<Machine> resources) {
+		this.getSourceJob().getResourceRequestPolicy().prioritize(resources);
 	}
 
 	@Override

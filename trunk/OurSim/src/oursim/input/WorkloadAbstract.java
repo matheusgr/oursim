@@ -1,10 +1,15 @@
 package oursim.input;
 
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
-
 import oursim.entities.Job;
 
+/**
+ * 
+ * An convenient Class to deal with generic workloads.
+ * 
+ * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
+ * @since 18/05/2010
+ * 
+ */
 public abstract class WorkloadAbstract extends InputAbstract<Job> implements Workload {
 
 	@Override
@@ -16,13 +21,4 @@ public abstract class WorkloadAbstract extends InputAbstract<Job> implements Wor
 		return true;
 	}
 
-	@Override
-	public void save(String fileName) throws FileNotFoundException {
-		PrintStream out = new PrintStream(fileName);
-		for (Job job : inputs) {
-			out.printf("%s %s %s %s\n", job.getId(), job.getSourcePeer().getName(), job.getDuration(), job.getSubmissionTime());
-		}
-		out.close();
-	}
-	
 }

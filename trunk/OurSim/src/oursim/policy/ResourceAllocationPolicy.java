@@ -33,7 +33,7 @@ public class ResourceAllocationPolicy {
 	}
 
 	public boolean allocateTask(Task task) {
-		Machine resource = this.resourceManager.hasAvailableResource() ? this.resourceManager.allocateResource() : forceAPreemptionOnBehalfOf(task);
+		Machine resource = this.resourceManager.hasAvailableResource() ? this.resourceManager.allocateResourceToTask(task) : forceAPreemptionOnBehalfOf(task);
 
 		if (resource != null) {
 			this.taskManager.addTask(task, resource);
