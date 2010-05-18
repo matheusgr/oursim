@@ -1,6 +1,8 @@
 package oursim.dispatchableevents.workerevents;
 
-public interface WorkerEventFilter {
+import oursim.dispatchableevents.EventFilter;
+
+public interface WorkerEventFilter extends EventFilter<WorkerEvent> {
 
 	WorkerEventFilter ACCEPT_ALL = new WorkerEventFilter() {
 

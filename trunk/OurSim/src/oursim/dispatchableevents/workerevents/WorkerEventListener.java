@@ -1,6 +1,6 @@
 package oursim.dispatchableevents.workerevents;
 
-import java.util.EventListener;
+import oursim.dispatchableevents.EventListener;
 
 public interface WorkerEventListener extends EventListener {
 

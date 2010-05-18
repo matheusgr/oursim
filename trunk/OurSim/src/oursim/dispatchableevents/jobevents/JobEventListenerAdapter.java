@@ -1,21 +1,15 @@
 package oursim.dispatchableevents.jobevents;
 
-public class JobEventListenerAdapter implements JobEventListener {
+import oursim.dispatchableevents.EventListenerAdapter;
 
-	public void jobSubmitted(JobEvent jobEvent) {
+public class JobEventListenerAdapter implements JobEventListener, EventListenerAdapter {
 
-	}
+	public void jobSubmitted(JobEvent jobEvent) {}
 
-	public void jobStarted(JobEvent jobEvent) {
+	public void jobStarted(JobEvent jobEvent) {}
 
-	}
+	public void jobFinished(JobEvent jobEvent) {}
 
-	public void jobFinished(JobEvent jobEvent) {
-
-	}
-
-	public void jobPreempted(JobEvent jobEvent) {
-
-	}
+	public void jobPreempted(JobEvent jobEvent) {}
 
 }

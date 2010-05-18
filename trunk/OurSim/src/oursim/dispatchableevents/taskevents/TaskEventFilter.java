@@ -1,6 +1,8 @@
 package oursim.dispatchableevents.taskevents;
 
-public interface TaskEventFilter {
+import oursim.dispatchableevents.EventFilter;
+
+public interface TaskEventFilter extends EventFilter<TaskEvent> {
 
 	TaskEventFilter ACCEPT_ALL = new TaskEventFilter() {
 

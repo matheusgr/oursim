@@ -1,6 +1,6 @@
 package oursim.dispatchableevents.jobevents;
 
-import java.util.EventListener;
+import oursim.dispatchableevents.EventListener;
 
 public interface JobEventListener extends EventListener {
 

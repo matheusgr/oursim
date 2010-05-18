@@ -1,7 +1,8 @@
 package oursim.dispatchableevents.taskevents;
 
+import oursim.dispatchableevents.EventListenerAdapter;
 
-public class TaskEventListenerAdapter implements TaskEventListener {
+public class TaskEventListenerAdapter implements TaskEventListener, EventListenerAdapter {
 
 	@Override
 	public void taskFinished(TaskEvent taskEvent) {

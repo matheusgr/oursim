@@ -1,5 +1,6 @@
 package oursim.policy;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,5 +40,32 @@ public interface ResourceSharingPolicy {
 	 *            todas as tasks não locais que estão rodando neste site
 	 */
 	List<Peer> getPreemptablePeers(Peer provider, Peer consumer, Map<Peer, Integer> resourcesBeingConsumed, Set<Task> runningTasks);
+
+	/**
+	 * An ordinary FIFO sharing policy, that is, there are no possibility of
+	 * preemption of a task in behalf of another.
+	 */
+	public static final ResourceSharingPolicy DEFAULT_SHARING_POLICY = new ResourceSharingPolicy() {
+
+		@Override
+		public List<Peer> getPreemptablePeers(Peer provider, Peer consumer, Map<Peer, Integer> resourcesBeingConsumed, Set<Task> runningTasks) {
+			ArrayList<Peer> preemptablePeers = new ArrayList<Peer>();
+			if (consumer == provider) {
+				for (Peer peer : resourcesBeingConsumed.keySet()) {
+					if (peer != provider) {
+						preemptablePeers.add(peer);
+					}
+				}
+			}
+			assert !preemptablePeers.contains(provider);
+			return preemptablePeers;
+		}
+
+		public long getBalance(Peer source, Peer target) {return Long.MAX_VALUE;}
+		public void addPeer(Peer peer) {}
+		public void increaseBalance(Peer source, Peer target, Task task) {}
+		public void decreaseBalance(Peer source, Peer target, Task task) {}
+		public void updateMutualBalance(Peer provider, Peer consumer, Task task) {}
+	};
 
 }

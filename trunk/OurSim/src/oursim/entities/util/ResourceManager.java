@@ -1,4 +1,4 @@
-package oursim.policy;
+package oursim.entities.util;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,7 +21,7 @@ import oursim.entities.Task;
 public class ResourceManager {
 
 	/**
-	 * The peer
+	 * The peer where the tasks are executing.
 	 */
 	private Peer peer;
 

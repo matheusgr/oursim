@@ -10,7 +10,6 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import oursim.availability.AvailabilityRecord;
@@ -25,7 +24,7 @@ import oursim.input.Input;
 import oursim.input.InputAbstract;
 import oursim.input.Workload;
 import oursim.input.WorkloadAbstract;
-import oursim.policy.DefaultSharingPolicy;
+import oursim.policy.ResourceSharingPolicy;
 import oursim.simulationevents.EventQueue;
 import oursim.simulationevents.FinishJobEvent;
 import oursim.simulationevents.FinishTaskEvent;
@@ -37,7 +36,7 @@ import oursim.simulationevents.WorkerUnavailableEvent;
 public class OurSimAPITest {
 
 	OurSimAPI oursim;
-	
+
 	JobEventCounter jobEventCounter;
 
 	TaskEventCounter taskEventCounter;
@@ -71,7 +70,7 @@ public class OurSimAPITest {
 	public void setUp() throws Exception {
 
 		oursim = new OurSimAPI();
-		
+
 		jobEventCounter = new JobEventCounter();
 		JobEventDispatcher.getInstance().addListener(jobEventCounter);
 
@@ -94,7 +93,7 @@ public class OurSimAPITest {
 		peers = new ArrayList<Peer>(NUMBER_OF_PEERS);
 
 		for (int i = 0; i < NUMBER_OF_PEERS; i++) {
-			peers.add(new Peer("p_" + i, NUMBER_OF_RESOURCES_BY_PEER, RESOURCE_MIPS_RATING, DefaultSharingPolicy.getInstance()));
+			peers.add(new Peer("p_" + i, NUMBER_OF_RESOURCES_BY_PEER, RESOURCE_MIPS_RATING, ResourceSharingPolicy.DEFAULT_SHARING_POLICY));
 		}
 
 	}
@@ -306,5 +305,5 @@ public class OurSimAPITest {
 
 		return allWorkloads;
 	}
-	
+
 }
