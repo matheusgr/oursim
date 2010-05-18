@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  * 
- * Represents a way of determine the preferable resources to be consumed.
+ * Represents a way to determine the preferable resources to be consumed.
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @since 18/05/2010

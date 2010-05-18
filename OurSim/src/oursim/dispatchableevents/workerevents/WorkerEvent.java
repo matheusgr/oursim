@@ -1,8 +1,8 @@
 package oursim.dispatchableevents.workerevents;
 
-import java.util.EventObject;
+import oursim.dispatchableevents.Event;
 
-public class WorkerEvent extends EventObject {
+public class WorkerEvent extends Event {
 
 	private static final long serialVersionUID = 8645620849581846104L;
 

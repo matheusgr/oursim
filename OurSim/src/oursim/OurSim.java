@@ -17,7 +17,6 @@ import oursim.input.AvailabilityCharacterization;
 import oursim.input.Input;
 import oursim.input.SyntheticWorkload;
 import oursim.input.Workload;
-import oursim.policy.DefaultSharingPolicy;
 import oursim.policy.NoFSharingPolicy;
 import oursim.policy.ResourceSharingPolicy;
 import oursim.simulationevents.EventQueue;
@@ -28,7 +27,7 @@ public class OurSim {
 
 		ArrayList<Peer> peers = new ArrayList<Peer>(numPeers);
 
-		ResourceSharingPolicy sharingPolicy = useNoF ? NoFSharingPolicy.getInstance() : DefaultSharingPolicy.getInstance();
+		ResourceSharingPolicy sharingPolicy = useNoF ? NoFSharingPolicy.getInstance() : ResourceSharingPolicy.DEFAULT_SHARING_POLICY;
 
 		for (int i = 0; i < numPeers; i++) {
 			peers.add(new Peer("P" + i, numNodesByPeer, nodeMIPSRating, sharingPolicy));

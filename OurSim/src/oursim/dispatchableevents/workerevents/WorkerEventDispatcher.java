@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class WorkerEventDispatcher {
+import oursim.dispatchableevents.EventDispatcher;
+
+public class WorkerEventDispatcher implements EventDispatcher {
 
 	private enum TYPE_OF_DISPATCHING {
 		up, down, available, unavailable, idle, running

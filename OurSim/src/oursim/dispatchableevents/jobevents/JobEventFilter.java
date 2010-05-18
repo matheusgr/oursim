@@ -1,6 +1,8 @@
 package oursim.dispatchableevents.jobevents;
 
-public interface JobEventFilter {
+import oursim.dispatchableevents.EventFilter;
+
+public interface JobEventFilter extends EventFilter<JobEvent> {
 
 	JobEventFilter ACCEPT_ALL = new JobEventFilter() {
 

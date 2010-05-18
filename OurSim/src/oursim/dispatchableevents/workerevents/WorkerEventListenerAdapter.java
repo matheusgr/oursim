@@ -1,6 +1,8 @@
 package oursim.dispatchableevents.workerevents;
 
-public class WorkerEventListenerAdapter implements WorkerEventListener {
+import oursim.dispatchableevents.EventListenerAdapter;
+
+public class WorkerEventListenerAdapter implements WorkerEventListener, EventListenerAdapter {
 
 	@Override
 	public void workerAvailable(WorkerEvent workerEvent) {

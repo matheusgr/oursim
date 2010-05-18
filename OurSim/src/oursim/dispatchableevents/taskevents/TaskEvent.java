@@ -1,10 +1,9 @@
 package oursim.dispatchableevents.taskevents;
 
-import java.util.EventObject;
-
+import oursim.dispatchableevents.Event;
 import oursim.entities.Task;
 
-public class TaskEvent extends EventObject {
+public class TaskEvent extends Event {
 
 	private static final long serialVersionUID = 481672425365120073L;
 

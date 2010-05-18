@@ -1,6 +1,6 @@
 package oursim.dispatchableevents.taskevents;
 
-import java.util.EventListener;
+import oursim.dispatchableevents.EventListener;
 
 public interface TaskEventListener extends EventListener {
 

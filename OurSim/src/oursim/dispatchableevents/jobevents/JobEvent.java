@@ -1,10 +1,9 @@
 package oursim.dispatchableevents.jobevents;
 
-import java.util.EventObject;
-
+import oursim.dispatchableevents.Event;
 import oursim.entities.Job;
 
-public class JobEvent extends EventObject {
+public class JobEvent extends Event {
 
 	private static final long serialVersionUID = 481672427365120073L;
 

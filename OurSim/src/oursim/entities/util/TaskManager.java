@@ -1,4 +1,4 @@
-package oursim.policy;
+package oursim.entities.util;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -86,7 +86,7 @@ public class TaskManager {
 	 * @param resource
 	 *            the machine in which the task are running.
 	 */
-	public void addTask(Task task, Machine resource) {
+	public void startTask(Task task, Machine resource) {
 		assert resource != null && !tasksInExecution.containsKey(task);
 
 		this.tasksInExecution.put(task, resource);
@@ -98,6 +98,33 @@ public class TaskManager {
 			this.addForeignTask(task);
 		}
 
+	}
+
+	/**
+	 * Finishs the task that are running in a given machine.
+	 * 
+	 * @param resource
+	 *            the given machine.
+	 */
+	public void finishTask(Machine resource) {
+		assert this.tasksInExecution.containsValue(resource);
+		Task task = this.getTask(resource);
+		finishTask(task);
+	}
+
+	/**
+	 * Finishs a given task.
+	 * 
+	 * @param task
+	 *            the given task.
+	 * @return the machine in which the given task was running.
+	 */
+	public Machine finishTask(Task task) {
+		assert this.tasksInExecution.containsKey(task) : task;
+		Machine machine = this.tasksInExecution.remove(task);
+		boolean removed = this.remove(task);
+		assert removed && machine != null;
+		return machine;
 	}
 
 	/**
@@ -145,7 +172,7 @@ public class TaskManager {
 	}
 
 	/**
-	 * Check if there are some foreign task running in the peer of this
+	 * Checks if there are some foreign task running in the peer of this
 	 * TaskManager.
 	 * 
 	 * @return <code>true</code> if there are some foreign task running,
@@ -155,9 +182,70 @@ public class TaskManager {
 		return !this.foreignTasks.isEmpty();
 	}
 
+	/**
+	 * Gets the total of resources being locally consumed, that is, that the
+	 * tasks running in them belong to the peer that holds this taskManager.
+	 * 
+	 * @return Gets the total of resources being locally consumed
+	 */
+	public int getNumberOfLocallyConsumedResources() {
+		return this.localTasks.size();
+	}
+
+	/**
+	 * Gets the machine in which a given task are running.
+	 * 
+	 * @param task
+	 *            the given task.
+	 * @return the machine in which the given task are running.
+	 */
+	public Machine getMachine(Task task) {
+		return this.tasksInExecution.get(task);
+	}
+
+	/**
+	 * Gets the task that are running in a given machine.
+	 * 
+	 * @param resource
+	 *            the given machine.
+	 * @return the task that are running in a given machine.
+	 */
+	public Task getTask(Machine resource) {
+
+		return this.tasksInExecution.getKey(resource);
+	}
+
+	/**
+	 * Checks if there are some task running in a given machine.
+	 * 
+	 * @param machine
+	 *            the given machine.
+	 * @return <code>true</code> if there are some foreign task running in the
+	 *         given machine, <code>false</false> otherwise.
+	 */
+	public boolean isInExecution(Machine machine) {
+		return this.tasksInExecution.containsValue(machine);
+	}
+
+	/**
+	 * Checks if a given task is running.
+	 * 
+	 * @param task
+	 *            the given task.
+	 * @return <code>true</code> if the given task is running,
+	 *         <code>false</false> otherwise.
+	 */
+	public boolean isInExecution(Task task) {
+		return this.tasksInExecution.containsKey(task);
+	}
+
 	private void addLocalTask(Task task) {
 		assert !this.localTasks.contains(task);
 		this.localTasks.add(task);
+	}
+
+	private void addForeignTask(Task task) {
+		this.foreignTasks.add(task);
 	}
 
 	private boolean removeLocalTask(Task task) {
@@ -168,45 +256,6 @@ public class TaskManager {
 	private boolean removeForeignTask(Task task) {
 		assert this.foreignTasks.contains(task);
 		return this.foreignTasks.remove(task);
-	}
-
-	private void addForeignTask(Task task) {
-		this.foreignTasks.add(task);
-	}
-
-	public Machine finishTask(Task task) {
-		assert this.tasksInExecution.containsKey(task) : task;
-		Machine machine = this.tasksInExecution.remove(task);
-		boolean removed = this.remove(task);
-		assert removed && machine != null;
-		return machine;
-	}
-
-	public int getNumberOfLocallyConsumedResources() {
-		return this.localTasks.size();
-	}
-
-	public Machine getMachine(Task task) {
-		return this.tasksInExecution.get(task);
-	}
-
-	public Task getTask(Machine resource) {
-
-		return this.tasksInExecution.getKey(resource);
-	}
-
-	public void finishTask(Machine resource) {
-		assert this.tasksInExecution.containsValue(resource);
-		Task task = this.getTask(resource);
-		finishTask(task);
-	}
-
-	public boolean isInExecution(Machine machine) {
-		return this.tasksInExecution.containsValue(machine);
-	}
-
-	public boolean isInExecution(Task task) {
-		return this.tasksInExecution.containsKey(task);
 	}
 
 }

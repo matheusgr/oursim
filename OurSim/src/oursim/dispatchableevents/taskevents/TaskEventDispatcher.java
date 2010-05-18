@@ -5,9 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import oursim.dispatchableevents.EventDispatcher;
 import oursim.entities.Task;
 
-public class TaskEventDispatcher {
+public class TaskEventDispatcher implements EventDispatcher {
 
 	private enum TYPE_OF_DISPATCHING {
 		submitted, started, preempted, finished

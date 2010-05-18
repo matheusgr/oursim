@@ -10,13 +10,13 @@ import org.apache.commons.lang.builder.ToStringStyle;
 
 import oursim.dispatchableevents.workerevents.WorkerEvent;
 import oursim.dispatchableevents.workerevents.WorkerEventListenerAdapter;
+import oursim.entities.util.ResourceManager;
+import oursim.entities.util.TaskManager;
 import oursim.input.Workload;
 import oursim.policy.PeerRankingPolicy;
 import oursim.policy.ResourceAllocationPolicy;
-import oursim.policy.ResourceManager;
 import oursim.policy.ResourceRankingPolicy;
 import oursim.policy.ResourceSharingPolicy;
-import oursim.policy.TaskManager;
 import oursim.policy.TaskPreemptionRankingPolicy;
 import oursim.simulationevents.EventQueue;
 

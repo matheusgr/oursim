@@ -57,7 +57,7 @@ public class OurSimAPI {
 			while (eq.peek() != null && eq.peek().getTime() == time) {
 				eq.poll().action();
 			}
-			sp.scheduleTasks();
+			sp.schedule();
 		}
 
 		eq.close();
