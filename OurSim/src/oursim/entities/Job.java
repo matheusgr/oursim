@@ -5,6 +5,8 @@ import java.util.List;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+import oursim.policy.ResourceRequestPolicy;
+
 /**
  * 
  * This class represents an Job, as usually treated in a bag of task (bot)
@@ -29,6 +31,8 @@ public class Job extends ComputableElement implements Comparable<Job> {
 	 */
 	private final List<Task> tasks;
 
+	private final ResourceRequestPolicy resourceRequestPolicy;
+	
 	/**
 	 * Field to assure the uniqueness of the id of each task.
 	 */
@@ -56,6 +60,8 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		sourcePeer.addJob(this);
 
 		this.tasks = new ArrayList<Task>();
+		
+		this.resourceRequestPolicy = new ResourceRequestPolicy(this);
 
 	}
 
@@ -286,6 +292,10 @@ public class Job extends ComputableElement implements Comparable<Job> {
 	public String toString() {
 		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("id", id).append("submissionTime", submissionTime).append("sourcePeer",
 				sourcePeer.getName()).append("#tasks", tasks.size()).toString();
+	}
+
+	public ResourceRequestPolicy getResourceRequestPolicy() {
+		return resourceRequestPolicy;
 	}
 
 }

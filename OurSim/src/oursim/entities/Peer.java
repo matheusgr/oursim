@@ -9,9 +9,9 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import oursim.dispatchableevents.workerevents.WorkerEvent;
 import oursim.dispatchableevents.workerevents.WorkerEventListenerAdapter;
 import oursim.input.Workload;
+import oursim.policy.PeerRequestPolicy;
 import oursim.policy.ResourceAllocationPolicy;
 import oursim.policy.ResourceManager;
-import oursim.policy.ResourceRequestPolicy;
 import oursim.policy.ResourceSharingPolicy;
 import oursim.policy.TaskManager;
 import oursim.simulationevents.EventQueue;
@@ -43,7 +43,7 @@ public class Peer extends WorkerEventListenerAdapter {
 
 	private final ResourceSharingPolicy resourceSharingPolicy;
 
-	private final ResourceRequestPolicy resourceRequestPolicy;
+	private final PeerRequestPolicy resourceRequestPolicy;
 
 	private final ResourceManager resourceManager;
 
@@ -144,7 +144,7 @@ public class Peer extends WorkerEventListenerAdapter {
 		this.resourceSharingPolicy = resourceSharingPolicy;
 		this.resourceSharingPolicy.addPeer(this);
 
-		this.resourceRequestPolicy = new ResourceRequestPolicy(this);
+		this.resourceRequestPolicy = new PeerRequestPolicy(this);
 
 		this.resourceManager = new ResourceManager(this);
 		this.resourceAllocationPolicy = new ResourceAllocationPolicy(this, resourceSharingPolicy, this.resourceManager, this.taskManager);
@@ -340,8 +340,8 @@ public class Peer extends WorkerEventListenerAdapter {
 	 * @param peers
 	 *            the peers available to be consumed.
 	 */
-	public void prioritizeResourcesToConsume(List<Peer> peers) {
-		this.resourceRequestPolicy.request(peers);
+	public void prioritizePeersToConsume(List<Peer> peers) {
+		this.resourceRequestPolicy.prioritize(peers);
 	}
 
 	/**
