@@ -4,13 +4,15 @@
  * from the callee of a message.
  * 
  * Each family of class that implement the pattern are located in its own package. 
- * Each package must contain at least three types:
+ * Each package must contain at least three classes, from the types :
  * 
  * <ol>
- * 	<li>{@link Event}
+ * 	<li>{@link EventFilter}
  * 	<li>{@link EventListener}
  * 	<li>{@link EventDispatcher}
  * </ol>
  * 
+ * Apart from this three types, it could contain an {@link EventListenerAdapter} as a
+ * default (usually empty) implementation of the listener.
  */
 package oursim.dispatchableevents;

@@ -3,9 +3,31 @@ package oursim.dispatchableevents.workerevents;
 import oursim.dispatchableevents.Event;
 import oursim.dispatchableevents.EventDispatcher;
 
+/**
+ * 
+ * A dispatcher to the worker's related events.
+ * 
+ * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
+ * @since 19/05/2010
+ * 
+ * @see {@link WorkerEventListener}
+ * @see {@link WorkerEventFilter}
+ * 
+ */
 public class WorkerEventDispatcher extends EventDispatcher<String, WorkerEventListener, WorkerEventFilter> {
 
-	private enum TYPE_OF_DISPATCHING {
+	/**
+	 * 
+	 * An enumeration of all the types of the events that could be dispatched by
+	 * this dispatcher. For each type there is an method responsible to dispatch
+	 * it. For example, to {@link TYPE_OF_DISPATCHING#available} there is
+	 * {@link WorkerEventDispatcher#dispatchWorkerAvailable(String, long)}
+	 * 
+	 * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
+	 * @since 19/05/2010
+	 * 
+	 */
+	protected enum TYPE_OF_DISPATCHING {
 		up, down, available, unavailable, idle, running
 	};
 
@@ -31,30 +53,60 @@ public class WorkerEventDispatcher extends EventDispatcher<String, WorkerEventLi
 	}
 
 	@Override
-	public void removeListener(WorkerEventListener listener) {
-		this.listeners.remove(listener);
+	public boolean removeListener(WorkerEventListener listener) {
+		return this.listeners.remove(listener);
 	}
 
+	/**
+	 * @see {@link WorkerEventListener#workerUp(Event)
+	 * @param machineName
+	 * @param time
+	 */
 	public void dispatchWorkerUp(String machineName, long time) {
 		dispatch(TYPE_OF_DISPATCHING.up, machineName, time);
 	}
 
+	/**
+	 * @see {@link WorkerEventListener#workerDown(Event)
+	 * @param machineName
+	 * @param time
+	 */
 	public void dispatchWorkerDown(String machineName, long time) {
 		dispatch(TYPE_OF_DISPATCHING.down, machineName, time);
 	}
 
+	/**
+	 * @see {@link WorkerEventListener#workerAvailable(Event)
+	 * @param machineName
+	 * @param time
+	 */
 	public void dispatchWorkerAvailable(String machineName, long time) {
 		dispatch(TYPE_OF_DISPATCHING.available, machineName, time);
 	}
 
+	/**
+	 * @see {@link WorkerEventListener#workerUnavailable(Event)
+	 * @param machineName
+	 * @param time
+	 */
 	public void dispatchWorkerUnavailable(String machineName, long time) {
 		dispatch(TYPE_OF_DISPATCHING.unavailable, machineName, time);
 	}
 
+	/**
+	 * @see {@link WorkerEventListener#workerIdle(Event)
+	 * @param machineName
+	 * @param time
+	 */
 	public void dispatchWorkerIdle(String machineName, long time) {
 		dispatch(TYPE_OF_DISPATCHING.idle, machineName, time);
 	}
 
+	/**
+	 * @see {@link WorkerEventListener#workerRunning(Event)
+	 * @param machineName
+	 * @param time
+	 */
 	public void dispatchWorkerRunning(String machineName, long time) {
 		dispatch(TYPE_OF_DISPATCHING.running, machineName, time);
 	}
@@ -65,23 +117,30 @@ public class WorkerEventDispatcher extends EventDispatcher<String, WorkerEventLi
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void dispatch(Enum type, Event<String> workerEvent) {
+	protected void dispatch(Enum type, Event<String> workerEvent) {
 		for (WorkerEventListener listener : listeners) {
 			// up, down, available, unavailable, idle, running
 			if (listenerToFilter.get(listener).accept(workerEvent)) {
-				if (type.equals(TYPE_OF_DISPATCHING.up)) {
+				switch ((TYPE_OF_DISPATCHING) type) {
+				case up:
 					listener.workerUp(workerEvent);
-				} else if (type.equals(TYPE_OF_DISPATCHING.down)) {
+					break;
+				case down:
 					listener.workerDown(workerEvent);
-				} else if (type.equals(TYPE_OF_DISPATCHING.available)) {
+					break;
+				case available:
 					listener.workerAvailable(workerEvent);
-				} else if (type.equals(TYPE_OF_DISPATCHING.unavailable)) {
+					break;
+				case unavailable:
 					listener.workerUnavailable(workerEvent);
-				} else if (type.equals(TYPE_OF_DISPATCHING.idle)) {
+					break;
+				case idle:
 					listener.workerIdle(workerEvent);
-				} else if (type.equals(TYPE_OF_DISPATCHING.running)) {
+					break;
+				case running:
 					listener.workerRunning(workerEvent);
-				} else {
+					break;
+				default:
 					assert false;
 				}
 			}

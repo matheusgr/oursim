@@ -16,11 +16,11 @@ import java.util.EventObject;
 public class Event<T> extends EventObject {
 
 	private static final long serialVersionUID = 4966574677524224231L;
-	
+
 	/**
 	 * The instant at which the event have occurred.
 	 */
-	protected long time = -1;
+	private Long time = null;
 
 	/**
 	 * Constructs a prototypical Event.
@@ -55,7 +55,7 @@ public class Event<T> extends EventObject {
 	 * @return The instant at which this event have occurred.
 	 */
 	public long getTime() {
-		assert time >= 0;
+		assert time != null;
 		return time;
 	}
 

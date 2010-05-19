@@ -48,7 +48,7 @@ public class PrintOutput implements Output {
 	@Override
 	public void jobFinished(Event<Job> jobEvent) {
 
-		Job job = (Job) jobEvent.getSource();
+		Job job = jobEvent.getSource();
 
 		long id = job.getId();
 		long submissionTime = job.getSubmissionTime();
@@ -61,19 +61,19 @@ public class PrintOutput implements Output {
 
 	@Override
 	public void jobSubmitted(Event<Job> jobEvent) {
-		Job job = (Job) jobEvent.getSource();
+		Job job = jobEvent.getSource();
 		this.out.println("U:" + job.getSubmissionTime() + ":" + job.getId());
 	}
 
 	@Override
 	public void jobStarted(Event<Job> jobEvent) {
-		Job job = (Job) jobEvent.getSource();
+		Job job = jobEvent.getSource();
 		this.out.println("S:" + job.getStartTime() + ":" + job.getId());
 	}
 
 	@Override
 	public void jobPreempted(Event<Job> jobEvent) {
-		Job job = (Job) jobEvent.getSource();
+		Job job = jobEvent.getSource();
 		this.out.println("P:" + job.getStartTime() + ":" + job.getId() + ":" + jobEvent.getTime());
 	}
 

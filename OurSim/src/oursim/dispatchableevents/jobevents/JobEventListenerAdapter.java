@@ -4,7 +4,15 @@ import oursim.dispatchableevents.Event;
 import oursim.dispatchableevents.EventListenerAdapter;
 import oursim.entities.Job;
 
-public class JobEventListenerAdapter implements JobEventListener, EventListenerAdapter {
+/**
+ * 
+ * A default (empty) implementation of the listener.
+ * 
+ * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
+ * @since 19/05/2010
+ * 
+ */
+public abstract class JobEventListenerAdapter implements JobEventListener, EventListenerAdapter {
 
 	public void jobSubmitted(Event<Job> jobEvent) {
 	}
