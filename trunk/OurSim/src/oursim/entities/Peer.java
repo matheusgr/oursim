@@ -342,14 +342,14 @@ public class Peer extends WorkerEventListenerAdapter {
 
 	@Override
 	public void workerAvailable(Event<String> workerEvent) {
-		String machineName = (String) workerEvent.getSource();
+		String machineName = workerEvent.getSource();
 		this.resourceManager.makeResourceAvailable(machineName);
 		// TODO: deve-se reescalonar os jobs agora pois tem recurso disponível
 	}
 
 	@Override
 	public void workerUnavailable(Event<String> workerEvent) {
-		String machineName = (String) workerEvent.getSource();
+		String machineName = workerEvent.getSource();
 		if (this.resourceManager.isAllocated(machineName)) {
 			Machine resource = this.resourceManager.getResource(machineName);
 			Task task = this.taskManager.getTask(resource);

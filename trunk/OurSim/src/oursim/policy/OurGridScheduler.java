@@ -123,7 +123,7 @@ public class OurGridScheduler extends WorkerEventListenerAdapter implements JobS
 
 	@Override
 	public void taskFinished(Event<Task> taskEvent) {
-		Task task = (Task) taskEvent.getSource();
+		Task task = taskEvent.getSource();
 		task.getTargetPeer().finishTask(task);
 		if (task.getSourceJob().isFinished()) {
 			eventQueue.addFinishJobEvent(eventQueue.getCurrentTime(), task.getSourceJob());
@@ -132,13 +132,13 @@ public class OurGridScheduler extends WorkerEventListenerAdapter implements JobS
 
 	@Override
 	public void taskSubmitted(Event<Task> taskEvent) {
-		Task task = (Task) taskEvent.getSource();
+		Task task = taskEvent.getSource();
 		this.submittedTasks.add(task);
 	}
 
 	@Override
 	public void taskPreempted(Event<Task> taskEvent) {
-		Task task = (Task) taskEvent.getSource();
+		Task task = taskEvent.getSource();
 		this.rescheduleTask(task);
 	}
 
