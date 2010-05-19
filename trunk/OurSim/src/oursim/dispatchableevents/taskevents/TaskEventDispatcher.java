@@ -1,14 +1,10 @@
 package oursim.dispatchableevents.taskevents;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import oursim.dispatchableevents.Event;
 import oursim.dispatchableevents.EventDispatcher;
 import oursim.entities.Task;
 
-public class TaskEventDispatcher implements EventDispatcher {
+public class TaskEventDispatcher extends EventDispatcher<Task, TaskEventListener, TaskEventFilter> {
 
 	private enum TYPE_OF_DISPATCHING {
 		submitted, started, preempted, finished
@@ -16,31 +12,25 @@ public class TaskEventDispatcher implements EventDispatcher {
 
 	private static TaskEventDispatcher instance = null;
 
-	private List<TaskEventListener> listeners;
-
-	private Map<TaskEventListener, TaskEventFilter> listenerToFilter;
-
 	private TaskEventDispatcher() {
-		this.listeners = new ArrayList<TaskEventListener>();
-		this.listenerToFilter = new HashMap<TaskEventListener, TaskEventFilter>();
+		super();
 	}
 
 	public static TaskEventDispatcher getInstance() {
 		return instance = (instance != null) ? instance : new TaskEventDispatcher();
 	}
 
+	@Override
 	public void addListener(TaskEventListener listener) {
 		if (!this.listeners.contains(listener)) {
 			this.listeners.add(listener);
 			this.listenerToFilter.put(listener, TaskEventFilter.ACCEPT_ALL);
+		} else {
+			assert false;
 		}
 	}
 
-	public void addListener(TaskEventListener listener, TaskEventFilter workerEventFilter) {
-		addListener(listener);
-		this.listenerToFilter.put(listener, workerEventFilter);
-	}
-
+	@Override
 	public void removeListener(TaskEventListener listener) {
 		this.listeners.remove(listener);
 	}
@@ -61,26 +51,26 @@ public class TaskEventDispatcher implements EventDispatcher {
 		dispatch(TYPE_OF_DISPATCHING.preempted, task);
 	}
 
-	public void dispatch(TYPE_OF_DISPATCHING type, Task task) {
-		TaskEvent taskEvent = new TaskEvent(task);
+	private void dispatch(TYPE_OF_DISPATCHING type, Task task) {
+		dispatch(type, new Event<Task>(task));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void dispatch(Enum type, Event<Task> taskEvent) {
 		for (TaskEventListener listener : listeners) {
 			// submitted, started, preempted, finished
 			if (listenerToFilter.get(listener).accept(taskEvent)) {
-				switch (type) {
-				case submitted:
+				if (type.equals(TYPE_OF_DISPATCHING.submitted)) {
 					listener.taskSubmitted(taskEvent);
-					break;
-				case started:
+				} else if (type.equals(TYPE_OF_DISPATCHING.started)) {
 					listener.taskStarted(taskEvent);
-					break;
-				case preempted:
+				} else if (type.equals(TYPE_OF_DISPATCHING.preempted)) {
 					listener.taskPreempted(taskEvent);
-					break;
-				case finished:
+				} else if (type.equals(TYPE_OF_DISPATCHING.finished)) {
 					listener.taskFinished(taskEvent);
-					break;
-				default:
-					break;
+				} else {
+					assert false;
 				}
 			}
 		}

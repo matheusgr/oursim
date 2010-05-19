@@ -4,9 +4,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import oursim.availability.AvailabilityRecord;
+import oursim.dispatchableevents.Event;
 import oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import oursim.dispatchableevents.taskevents.TaskEventDispatcher;
-import oursim.dispatchableevents.workerevents.WorkerEvent;
 import oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
 import oursim.dispatchableevents.workerevents.WorkerEventFilter;
 import oursim.entities.Job;
@@ -98,7 +98,7 @@ public class OurSimAPI {
 			WorkerEventDispatcher.getInstance().addListener(peer, new WorkerEventFilter() {
 
 				@Override
-				public boolean accept(WorkerEvent workerEvent) {
+				public boolean accept(Event<String> workerEvent) {
 					String machineName = (String) workerEvent.getSource();
 					return peer.hasResource(machineName);
 				}

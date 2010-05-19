@@ -15,7 +15,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import oursim.dispatchableevents.jobevents.JobEvent;
+import oursim.dispatchableevents.Event;
 import oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import oursim.dispatchableevents.jobevents.JobEventListener;
 import oursim.entities.Job;
@@ -49,7 +49,7 @@ public class SimulationBase {
 		}
 
 		@Override
-		public void jobFinished(JobEvent jobEvent) {
+		public void jobFinished(Event<Job> jobEvent) {
 			this.expectedJobs -= 1;
 			assertTrue(this.expectedJobs >= 0);
 			Job j = ((Job) jobEvent.getSource());
@@ -60,7 +60,7 @@ public class SimulationBase {
 		}
 
 		@Override
-		public void jobStarted(JobEvent jobEvent) {
+		public void jobStarted(Event<Job> jobEvent) {
 			System.out.println("*** " + this.expectedStartJobs);
 			System.out.println(jobEvent.getSource());
 			this.expectedStartJobs -= 1;
@@ -68,7 +68,7 @@ public class SimulationBase {
 		}
 
 		@Override
-		public void jobSubmitted(JobEvent jobEvent) {
+		public void jobSubmitted(Event<Job> jobEvent) {
 			System.out.println("--- " + expectedSubmitJobs);
 			System.out.println(jobEvent.getSource());
 			this.expectedSubmitJobs -= 1;
@@ -76,7 +76,7 @@ public class SimulationBase {
 		}
 
 		@Override
-		public void jobPreempted(JobEvent jobEvent) {
+		public void jobPreempted(Event<Job> jobEvent) {
 			fail("Doesn't expect preemption");
 		}
 

@@ -1,14 +1,10 @@
 package oursim.dispatchableevents.jobevents;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import oursim.dispatchableevents.Event;
 import oursim.dispatchableevents.EventDispatcher;
 import oursim.entities.Job;
 
-public class JobEventDispatcher implements EventDispatcher {
+public class JobEventDispatcher extends EventDispatcher<Job, JobEventListener, JobEventFilter> {
 
 	private enum TYPE_OF_DISPATCHING {
 		submitted, started, preempted, finished
@@ -16,31 +12,25 @@ public class JobEventDispatcher implements EventDispatcher {
 
 	private static JobEventDispatcher instance = null;
 
-	private List<JobEventListener> listeners;
-
-	private Map<JobEventListener, JobEventFilter> listenerToFilter;
-
 	private JobEventDispatcher() {
-		this.listeners = new ArrayList<JobEventListener>();
-		this.listenerToFilter = new HashMap<JobEventListener, JobEventFilter>();
+		super();
 	}
 
 	public static JobEventDispatcher getInstance() {
 		return instance = (instance != null) ? instance : new JobEventDispatcher();
 	}
 
+	@Override
 	public void addListener(JobEventListener listener) {
 		if (!this.listeners.contains(listener)) {
 			this.listeners.add(listener);
 			this.listenerToFilter.put(listener, JobEventFilter.ACCEPT_ALL);
+		} else {
+			assert false;
 		}
 	}
 
-	public void addListener(JobEventListener listener, JobEventFilter workerEventFilter) {
-		addListener(listener);
-		this.listenerToFilter.put(listener, workerEventFilter);
-	}
-
+	@Override
 	public void removeListener(JobEventListener listener) {
 		this.listeners.remove(listener);
 	}
@@ -61,29 +51,28 @@ public class JobEventDispatcher implements EventDispatcher {
 		dispatch(TYPE_OF_DISPATCHING.preempted, job);
 	}
 
-	public void dispatch(TYPE_OF_DISPATCHING type, Job job) {
-		JobEvent jobEvent = new JobEvent(job);
+	private void dispatch(TYPE_OF_DISPATCHING type, Job job) {
+		dispatch(type, new Event<Job>(job));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void dispatch(Enum type, Event<Job> jobEvent) {
 		for (JobEventListener listener : listeners) {
 			// submitted, started, preempted, finished
 			if (listenerToFilter.get(listener).accept(jobEvent)) {
-				switch (type) {
-				case submitted:
+				if (type.equals(TYPE_OF_DISPATCHING.submitted)) {
 					listener.jobSubmitted(jobEvent);
-					break;
-				case started:
+				} else if (type.equals(TYPE_OF_DISPATCHING.started)) {
 					listener.jobStarted(jobEvent);
-					break;
-				case preempted:
+				} else if (type.equals(TYPE_OF_DISPATCHING.preempted)) {
 					listener.jobPreempted(jobEvent);
-					break;
-				case finished:
+				} else if (type.equals(TYPE_OF_DISPATCHING.finished)) {
 					listener.jobFinished(jobEvent);
-					break;
-				default:
-					break;
+				} else {
+					assert false;
 				}
 			}
 		}
 	}
-
 }

@@ -6,9 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import oursim.dispatchableevents.jobevents.JobEvent;
-import oursim.dispatchableevents.taskevents.TaskEvent;
-import oursim.dispatchableevents.workerevents.WorkerEvent;
+import oursim.dispatchableevents.Event;
 import oursim.dispatchableevents.workerevents.WorkerEventListenerAdapter;
 import oursim.entities.Job;
 import oursim.entities.Peer;
@@ -99,33 +97,32 @@ public class OurGridScheduler extends WorkerEventListenerAdapter implements JobS
 	}
 
 	@Override
-	public void jobSubmitted(JobEvent jobEvent) {
-		Job job = (Job) jobEvent.getSource();
-		this.addJob(job);
+	public void jobSubmitted(Event<Job> jobEvent) {
+		this.addJob(jobEvent.getSource());
 	}
 
 	@Override
-	public void jobPreempted(JobEvent jobEvent) {
+	public void jobPreempted(Event<Job> jobEvent) {
 		// nothing to do
 	}
 
 	@Override
-	public void jobFinished(JobEvent jobEvent) {
+	public void jobFinished(Event<Job> jobEvent) {
 		// nothing to do
 	}
 
 	@Override
-	public void jobStarted(JobEvent jobEvent) {
+	public void jobStarted(Event<Job> jobEvent) {
 		// nothing to do
 	}
 
 	@Override
-	public void taskStarted(TaskEvent taskEvent) {
+	public void taskStarted(Event<Task> taskEvent) {
 		// nothing to do
 	}
 
 	@Override
-	public void taskFinished(TaskEvent taskEvent) {
+	public void taskFinished(Event<Task> taskEvent) {
 		Task task = (Task) taskEvent.getSource();
 		task.getTargetPeer().finishTask(task);
 		if (task.getSourceJob().isFinished()) {
@@ -134,19 +131,19 @@ public class OurGridScheduler extends WorkerEventListenerAdapter implements JobS
 	}
 
 	@Override
-	public void taskSubmitted(TaskEvent taskEvent) {
+	public void taskSubmitted(Event<Task> taskEvent) {
 		Task task = (Task) taskEvent.getSource();
 		this.submittedTasks.add(task);
 	}
 
 	@Override
-	public void taskPreempted(TaskEvent taskEvent) {
+	public void taskPreempted(Event<Task> taskEvent) {
 		Task task = (Task) taskEvent.getSource();
 		this.rescheduleTask(task);
 	}
 
 	@Override
-	public void workerAvailable(WorkerEvent workerEvent) {
+	public void workerAvailable(Event<String> workerEvent) {
 		this.schedule();
 	}
 
