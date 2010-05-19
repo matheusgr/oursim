@@ -1,5 +1,8 @@
 package oursim.dispatchableevents.jobevents;
 
+import oursim.dispatchableevents.Event;
+import oursim.entities.Job;
+
 public class JobEventCounter extends JobEventListenerAdapter {
 
 	private int numberOfFinishedJobs = 0;
@@ -7,12 +10,12 @@ public class JobEventCounter extends JobEventListenerAdapter {
 	private int numberOfPreemptionsForAllJobs = 0;
 
 	@Override
-	public void jobFinished(JobEvent jobEvent) {
+	public void jobFinished(Event<Job> jobEvent) {
 		this.numberOfFinishedJobs++;
 	}
 
 	@Override
-	public void jobPreempted(JobEvent jobEvent) {
+	public void jobPreempted(Event<Job> jobEvent) {
 		this.numberOfPreemptionsForAllJobs++;
 	}
 

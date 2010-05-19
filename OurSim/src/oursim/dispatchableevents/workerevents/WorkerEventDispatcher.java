@@ -1,13 +1,9 @@
 package oursim.dispatchableevents.workerevents;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import oursim.dispatchableevents.Event;
 import oursim.dispatchableevents.EventDispatcher;
 
-public class WorkerEventDispatcher implements EventDispatcher {
+public class WorkerEventDispatcher extends EventDispatcher<String, WorkerEventListener, WorkerEventFilter> {
 
 	private enum TYPE_OF_DISPATCHING {
 		up, down, available, unavailable, idle, running
@@ -15,31 +11,26 @@ public class WorkerEventDispatcher implements EventDispatcher {
 
 	private static WorkerEventDispatcher instance = null;
 
-	private List<WorkerEventListener> listeners;
-
-	private Map<WorkerEventListener, WorkerEventFilter> listenerToFilter;
-
 	private WorkerEventDispatcher() {
-		this.listeners = new ArrayList<WorkerEventListener>();
-		this.listenerToFilter = new HashMap<WorkerEventListener, WorkerEventFilter>();
+		super();
 	}
 
 	public static WorkerEventDispatcher getInstance() {
 		return instance = (instance != null) ? instance : new WorkerEventDispatcher();
 	}
 
+	@Override
 	public void addListener(WorkerEventListener listener) {
 		if (!this.listeners.contains(listener)) {
 			this.listeners.add(listener);
 			this.listenerToFilter.put(listener, WorkerEventFilter.ACCEPT_ALL);
+		} else {
+			assert false;
 		}
+		assert listenerToFilter.get(listener) != null;
 	}
 
-	public void addListener(WorkerEventListener listener, WorkerEventFilter workerEventFilter) {
-		addListener(listener);
-		this.listenerToFilter.put(listener, workerEventFilter);
-	}
-
+	@Override
 	public void removeListener(WorkerEventListener listener) {
 		this.listeners.remove(listener);
 	}
@@ -68,35 +59,32 @@ public class WorkerEventDispatcher implements EventDispatcher {
 		dispatch(TYPE_OF_DISPATCHING.running, machineName, time);
 	}
 
-	public void dispatch(TYPE_OF_DISPATCHING type, String machineName, long time) {
-		WorkerEvent workerEvent = new WorkerEvent(time, machineName);
+	private void dispatch(TYPE_OF_DISPATCHING type, String machineName, long time) {
+		dispatch(type, new Event<String>(time, machineName));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void dispatch(Enum type, Event<String> workerEvent) {
 		for (WorkerEventListener listener : listeners) {
 			// up, down, available, unavailable, idle, running
 			if (listenerToFilter.get(listener).accept(workerEvent)) {
-				switch (type) {
-				case up:
+				if (type.equals(TYPE_OF_DISPATCHING.up)) {
 					listener.workerUp(workerEvent);
-					break;
-				case down:
+				} else if (type.equals(TYPE_OF_DISPATCHING.down)) {
 					listener.workerDown(workerEvent);
-					break;
-				case available:
+				} else if (type.equals(TYPE_OF_DISPATCHING.available)) {
 					listener.workerAvailable(workerEvent);
-					break;
-				case unavailable:
+				} else if (type.equals(TYPE_OF_DISPATCHING.unavailable)) {
 					listener.workerUnavailable(workerEvent);
-					break;
-				case idle:
+				} else if (type.equals(TYPE_OF_DISPATCHING.idle)) {
 					listener.workerIdle(workerEvent);
-					break;
-				case running:
+				} else if (type.equals(TYPE_OF_DISPATCHING.running)) {
 					listener.workerRunning(workerEvent);
-					break;
-				default:
-					break;
+				} else {
+					assert false;
 				}
 			}
 		}
 	}
-
 }

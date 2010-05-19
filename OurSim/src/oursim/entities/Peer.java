@@ -8,7 +8,7 @@ import java.util.Set;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-import oursim.dispatchableevents.workerevents.WorkerEvent;
+import oursim.dispatchableevents.Event;
 import oursim.dispatchableevents.workerevents.WorkerEventListenerAdapter;
 import oursim.entities.util.ResourceManager;
 import oursim.entities.util.TaskManager;
@@ -341,14 +341,14 @@ public class Peer extends WorkerEventListenerAdapter {
 	}
 
 	@Override
-	public void workerAvailable(WorkerEvent workerEvent) {
+	public void workerAvailable(Event<String> workerEvent) {
 		String machineName = (String) workerEvent.getSource();
 		this.resourceManager.makeResourceAvailable(machineName);
 		// TODO: deve-se reescalonar os jobs agora pois tem recurso disponível
 	}
 
 	@Override
-	public void workerUnavailable(WorkerEvent workerEvent) {
+	public void workerUnavailable(Event<String> workerEvent) {
 		String machineName = (String) workerEvent.getSource();
 		if (this.resourceManager.isAllocated(machineName)) {
 			Machine resource = this.resourceManager.getResource(machineName);

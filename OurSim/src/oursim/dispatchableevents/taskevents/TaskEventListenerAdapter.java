@@ -1,23 +1,25 @@
 package oursim.dispatchableevents.taskevents;
 
+import oursim.dispatchableevents.Event;
 import oursim.dispatchableevents.EventListenerAdapter;
+import oursim.entities.Task;
 
 public class TaskEventListenerAdapter implements TaskEventListener, EventListenerAdapter {
 
 	@Override
-	public void taskFinished(TaskEvent taskEvent) {
+	public void taskFinished(Event<Task> taskEvent) {
 	}
 
 	@Override
-	public void taskPreempted(TaskEvent taskEvent) {
+	public void taskPreempted(Event<Task> taskEvent) {
 	}
 
 	@Override
-	public void taskStarted(TaskEvent taskEvent) {
+	public void taskStarted(Event<Task> taskEvent) {
 	}
 
 	@Override
-	public void taskSubmitted(TaskEvent taskEvent) {
+	public void taskSubmitted(Event<Task> taskEvent) {
 	}
 
 }

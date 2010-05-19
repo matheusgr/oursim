@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
-import oursim.dispatchableevents.jobevents.JobEvent;
+import oursim.dispatchableevents.Event;
 import oursim.entities.Job;
 
 /**
@@ -46,7 +46,7 @@ public class PrintOutput implements Output {
 	}
 
 	@Override
-	public void jobFinished(JobEvent jobEvent) {
+	public void jobFinished(Event<Job> jobEvent) {
 
 		Job job = (Job) jobEvent.getSource();
 
@@ -60,19 +60,19 @@ public class PrintOutput implements Output {
 	}
 
 	@Override
-	public void jobSubmitted(JobEvent jobEvent) {
+	public void jobSubmitted(Event<Job> jobEvent) {
 		Job job = (Job) jobEvent.getSource();
 		this.out.println("U:" + job.getSubmissionTime() + ":" + job.getId());
 	}
 
 	@Override
-	public void jobStarted(JobEvent jobEvent) {
+	public void jobStarted(Event<Job> jobEvent) {
 		Job job = (Job) jobEvent.getSource();
 		this.out.println("S:" + job.getStartTime() + ":" + job.getId());
 	}
 
 	@Override
-	public void jobPreempted(JobEvent jobEvent) {
+	public void jobPreempted(Event<Job> jobEvent) {
 		Job job = (Job) jobEvent.getSource();
 		this.out.println("P:" + job.getStartTime() + ":" + job.getId() + ":" + jobEvent.getTime());
 	}

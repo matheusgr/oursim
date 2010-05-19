@@ -1,15 +1,17 @@
 package oursim.dispatchableevents.taskevents;
 
+import oursim.dispatchableevents.Event;
 import oursim.dispatchableevents.EventListener;
+import oursim.entities.Task;
 
 public interface TaskEventListener extends EventListener {
 
-	void taskSubmitted(TaskEvent taskEvent);
+	void taskSubmitted(Event<Task> taskEvent);
 
-	void taskStarted(TaskEvent taskEvent);
+	void taskStarted(Event<Task> taskEvent);
 
-	void taskFinished(TaskEvent taskEvent);
+	void taskFinished(Event<Task> taskEvent);
 
-	void taskPreempted(TaskEvent taskEvent);
+	void taskPreempted(Event<Task> taskEvent);
 
 }
