@@ -27,18 +27,18 @@ public enum StateModelImp implements StateModel {
 
 	NA_LONG_FROM_AV_LONG;
 
-	private static Map<StateModelImp, Long> duracao = new HashMap<StateModelImp, Long>();
+	private static Map<StateModelImp, Long> duration = new HashMap<StateModelImp, Long>();
 
 	static {
-		duracao.put(AV_SHORT, 3 * MINUTE_DURATION);
-		duracao.put(AV_MED, 25 * MINUTE_DURATION);
-		duracao.put(AV_LONG, 300 * MINUTE_DURATION);
-		duracao.put(NA_SHORT_FROM_AV_SHORT, 7 * MINUTE_DURATION);
-		duracao.put(NA_LONG_FROM_AV_SHORT, 55 * MINUTE_DURATION);
-		duracao.put(NA_SHORT_FROM_AV_MED, 7 * MINUTE_DURATION);
-		duracao.put(NA_LONG_FROM_AV_MED, 55 * MINUTE_DURATION);
-		duracao.put(NA_SHORT_FROM_AV_LONG, 7 * MINUTE_DURATION);
-		duracao.put(NA_LONG_FROM_AV_LONG, 55 * MINUTE_DURATION);
+		duration.put(AV_SHORT, 3 * MINUTE_DURATION);
+		duration.put(AV_MED, 25 * MINUTE_DURATION);
+		duration.put(AV_LONG, 300 * MINUTE_DURATION);
+		duration.put(NA_SHORT_FROM_AV_SHORT, 7 * MINUTE_DURATION);
+		duration.put(NA_LONG_FROM_AV_SHORT, 55 * MINUTE_DURATION);
+		duration.put(NA_SHORT_FROM_AV_MED, 7 * MINUTE_DURATION);
+		duration.put(NA_LONG_FROM_AV_MED, 55 * MINUTE_DURATION);
+		duration.put(NA_SHORT_FROM_AV_LONG, 7 * MINUTE_DURATION);
+		duration.put(NA_LONG_FROM_AV_LONG, 55 * MINUTE_DURATION);
 	}
 
 	private boolean isNAShort() {
@@ -73,7 +73,7 @@ public enum StateModelImp implements StateModel {
 	}
 
 	@Override
-	public Long getDuracao() {
+	public Long getDuration() {
 
 		double coef = 0;
 		double lambda = 0;

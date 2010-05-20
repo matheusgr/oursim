@@ -296,7 +296,7 @@ public class Peer extends WorkerEventListenerAdapter {
 		if (this.taskManager.isInExecution(task)) {
 			this.resourceAllocationManager.deallocateTask(task);
 			this.resourceSharingPolicy.updateMutualBalance(this, task.getSourcePeer(), task);
-			EventQueue.getInstance().addPreemptedTaskEvent(task, EventQueue.getInstance().getCurrentTime());
+			EventQueue.getInstance().addPreemptedTaskEvent(EventQueue.getInstance().getCurrentTime(), task);
 		} else {
 			throw new IllegalArgumentException("The task was not being executed in this peer.");
 		}
