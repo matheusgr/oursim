@@ -1,4 +1,4 @@
-package oursim.policy;
+package oursim.policy.ranking;
 
 import java.util.List;
 

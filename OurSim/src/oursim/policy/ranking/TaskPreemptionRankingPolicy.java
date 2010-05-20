@@ -1,4 +1,4 @@
-package oursim.policy;
+package oursim.policy.ranking;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -9,7 +9,7 @@ import oursim.entities.Task;
 
 /**
  * 
- * An policy to prioritize the peers from which the resources will be consumed.
+ * An policy to prioritize the tasks that can be preempted.
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @since 18/05/2010

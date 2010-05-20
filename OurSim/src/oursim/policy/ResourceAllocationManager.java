@@ -13,13 +13,13 @@ import oursim.entities.util.TaskManager;
 
 /**
  * 
- * A policy that determines how to allocate the resources to tasks.
+ * A manager to help in allocation of resource to tasks..
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @since 18/05/2010
  * 
  */
-public class ResourceAllocationPolicy {
+public class ResourceAllocationManager {
 
 	/**
 	 * The peer that holds the resources being allocated.
@@ -53,7 +53,7 @@ public class ResourceAllocationPolicy {
 	 * @param taskManager
 	 *            an helper object to manages the tasks that are running.
 	 */
-	public ResourceAllocationPolicy(Peer peer, ResourceManager resourceManager, TaskManager taskManager) {
+	public ResourceAllocationManager(Peer peer, ResourceManager resourceManager, TaskManager taskManager) {
 
 		this.peer = peer;
 

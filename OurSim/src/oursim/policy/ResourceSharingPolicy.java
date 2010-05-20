@@ -10,7 +10,7 @@ import oursim.entities.Task;
 
 /**
  * 
- * An policy to determine how the resources will be shared between the
+ * A policy to determine how the resources will be shared between the
  * participating peers in the grid.
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
@@ -43,7 +43,8 @@ public interface ResourceSharingPolicy {
 
 	/**
 	 * An ordinary FIFO sharing policy, that is, there are no possibility of
-	 * preemption of a task in behalf of another.
+	 * preemption of a task in behalf of another. In this policy there are
+	 * preemptios only on behalf o the local tasks.
 	 */
 	public static final ResourceSharingPolicy DEFAULT_SHARING_POLICY = new ResourceSharingPolicy() {
 
@@ -62,9 +63,13 @@ public interface ResourceSharingPolicy {
 		}
 
 		public long getBalance(Peer source, Peer target) {return Long.MAX_VALUE;}
+
 		public void addPeer(Peer peer) {}
+
 		public void increaseBalance(Peer source, Peer target, Task task) {}
+
 		public void decreaseBalance(Peer source, Peer target, Task task) {}
+
 		public void updateMutualBalance(Peer provider, Peer consumer, Task task) {}
 	};
 

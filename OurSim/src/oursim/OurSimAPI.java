@@ -25,6 +25,7 @@ public class OurSimAPI {
 
 	private static void scheduleJobEvents(EventQueue eq, Input<Job> workload) {
 
+		// TODO: verificar uma maneira sob-demanda de adicionar o workload
 		while (workload.peek() != null) {
 			Job job = workload.poll();
 			long time = job.getSubmissionTime();
@@ -94,6 +95,7 @@ public class OurSimAPI {
 		JobEventDispatcher.getInstance().addListener(sp);
 		TaskEventDispatcher.getInstance().addListener(sp);
 
+		// os peers devem ser adicionados primeiro ao WorkerEventDispatcher
 		for (final Peer peer : peers) {
 			WorkerEventDispatcher.getInstance().addListener(peer, new WorkerEventFilter() {
 
@@ -109,6 +111,8 @@ public class OurSimAPI {
 			}
 		}
 
+		// o scheduller deve ser adicionado ao WorkerEventDispatcher sempre
+		// depois dos peers
 		WorkerEventDispatcher.getInstance().addListener(sp);
 
 	}
