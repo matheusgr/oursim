@@ -1,4 +1,4 @@
-package oursim.policy;
+package oursim.policy.ranking;
 
 import java.util.Collections;
 import java.util.List;
@@ -12,7 +12,6 @@ import oursim.entities.Peer;
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @since 18/05/2010
- * 
  */
 public class PeerRankingPolicy extends RankingPolicy<Peer, Peer> {
 

@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import oursim.policy.ResourceRankingPolicy;
+import oursim.policy.ranking.ResourceRankingPolicy;
 
 /**
  * 
