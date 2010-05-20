@@ -20,7 +20,7 @@ public interface StateModel {
 
 	static final long MINUTE_DURATION = 60L;
 
-	Long getDuracao();
+	Long getDuration();
 
 	boolean isAvailability();
 

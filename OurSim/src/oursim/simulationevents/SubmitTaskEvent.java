@@ -5,7 +5,8 @@ import oursim.entities.Task;
 
 /**
  * 
- * Utilizado quando uma task é preemptada.
+ * Event indicating that a task was submitted. Used when a task has been
+ * preempted.
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @since 30/04/2010
@@ -13,8 +14,16 @@ import oursim.entities.Task;
  */
 public class SubmitTaskEvent extends TaskTimedEvent {
 
-	SubmitTaskEvent(long time, Task task) {
-		super(time, 4, task);
+	/**
+	 * Creates an event indicating that a task was submitted.
+	 * 
+	 * @param submitTime
+	 *            the time at which the job has been submitted.
+	 * @param task
+	 *            the task that has been submitted.
+	 */
+	SubmitTaskEvent(long submitTime, Task task) {
+		super(submitTime, 4, task);
 	}
 
 	@Override

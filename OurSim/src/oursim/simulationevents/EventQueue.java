@@ -1,6 +1,7 @@
 package oursim.simulationevents;
 
 import java.io.BufferedWriter;
+import java.io.Closeable;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
@@ -13,17 +14,26 @@ import oursim.entities.Task;
 
 /**
  * 
- * The data structure responsible for deal with the simulation events.
+ * The data structure responsible for deal with the simulation events. To add an
+ * event to this queue the parameters of the event must be passed to the
+ * apropriate method must be called. There isn't another way to create and event
+ * outside of this package.
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @author Matheus G. do Rêgo, matheusgr@lsd.ufcg.edu.br
  * @since 14/05/2010
  * 
  */
-public class EventQueue {
+public class EventQueue implements Closeable {
 
+	/**
+	 * the current simulation's time.
+	 */
 	private long time = -1;
 
+	/**
+	 * The data structure that holds efectivelly the events.
+	 */
 	private PriorityQueue<TimedEvent> pq;
 
 	public static long totalNumberOfEvents = 0;
@@ -60,6 +70,10 @@ public class EventQueue {
 		return instance = (instance != null) ? instance : new EventQueue();
 	}
 
+	/**
+	 * Cleans all the state of this EventQueue. Its behaviour is something like
+	 * a new instantiation of the EventQueue.
+	 */
 	public void clear() {
 		pq = new PriorityQueue<TimedEvent>();
 		job2FinishJobEvent = new HashMap<Job, FinishJobEvent>();
@@ -68,6 +82,12 @@ public class EventQueue {
 		totalNumberOfEvents = 0;
 	}
 
+	/**
+	 * Adds an generic event to this queue.
+	 * 
+	 * @param event
+	 *            the event to be added.
+	 */
 	private void addEvent(TimedEvent event) {
 		assert event.getTime() >= time : event.getTime() + ">=" + time;
 		totalNumberOfEvents++;
@@ -82,22 +102,52 @@ public class EventQueue {
 		pq.add(event);
 	}
 
+	/**
+	 * Adds an event indicating that a job was submitted.
+	 * 
+	 * @param submitTime
+	 *            the time at which the job has been submitted.
+	 * @param job
+	 *            the job that has been submitted.
+	 */
 	public void addSubmitJobEvent(long submitTime, Job job) {
 		this.addEvent(new SubmitJobEvent(submitTime, job));
 	}
 
+	/**
+	 * Adds an event indicating that a job has been started.
+	 * 
+	 * @param job
+	 *            the job that has been started.
+	 */
 	@Deprecated
 	public void addStartedJobEvent(Job job) {
 		this.addEvent(new StartedJobEvent(job));
 		this.addFinishJobEvent(job.getEstimatedFinishTime(), job);
 	}
 
-	public void addPreemptedJobEvent(Job job, long time) {
+	/**
+	 * Adds an event indicating that a job has been preempted.
+	 * 
+	 * @param preemptionTime
+	 *            the time at which the job has been preempted.
+	 * @param job
+	 *            the job that has been preempted.
+	 */
+	public void addPreemptedJobEvent(long preemptionTime, Job job) {
 		assert job2FinishJobEvent.containsKey(job);
 		this.job2FinishJobEvent.remove(job).cancel();
-		this.addEvent(new PreemptedJobEvent(time, job));
+		this.addEvent(new PreemptedJobEvent(preemptionTime, job));
 	}
 
+	/**
+	 * Adds an event indicating that a job has been finished.
+	 * 
+	 * @param finishTime
+	 *            the time at which the job has been finished.
+	 * @param job
+	 *            the job that has been finished.
+	 */
 	public void addFinishJobEvent(long finishTime, Job job) {
 		assert finishTime >= this.getCurrentTime();
 		FinishJobEvent finishJobEvent = new FinishJobEvent(finishTime, job);
@@ -105,21 +155,51 @@ public class EventQueue {
 		this.job2FinishJobEvent.put(job, finishJobEvent);
 	}
 
+	/**
+	 * Adds an event indicating that a task was submitted.
+	 * 
+	 * @param submitTime
+	 *            the time at which the job has been submitted.
+	 * @param task
+	 *            the task that has been submitted.
+	 */
 	public void addSubmitTaskEvent(long submitTime, Task task) {
 		this.addEvent(new SubmitTaskEvent(submitTime, task));
 	}
 
+	/**
+	 * Adds an event indicating that a task has been started.
+	 * 
+	 * @param task
+	 *            the task that has been started.
+	 */
 	public void addStartedTaskEvent(Task task) {
 		this.addEvent(new StartedTaskEvent(task));
 		this.addFinishTaskEvent(task.getEstimatedFinishTime(), task);
 	}
 
-	public void addPreemptedTaskEvent(Task task, long time) {
+	/**
+	 * Adds an event indicating that a task has been preempted.
+	 * 
+	 * @param preemptionTime
+	 *            the time at which the task has been preempted.
+	 * @param task
+	 *            the task that has been preempted.
+	 */
+	public void addPreemptedTaskEvent(long preemptionTime, Task task) {
 		assert task2FinishTaskEvent.containsKey(task);
 		this.task2FinishTaskEvent.remove(task).cancel();
-		this.addEvent(new PreemptedTaskEvent(task, time));
+		this.addEvent(new PreemptedTaskEvent(preemptionTime, task));
 	}
 
+	/**
+	 * Adds an event indicating that a task has been finished.
+	 * 
+	 * @param finishTime
+	 *            the time at which the task has been finished.
+	 * @param task
+	 *            the task that has been finished.
+	 */
 	public void addFinishTaskEvent(long finishTime, Task task) {
 		assert finishTime > this.getCurrentTime();
 
@@ -133,20 +213,51 @@ public class EventQueue {
 		this.task2FinishTaskEvent.put(task, finishTaskEvent);
 	}
 
-	public void addWorkerAvailableEvent(String machineName, long time, long duration) {
+	/**
+	 * Adds an event indicating that a worker has become available. It's
+	 * automatically added a future event indicating that the worker has become
+	 * unavailable after the duration of the availability period.
+	 * 
+	 * @param time
+	 *            the time at which the machine has become available.
+	 * @param machineName
+	 *            the name of the machine that has become available.
+	 * @param duration
+	 *            the duration of the availability period.
+	 */
+	public void addWorkerAvailableEvent(long time, String machineName, long duration) {
 		assert duration > 0 && time >= 0;
 		addEvent(new WorkerAvailableEvent(time, machineName));
 		addEvent(new WorkerUnavailableEvent(time + duration, machineName));
 	}
 
+	/**
+	 * Remove an event of this queue.
+	 * 
+	 * @param event
+	 *            the event to be removed.
+	 */
 	public void removeEvent(TimedEvent event) {
 		pq.remove(event);
 	}
 
+	/**
+	 * Retrieves, but does not remove, the head (first element) of this
+	 * eventqueue.
+	 * 
+	 * @return the head of this list, or <tt>null</tt> if this eventqueue is
+	 *         empty.
+	 */
 	public TimedEvent peek() {
 		return pq.peek();
 	}
 
+	/**
+	 * /** Retrieves and removes the head (first element) of this eventqueue.
+	 * 
+	 * @return the head of this list, or <tt>null</tt> if this eventqueue is
+	 *         empty
+	 */
 	public TimedEvent poll() {
 		if (pq.peek() != null) {
 			if (!pq.peek().isCancelled()) {
@@ -161,11 +272,16 @@ public class EventQueue {
 		return pq.poll();
 	}
 
+	/**
+	 * Gets the current simulation's time.
+	 * 
+	 * @return the current simulation's time.
+	 */
 	public long getCurrentTime() {
 		return this.time;
 	}
 
-	// TODO: Verificar a necessidade desse método
+	@Override
 	public void close() {
 		try {
 			if (bw != null) {

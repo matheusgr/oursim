@@ -3,6 +3,14 @@ package oursim.simulationevents;
 import oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import oursim.entities.Job;
 
+/**
+ * 
+ * Event indicating that a job was preempted.
+ *
+ * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
+ * @since 20/05/2010
+ *
+ */
 public class PreemptedJobEvent extends JobTimedEvent {
 
 	PreemptedJobEvent(long time, Job job) {
