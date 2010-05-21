@@ -14,9 +14,11 @@ import oursim.dispatchableevents.taskevents.TaskEventCounter;
 import oursim.dispatchableevents.taskevents.TaskEventDispatcher;
 import oursim.entities.Peer;
 import oursim.input.AvailabilityCharacterization;
+import oursim.input.DedicatedResourcesAvailabilityCharacterization;
 import oursim.input.Input;
 import oursim.input.SyntheticWorkload;
 import oursim.input.Workload;
+import oursim.output.PrintOutput;
 import oursim.policy.NoFSharingPolicy;
 import oursim.policy.ResourceSharingPolicy;
 import oursim.simulationevents.EventQueue;
@@ -69,7 +71,7 @@ public class OurSim {
 
 		// OutputManager.getInstance().addListener(new
 		// PrintOutput("oursim_trace.txt"));
-		// OutputManager.getInstance().addListener(new PrintOutput());
+		JobEventDispatcher.getInstance().addListener(new PrintOutput());
 
 		JobEventCounter jobEventCounter = new JobEventCounter();
 		JobEventDispatcher.getInstance().addListener(jobEventCounter);
@@ -79,7 +81,9 @@ public class OurSim {
 
 		List<Peer> peers = prepareGrid(Parameters.NUM_PEERS, Parameters.NUM_RESOURCES_BY_PEER, Parameters.NODE_MIPS_RATING, Parameters.USE_NOF);
 		Workload workload = prepareWorkload(peers);
-		Input<AvailabilityRecord> availability = new AvailabilityCharacterization("trace_mutka_100-machines_10-hours.txt");
+
+		Input<AvailabilityRecord> availability = Parameters.DEDICATED_RESOURCES ? new DedicatedResourcesAvailabilityCharacterization(peers)
+				: new AvailabilityCharacterization(Parameters.AVAILABILITY_CHARACTERIZATION_FILE_PATH);
 
 		System.out.println("Starting Simulation...");
 

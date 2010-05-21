@@ -46,35 +46,48 @@ public class PrintOutput implements Output {
 	}
 
 	@Override
-	public void jobFinished(Event<Job> jobEvent) {
-
+	public void jobSubmitted(Event<Job> jobEvent) {
 		Job job = jobEvent.getSource();
 
 		long id = job.getId();
 		long submissionTime = job.getSubmissionTime();
-		long numberOfpreemptions = job.getNumberOfpreemptions();
-		long runTimeDuration = job.getRunningTime();
 
-		this.out.println("F:" + id + ":" + submissionTime + ":" + runTimeDuration + ":" + numberOfpreemptions);
-
-	}
-
-	@Override
-	public void jobSubmitted(Event<Job> jobEvent) {
-		Job job = jobEvent.getSource();
-		this.out.println("U:" + job.getSubmissionTime() + ":" + job.getId());
+		this.out.println("U:" + submissionTime + ":" + id);
 	}
 
 	@Override
 	public void jobStarted(Event<Job> jobEvent) {
 		Job job = jobEvent.getSource();
-		this.out.println("S:" + job.getStartTime() + ":" + job.getId());
+
+		long id = job.getId();
+		long startTime = job.getStartTime();
+
+		this.out.println("S:" + startTime + ":" + id);
 	}
 
 	@Override
 	public void jobPreempted(Event<Job> jobEvent) {
 		Job job = jobEvent.getSource();
-		this.out.println("P:" + job.getStartTime() + ":" + job.getId() + ":" + jobEvent.getTime());
+
+		long id = job.getId();
+		long preemptionTime = jobEvent.getTime();
+
+		this.out.println("P:" + preemptionTime + ":" + id);
+	}
+
+	@Override
+	public void jobFinished(Event<Job> jobEvent) {
+
+		Job job = jobEvent.getSource();
+
+		long id = job.getId();
+		long finishTime = jobEvent.getTime();
+		long submissionTime = job.getSubmissionTime();
+		long numberOfpreemptions = job.getNumberOfpreemptions();
+		long runTimeDuration = job.getRunningTime();
+
+		this.out.println("F:" + finishTime + ":" + id + ":" + submissionTime + ":" + runTimeDuration + ":" + numberOfpreemptions);
+
 	}
 
 	@Override
