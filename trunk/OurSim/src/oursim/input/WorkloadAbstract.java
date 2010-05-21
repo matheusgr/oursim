@@ -14,7 +14,6 @@ public abstract class WorkloadAbstract extends InputAbstract<Job> implements Wor
 
 	@Override
 	public boolean merge(Workload other) {
-		assert other.peek() != null;
 		while (other.peek() != null) {
 			this.inputs.addLast(other.poll());
 		}

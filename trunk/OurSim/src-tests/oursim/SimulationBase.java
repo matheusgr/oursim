@@ -22,6 +22,7 @@ import oursim.entities.Job;
 import oursim.entities.Peer;
 import oursim.input.Workload;
 import oursim.policy.NoFSharingPolicy;
+import oursim.simulationevents.EventQueue;
 
 public class SimulationBase {
 
@@ -152,7 +153,7 @@ public class SimulationBase {
 	public final void testRun() {
 		TestOutput to = new TestOutput(100, 100, 100, 100);
 		JobEventDispatcher.getInstance().addListener(to);
-		new OurSimAPI().run(peers, workload);
+		new OurSimAPI(EventQueue.getInstance()).run(peers, workload);
 		to.verify();
 	}
 

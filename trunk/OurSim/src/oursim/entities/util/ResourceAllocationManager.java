@@ -1,4 +1,4 @@
-package oursim.policy;
+package oursim.entities.util;
 
 import java.util.HashMap;
 import java.util.List;
@@ -8,8 +8,6 @@ import java.util.Set;
 import oursim.entities.Machine;
 import oursim.entities.Peer;
 import oursim.entities.Task;
-import oursim.entities.util.ResourceManager;
-import oursim.entities.util.TaskManager;
 
 /**
  * 

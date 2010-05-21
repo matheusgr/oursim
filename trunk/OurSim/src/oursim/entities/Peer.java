@@ -10,10 +10,10 @@ import org.apache.commons.lang.builder.ToStringStyle;
 
 import oursim.dispatchableevents.Event;
 import oursim.dispatchableevents.workerevents.WorkerEventListenerAdapter;
+import oursim.entities.util.ResourceAllocationManager;
 import oursim.entities.util.ResourceManager;
 import oursim.entities.util.TaskManager;
 import oursim.input.Workload;
-import oursim.policy.ResourceAllocationManager;
 import oursim.policy.ResourceSharingPolicy;
 import oursim.policy.ranking.PeerRankingPolicy;
 import oursim.policy.ranking.ResourceRankingPolicy;
@@ -54,6 +54,11 @@ public class Peer extends WorkerEventListenerAdapter {
 	private final ResourceManager resourceManager;
 
 	private final TaskManager taskManager;
+
+	/**
+	 * The event queue that will be processed by this peer.
+	 */
+	private EventQueue eventQueue;
 
 	/**
 	 * The workload originated by this peer, that is, all the jobs in this
@@ -142,13 +147,13 @@ public class Peer extends WorkerEventListenerAdapter {
 
 		this.name = name;
 
+		this.resourceSharingPolicy = resourceSharingPolicy;
+		this.resourceSharingPolicy.addPeer(this);
+
 		this.jobs = new ArrayList<Job>();
 		this.resources = new ArrayList<Machine>();
 
 		this.taskManager = new TaskManager(this);
-
-		this.resourceSharingPolicy = resourceSharingPolicy;
-		this.resourceSharingPolicy.addPeer(this);
 
 		this.peerRankingPolicy = new PeerRankingPolicy(this);
 
@@ -201,8 +206,8 @@ public class Peer extends WorkerEventListenerAdapter {
 		for (Task task : this.taskManager.getRunningTasks()) {
 			Long estimatedFinishTime = task.getTaskExecution().updateProcessing(currentTime);
 			if (estimatedFinishTime != null) {
-				long finishTime = EventQueue.getInstance().getCurrentTime() + estimatedFinishTime;
-				EventQueue.getInstance().addFinishTaskEvent(finishTime, task);
+				long finishTime = this.eventQueue.getCurrentTime() + estimatedFinishTime;
+				this.eventQueue.addFinishTaskEvent(finishTime, task);
 			}
 		}
 	}
@@ -254,7 +259,7 @@ public class Peer extends WorkerEventListenerAdapter {
 	public boolean executeTask(Task task) {
 		Machine allocatedMachine = this.resourceAllocationManager.allocateTask(task);
 		if (allocatedMachine != null) {
-			long currentTime = EventQueue.getInstance().getCurrentTime();
+			long currentTime = this.eventQueue.getCurrentTime();
 			Processor defaultProcessor = allocatedMachine.getDefaultProcessor();
 			task.setTaskExecution(new TaskExecution(task, defaultProcessor, currentTime));
 			task.setStartTime(currentTime);
@@ -296,7 +301,7 @@ public class Peer extends WorkerEventListenerAdapter {
 		if (this.taskManager.isInExecution(task)) {
 			this.resourceAllocationManager.deallocateTask(task);
 			this.resourceSharingPolicy.updateMutualBalance(this, task.getSourcePeer(), task);
-			EventQueue.getInstance().addPreemptedTaskEvent(EventQueue.getInstance().getCurrentTime(), task);
+			this.eventQueue.addPreemptedTaskEvent(this.eventQueue.getCurrentTime(), task);
 		} else {
 			throw new IllegalArgumentException("The task was not being executed in this peer.");
 		}
@@ -417,6 +422,10 @@ public class Peer extends WorkerEventListenerAdapter {
 	@Override
 	public String toString() {
 		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("name", name).append("#resources", resources.size()).toString();
+	}
+
+	public void setEventQueue(EventQueue eventQueue) {
+		this.eventQueue = eventQueue;
 	}
 
 }

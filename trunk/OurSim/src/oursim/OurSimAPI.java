@@ -14,24 +14,67 @@ import oursim.entities.Machine;
 import oursim.entities.Peer;
 import oursim.input.Input;
 import oursim.input.InputAbstract;
+import oursim.input.Workload;
 import oursim.policy.JobSchedulerPolicy;
 import oursim.policy.OurGridScheduler;
 import oursim.simulationevents.EventQueue;
+import oursim.simulationevents.TimedEvent;
 
 public class OurSimAPI {
 
-	public OurSimAPI() {
+	private EventQueue eventQueue;
+
+	public OurSimAPI(EventQueue eventQueue) {
+		this.eventQueue = eventQueue;
 	}
 
-	private static void scheduleJobEvents(EventQueue eq, Input<Job> workload) {
+	public void run(List<Peer> peers, Workload workload) {
+		Input<AvailabilityRecord> defaultResourceAvailability = generateDefaultResourceAvailability(peers);
+		run(peers, workload, defaultResourceAvailability);
+	}
 
-		// TODO: verificar uma maneira sob-demanda de adicionar o workload
-		while (workload.peek() != null) {
-			Job job = workload.poll();
-			long time = job.getSubmissionTime();
-			eq.addSubmitJobEvent(time, job);
+	public void run(List<Peer> peers, Workload workload, Input<AvailabilityRecord> availability) {
+
+		JobSchedulerPolicy jobScheduler = new OurGridScheduler(eventQueue, peers, workload);
+
+		prepareListeners(peers, workload, availability, eventQueue, jobScheduler);
+
+		// setUP the peers to the simulation
+		for (Peer peer : peers) {
+			// share the eventQueue with the peers.
+			peer.setEventQueue(eventQueue);
+			// adds the workload of all peers to the jobScheduler
+			if (peer.getWorkload() != null) {
+				jobScheduler.addWorkload(peer.getWorkload());
+			}
 		}
 
+		scheduleWorkerEvents(eventQueue, availability);
+
+		run(eventQueue, jobScheduler);
+
+		eventQueue.close();
+
+		clearListeners(peers, jobScheduler);
+
+	}
+
+	private static void run(EventQueue queue, JobSchedulerPolicy jobScheduler) {
+		while (queue.peek() != null) {
+
+			long currentTime = queue.peek().getTime();
+
+			// dispatch all the events in current time
+			while (queue.peek() != null && queue.peek().getTime() == currentTime) {
+				TimedEvent nextEventInCurrentTime = queue.poll();
+				nextEventInCurrentTime.action();
+			}
+
+			// after the invocation of the actions of all events in current
+			// time, the scheduler must be invoked
+			jobScheduler.schedule();
+
+		}
 	}
 
 	private static void scheduleWorkerEvents(EventQueue eq, Input<AvailabilityRecord> availability) {
@@ -43,36 +86,42 @@ public class OurSimAPI {
 
 	}
 
-	public void run(List<Peer> peers, Input<Job> workload, Input<AvailabilityRecord> availability) {
+	private static void prepareListeners(List<Peer> peers, Input<Job> workload, Input<AvailabilityRecord> availability, EventQueue eq, JobSchedulerPolicy sp) {
+		JobEventDispatcher.getInstance().addListener(sp);
+		TaskEventDispatcher.getInstance().addListener(sp);
 
-		EventQueue eq = EventQueue.getInstance();
-		JobSchedulerPolicy sp = new OurGridScheduler(eq, peers);
+		// the peers must be the first added to the WorkerEventDispatcher
+		for (final Peer peer : peers) {
+			WorkerEventDispatcher.getInstance().addListener(peer, new WorkerEventFilter() {
 
-		prepareListeners(peers, workload, availability, eq, sp);
+				@Override
+				public boolean accept(Event<String> workerEvent) {
+					String machineName = (String) workerEvent.getSource();
+					return peer.hasResource(machineName);
+				}
 
-		scheduleJobEvents(eq, workload);
-		scheduleWorkerEvents(eq, availability);
-
-		while (eq.peek() != null) {
-			long time = eq.peek().getTime();
-			while (eq.peek() != null && eq.peek().getTime() == time) {
-				eq.poll().action();
-			}
-			sp.schedule();
+			});
 		}
 
-		eq.close();
-
-		clearListeners(peers, sp);
+		// the scheduler must be added to WorkerEventDispatcher always
+		// after of all peers
+		WorkerEventDispatcher.getInstance().addListener(sp);
 
 	}
 
-	public void run(List<Peer> peers, Input<Job> workload) {
-		Input<AvailabilityRecord> defaultResourceAvailability = generateDefaultResourceAvailability(peers);
-		run(peers, workload, defaultResourceAvailability);
+	private static void clearListeners(List<Peer> peers, JobSchedulerPolicy sp) {
+
+		for (Peer peer : peers) {
+			WorkerEventDispatcher.getInstance().removeListener(peer);
+		}
+
+		JobEventDispatcher.getInstance().removeListener(sp);
+		TaskEventDispatcher.getInstance().removeListener(sp);
+		WorkerEventDispatcher.getInstance().removeListener(sp);
+
 	}
 
-	private Input<AvailabilityRecord> generateDefaultResourceAvailability(final List<Peer> peers) {
+	private static Input<AvailabilityRecord> generateDefaultResourceAvailability(final List<Peer> peers) {
 
 		Input<AvailabilityRecord> availability = new InputAbstract<AvailabilityRecord>() {
 			@Override
@@ -89,43 +138,6 @@ public class OurSimAPI {
 			}
 		};
 		return availability;
-	}
-
-	private void prepareListeners(List<Peer> peers, Input<Job> workload, Input<AvailabilityRecord> availability, EventQueue eq, JobSchedulerPolicy sp) {
-		JobEventDispatcher.getInstance().addListener(sp);
-		TaskEventDispatcher.getInstance().addListener(sp);
-
-		// os peers devem ser adicionados primeiro ao WorkerEventDispatcher
-		for (final Peer peer : peers) {
-			WorkerEventDispatcher.getInstance().addListener(peer, new WorkerEventFilter() {
-
-				@Override
-				public boolean accept(Event<String> workerEvent) {
-					String machineName = (String) workerEvent.getSource();
-					return peer.hasResource(machineName);
-				}
-
-			});
-			if (peer.getWorkload() != null) {
-				scheduleJobEvents(eq, peer.getWorkload());
-			}
-		}
-
-		// o scheduller deve ser adicionado ao WorkerEventDispatcher sempre
-		// depois dos peers
-		WorkerEventDispatcher.getInstance().addListener(sp);
-
-	}
-
-	private void clearListeners(List<Peer> peers, JobSchedulerPolicy sp) {
-		JobEventDispatcher.getInstance().removeListener(sp);
-		TaskEventDispatcher.getInstance().removeListener(sp);
-
-		for (Peer peer : peers) {
-			WorkerEventDispatcher.getInstance().removeListener(peer);
-		}
-
-		WorkerEventDispatcher.getInstance().removeListener(sp);
 	}
 
 }
