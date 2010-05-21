@@ -5,6 +5,10 @@ import java.util.Random;
 public class Parameters {
 
 	public static final boolean USE_NOF = false;
+	
+	public static final boolean DEDICATED_RESOURCES = true;
+	
+	public static final String AVAILABILITY_CHARACTERIZATION_FILE_PATH = "trace_mutka_100-machines_10-hours.txt";
 
 	public static final boolean LOG = false;
 
@@ -12,7 +16,7 @@ public class Parameters {
 
 	private static String argsString =
 	// execTime execTimeVar subInterval   #Jobs  #TasksByJob #Peers #nodesByPeer nodeMIPSRating
-	"       100         50            5    1000            2     10 		  10           3000";
+	"       100         50            5    1000           50     10 		  10           3000";
 
 	// 100000
 

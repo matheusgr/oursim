@@ -1,6 +1,5 @@
 package oursim;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import oursim.availability.AvailabilityRecord;
@@ -9,11 +8,9 @@ import oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import oursim.dispatchableevents.taskevents.TaskEventDispatcher;
 import oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
 import oursim.dispatchableevents.workerevents.WorkerEventFilter;
-import oursim.entities.Job;
-import oursim.entities.Machine;
 import oursim.entities.Peer;
+import oursim.input.DedicatedResourcesAvailabilityCharacterization;
 import oursim.input.Input;
-import oursim.input.InputAbstract;
 import oursim.input.Workload;
 import oursim.policy.JobSchedulerPolicy;
 import oursim.policy.OurGridScheduler;
@@ -29,7 +26,7 @@ public class OurSimAPI {
 	}
 
 	public void run(List<Peer> peers, Workload workload) {
-		Input<AvailabilityRecord> defaultResourceAvailability = generateDefaultResourceAvailability(peers);
+		Input<AvailabilityRecord> defaultResourceAvailability = new DedicatedResourcesAvailabilityCharacterization(peers);
 		run(peers, workload, defaultResourceAvailability);
 	}
 
@@ -55,14 +52,6 @@ public class OurSimAPI {
 
 	}
 
-	void addFutureWorkerEventsToEventQueue(Input<AvailabilityRecord> availability) {
-		long nextAvRecordTime = (availability.peek() != null) ? availability.peek().getTime() : -1;
-		while (availability.peek() != null && availability.peek().getTime() == nextAvRecordTime) {
-			AvailabilityRecord av = availability.poll();
-			eventQueue.addWorkerAvailableEvent(av.getTime(), av.getMachineName(), av.getDuration());
-		}
-	}
-
 	private void run(EventQueue queue, JobSchedulerPolicy jobScheduler, Input<AvailabilityRecord> availability) {
 		addFutureWorkerEventsToEventQueue(availability);
 		while (queue.peek() != null) {
@@ -84,15 +73,14 @@ public class OurSimAPI {
 		}
 	}
 
-	private static void scheduleWorkerEvents(EventQueue eq, Input<AvailabilityRecord> availability) {
-
-		while (availability.peek() != null) {
+	void addFutureWorkerEventsToEventQueue(Input<AvailabilityRecord> availability) {
+		long nextAvRecordTime = (availability.peek() != null) ? availability.peek().getTime() : -1;
+		while (availability.peek() != null && availability.peek().getTime() == nextAvRecordTime) {
 			AvailabilityRecord av = availability.poll();
-			eq.addWorkerAvailableEvent(av.getTime(), av.getMachineName(), av.getDuration());
+			eventQueue.addWorkerAvailableEvent(av.getTime(), av.getMachineName(), av.getDuration());
 		}
-
-	}
-
+	}	
+	
 	private static void prepareListeners(List<Peer> peers, JobSchedulerPolicy sp) {
 		JobEventDispatcher.getInstance().addListener(sp);
 		TaskEventDispatcher.getInstance().addListener(sp);
@@ -126,25 +114,6 @@ public class OurSimAPI {
 		TaskEventDispatcher.getInstance().removeListener(sp);
 		WorkerEventDispatcher.getInstance().removeListener(sp);
 
-	}
-
-	private static Input<AvailabilityRecord> generateDefaultResourceAvailability(final List<Peer> peers) {
-
-		Input<AvailabilityRecord> availability = new InputAbstract<AvailabilityRecord>() {
-			@Override
-			protected void setUp() {
-				this.inputs = new LinkedList<AvailabilityRecord>();
-				long timestamp = 0;
-				long duration = Long.MAX_VALUE;
-				for (Peer peer : peers) {
-					for (Machine machine : peer.getResources()) {
-						this.inputs.add(new AvailabilityRecord(machine.getName(), timestamp, duration));
-					}
-				}
-
-			}
-		};
-		return availability;
 	}
 
 }
