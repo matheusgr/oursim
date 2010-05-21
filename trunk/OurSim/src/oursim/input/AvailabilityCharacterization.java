@@ -2,7 +2,7 @@ package oursim.input;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.LinkedList;
+import java.util.PriorityQueue;
 import java.util.Scanner;
 
 import oursim.availability.AvailabilityRecord;
@@ -10,7 +10,7 @@ import oursim.availability.AvailabilityRecord;
 public class AvailabilityCharacterization extends InputAbstract<AvailabilityRecord> {
 
 	public AvailabilityCharacterization(String fileName) throws FileNotFoundException {
-		this.inputs = new LinkedList<AvailabilityRecord>();
+		this.inputs = new PriorityQueue<AvailabilityRecord>();
 		Scanner sc = new Scanner(new File(fileName));
 		sc.nextLine();// TODO desconsidera a primeira linha (cabeçalho)
 		while (sc.hasNextLine()) {

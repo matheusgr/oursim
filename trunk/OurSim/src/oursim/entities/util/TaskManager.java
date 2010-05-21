@@ -183,12 +183,12 @@ public class TaskManager {
 	}
 
 	/**
-	 * Gets the total of resources being locally consumed, that is, that the
-	 * tasks running in them belong to the peer that holds this taskManager.
+	 * Gets the total of local running tasks, that is, that tasks thar are
+	 * running and belong to the peer that holds this taskManager.
 	 * 
 	 * @return Gets the total of resources being locally consumed
 	 */
-	public int getNumberOfLocallyConsumedResources() {
+	public int getNumberOfLocalTasks() {
 		return this.localTasks.size();
 	}
 

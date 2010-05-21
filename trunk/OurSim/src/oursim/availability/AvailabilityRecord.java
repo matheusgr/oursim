@@ -1,6 +1,6 @@
 package oursim.availability;
 
-public class AvailabilityRecord {
+public class AvailabilityRecord implements Comparable<AvailabilityRecord> {
 
 	private String machineName;
 	private long time;
@@ -22,6 +22,11 @@ public class AvailabilityRecord {
 
 	public long getDuration() {
 		return duration;
+	}
+
+	@Override
+	public int compareTo(AvailabilityRecord o) {
+		return (int) (this.time - o.time);
 	}
 
 }
