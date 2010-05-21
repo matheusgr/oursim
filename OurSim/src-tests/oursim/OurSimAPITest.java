@@ -69,7 +69,7 @@ public class OurSimAPITest {
 	@Before
 	public void setUp() throws Exception {
 
-		oursim = new OurSimAPI();
+		oursim = new OurSimAPI(EventQueue.getInstance());
 
 		jobEventCounter = new JobEventCounter();
 		JobEventDispatcher.getInstance().addListener(jobEventCounter);
@@ -122,7 +122,7 @@ public class OurSimAPITest {
 	public void testRun_1() {
 
 		// Define as demandas para cada peer
-		Input<Job> workload = generateDefaultWorkload();
+		Workload workload = generateDefaultWorkload();
 
 		// Define os eventos de disponibilidade para cada recurso de cada peer.
 		// Nesse cenário os recursos ficarão disponíveis o tempo suficiente para

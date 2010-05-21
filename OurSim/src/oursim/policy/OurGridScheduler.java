@@ -1,16 +1,12 @@
 package oursim.policy;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import oursim.dispatchableevents.Event;
-import oursim.dispatchableevents.workerevents.WorkerEventListenerAdapter;
-import oursim.entities.Job;
 import oursim.entities.Peer;
 import oursim.entities.Task;
+import oursim.input.Workload;
 import oursim.simulationevents.EventQueue;
 
 /**
@@ -21,28 +17,7 @@ import oursim.simulationevents.EventQueue;
  * @since 18/05/2010
  * 
  */
-public class OurGridScheduler extends WorkerEventListenerAdapter implements JobSchedulerPolicy {
-
-	/**
-	 * The event queue that will be processed by this scheduler.
-	 */
-	private EventQueue eventQueue;
-
-	/**
-	 * The jobs that have been submitted to this scheduler.
-	 */
-	private Set<Job> submittedJobs;
-
-	/**
-	 * The tasks of all jobs that have been submitted to this scheduler. The
-	 * schedulling is effectively performed in this collection.
-	 */
-	private Set<Task> submittedTasks;
-
-	/**
-	 * All the peers that participate of the grid.
-	 */
-	private List<Peer> peers;
+public class OurGridScheduler extends JobSchedulerPolicyAbstract {
 
 	/**
 	 * An ordinary constructor.
@@ -52,35 +27,12 @@ public class OurGridScheduler extends WorkerEventListenerAdapter implements JobS
 	 * @param peers
 	 *            All the peers that compound of the grid.
 	 */
-	public OurGridScheduler(EventQueue eventQueue, List<Peer> peers) {
-		this.peers = peers;
-		this.eventQueue = eventQueue;
-		this.submittedJobs = new HashSet<Job>();
-		this.submittedTasks = new TreeSet<Task>();
-	}
-
-	/**
-	 * 
-	 * Performs a rescheduling of the task. The task already has been schedulled
-	 * but it was preempted by some reason.
-	 * 
-	 * @param task
-	 *            The task to be rescheduled.
-	 */
-	private void rescheduleTask(Task task) {
-		eventQueue.addSubmitTaskEvent(eventQueue.getCurrentTime(), task);
+	public OurGridScheduler(EventQueue eventQueue, List<Peer> peers, Workload workload) {
+		super(eventQueue, peers, workload);
 	}
 
 	@Override
-	public void addJob(Job job) {
-		assert !job.getTasks().isEmpty();
-		this.submittedJobs.add(job);
-		this.submittedTasks.addAll(job.getTasks());
-	}
-
-	@Override
-	public void schedule() {
-
+	protected void performScheduling() {
 		for (Iterator<Task> iterator = submittedTasks.iterator(); iterator.hasNext();) {
 			Task task = iterator.next();
 			task.getSourcePeer().prioritizePeersToConsume(peers);
@@ -93,32 +45,12 @@ public class OurGridScheduler extends WorkerEventListenerAdapter implements JobS
 				}
 			}
 		}
-
 	}
 
 	@Override
-	public void jobSubmitted(Event<Job> jobEvent) {
-		this.addJob(jobEvent.getSource());
-	}
-
-	@Override
-	public void jobPreempted(Event<Job> jobEvent) {
-		// nothing to do
-	}
-
-	@Override
-	public void jobFinished(Event<Job> jobEvent) {
-		// nothing to do
-	}
-
-	@Override
-	public void jobStarted(Event<Job> jobEvent) {
-		// nothing to do
-	}
-
-	@Override
-	public void taskStarted(Event<Task> taskEvent) {
-		// nothing to do
+	public void taskSubmitted(Event<Task> taskEvent) {
+		Task task = taskEvent.getSource();
+		this.submittedTasks.add(task);
 	}
 
 	@Override
@@ -128,12 +60,6 @@ public class OurGridScheduler extends WorkerEventListenerAdapter implements JobS
 		if (task.getSourceJob().isFinished()) {
 			eventQueue.addFinishJobEvent(eventQueue.getCurrentTime(), task.getSourceJob());
 		}
-	}
-
-	@Override
-	public void taskSubmitted(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		this.submittedTasks.add(task);
 	}
 
 	@Override

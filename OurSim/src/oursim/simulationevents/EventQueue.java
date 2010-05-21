@@ -29,7 +29,7 @@ public class EventQueue implements Closeable {
 	/**
 	 * the current simulation's time.
 	 */
-	private long time = -1;
+	private long currentTime = -1;
 
 	/**
 	 * The data structure that holds efectivelly the events.
@@ -78,7 +78,7 @@ public class EventQueue implements Closeable {
 		pq = new PriorityQueue<TimedEvent>();
 		job2FinishJobEvent = new HashMap<Job, FinishJobEvent>();
 		task2FinishTaskEvent = new HashMap<Task, FinishTaskEvent>();
-		time = -1;
+		currentTime = -1;
 		totalNumberOfEvents = 0;
 	}
 
@@ -89,7 +89,7 @@ public class EventQueue implements Closeable {
 	 *            the event to be added.
 	 */
 	private void addEvent(TimedEvent event) {
-		assert event.getTime() >= time : event.getTime() + ">=" + time;
+		assert event.getTime() >= currentTime : event.getTime() + ">=" + currentTime;
 		totalNumberOfEvents++;
 		// TODO: Verificar a necessidade desse método
 		if (Parameters.LOG) {
@@ -103,6 +103,16 @@ public class EventQueue implements Closeable {
 	}
 
 	/**
+	 * Remove an event of this queue.
+	 * 
+	 * @param event
+	 *            the event to be removed.
+	 */
+	public void removeEvent(TimedEvent event) {
+		pq.remove(event);
+	}
+
+	/**
 	 * Adds an event indicating that a job was submitted.
 	 * 
 	 * @param submitTime
@@ -111,6 +121,7 @@ public class EventQueue implements Closeable {
 	 *            the job that has been submitted.
 	 */
 	public void addSubmitJobEvent(long submitTime, Job job) {
+		assert submitTime >= currentTime;
 		this.addEvent(new SubmitJobEvent(submitTime, job));
 	}
 
@@ -232,16 +243,6 @@ public class EventQueue implements Closeable {
 	}
 
 	/**
-	 * Remove an event of this queue.
-	 * 
-	 * @param event
-	 *            the event to be removed.
-	 */
-	public void removeEvent(TimedEvent event) {
-		pq.remove(event);
-	}
-
-	/**
 	 * Retrieves, but does not remove, the head (first element) of this
 	 * eventqueue.
 	 * 
@@ -259,15 +260,14 @@ public class EventQueue implements Closeable {
 	 *         empty
 	 */
 	public TimedEvent poll() {
-		if (pq.peek() != null) {
-			if (!pq.peek().isCancelled()) {
-				if (this.time > pq.peek().time) {
-					System.err.println(this);
-					System.err.println("Offending Event! " + pq.peek() + " CT: " + time);
-					throw new RuntimeException("Cannot go to the past :)");
-				}
-				this.time = pq.peek().time;
+		// checks if the next event is a valid one
+		if (pq.peek() != null && !pq.peek().isCancelled()) {
+			if (this.currentTime > pq.peek().getTime()) {
+				System.err.println(this);
+				System.err.println("Offending Event! " + pq.peek() + " CT: " + currentTime);
+				throw new RuntimeException("Cannot go to the past :)");
 			}
+			this.currentTime = pq.peek().getTime();
 		}
 		return pq.poll();
 	}
@@ -278,7 +278,7 @@ public class EventQueue implements Closeable {
 	 * @return the current simulation's time.
 	 */
 	public long getCurrentTime() {
-		return this.time;
+		return this.currentTime;
 	}
 
 	@Override
@@ -294,7 +294,7 @@ public class EventQueue implements Closeable {
 
 	@Override
 	public String toString() {
-		return "TimeQueue [pq=" + pq.size() + ", time=" + time + "]";
+		return "TimeQueue [pq=" + pq.size() + ", time=" + currentTime + "]";
 	}
 
 }

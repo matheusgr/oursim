@@ -83,7 +83,7 @@ public class OurSim {
 
 		System.out.println("Starting Simulation...");
 
-		new OurSimAPI().run(peers, workload, availability);
+		new OurSimAPI(EventQueue.getInstance()).run(peers, workload, availability);
 
 		System.out.println("# Total of  finished  jobs: " + jobEventCounter.getNumberOfFinishedJobs());
 		System.out.println("# Total of preempted  jobs: " + jobEventCounter.getNumberOfPreemptionsForAllJobs());
