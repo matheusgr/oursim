@@ -88,7 +88,7 @@ public abstract class JobSchedulerPolicyAbstract implements JobSchedulerPolicy {
 
 		performScheduling();
 
-		addFutureJobsToEventQueue();
+		addFutureJobEventsToEventQueue();
 
 	}
 
@@ -103,15 +103,12 @@ public abstract class JobSchedulerPolicyAbstract implements JobSchedulerPolicy {
 	 */
 	protected abstract void performScheduling();
 
-	protected final void addFutureJobsToEventQueue() {
+	protected final void addFutureJobEventsToEventQueue() {
 		long nextSubmissionTime = (workload.peek() != null) ? workload.peek().getSubmissionTime() : -1;
-		while (workload.peek() != null) {
-			Job nextJob = workload.peek();
-			if (nextJob.getSubmissionTime() == nextSubmissionTime) {
-				Job job = workload.poll();
-				long time = job.getSubmissionTime();
-				eventQueue.addSubmitJobEvent(time, job);
-			}
+		while (workload.peek() != null && workload.peek().getSubmissionTime() == nextSubmissionTime) {
+			Job job = workload.poll();
+			long time = job.getSubmissionTime();
+			eventQueue.addSubmitJobEvent(time, job);
 		}
 	}
 

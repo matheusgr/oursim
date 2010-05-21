@@ -37,11 +37,11 @@ public class OurSimAPI {
 
 		JobSchedulerPolicy jobScheduler = new OurGridScheduler(eventQueue, peers, workload);
 
-		prepareListeners(peers, workload, availability, eventQueue, jobScheduler);
+		prepareListeners(peers, jobScheduler);
 
 		// setUP the peers to the simulation
 		for (Peer peer : peers) {
-			// share the eventQueue with the peers.
+			// shpeersntQueue with the peers.
 			peer.setEventQueue(eventQueue);
 			// adds the workload of all peers to the jobScheduler
 			if (peer.getWorkload() != null) {
@@ -49,17 +49,22 @@ public class OurSimAPI {
 			}
 		}
 
-		scheduleWorkerEvents(eventQueue, availability);
-
-		run(eventQueue, jobScheduler);
-
-		eventQueue.close();
+		run(eventQueue, jobScheduler, availability);
 
 		clearListeners(peers, jobScheduler);
 
 	}
 
-	private static void run(EventQueue queue, JobSchedulerPolicy jobScheduler) {
+	void addFutureWorkerEventsToEventQueue(Input<AvailabilityRecord> availability) {
+		long nextAvRecordTime = (availability.peek() != null) ? availability.peek().getTime() : -1;
+		while (availability.peek() != null && availability.peek().getTime() == nextAvRecordTime) {
+			AvailabilityRecord av = availability.poll();
+			eventQueue.addWorkerAvailableEvent(av.getTime(), av.getMachineName(), av.getDuration());
+		}
+	}
+
+	private void run(EventQueue queue, JobSchedulerPolicy jobScheduler, Input<AvailabilityRecord> availability) {
+		addFutureWorkerEventsToEventQueue(availability);
 		while (queue.peek() != null) {
 
 			long currentTime = queue.peek().getTime();
@@ -74,6 +79,8 @@ public class OurSimAPI {
 			// time, the scheduler must be invoked
 			jobScheduler.schedule();
 
+			addFutureWorkerEventsToEventQueue(availability);
+
 		}
 	}
 
@@ -86,7 +93,7 @@ public class OurSimAPI {
 
 	}
 
-	private static void prepareListeners(List<Peer> peers, Input<Job> workload, Input<AvailabilityRecord> availability, EventQueue eq, JobSchedulerPolicy sp) {
+	private static void prepareListeners(List<Peer> peers, JobSchedulerPolicy sp) {
 		JobEventDispatcher.getInstance().addListener(sp);
 		TaskEventDispatcher.getInstance().addListener(sp);
 

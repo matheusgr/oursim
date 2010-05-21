@@ -74,6 +74,7 @@ public class ResourceManager {
 	public void releaseResource(String machineName) {
 		assert this.allocated.containsKey(machineName) : machineName;
 		Machine resource = this.allocated.remove(machineName);
+		assert !this.allocated.containsKey(machineName);
 		this.free.put(resource.getName(), resource);
 	}
 
@@ -91,6 +92,13 @@ public class ResourceManager {
 		this.free.put(machineName, resource);
 	}
 
+	public void makeResourceAllocated(Machine resource) {
+		assert this.free.containsValue(resource);
+		assert !this.allocated.containsValue(resource);
+		this.free.remove(resource.getName());
+		this.allocated.put(resource.getName(), resource);
+	}
+
 	public boolean isAllocated(String machineName) {
 		return this.allocated.containsKey(machineName);
 	}
@@ -104,7 +112,15 @@ public class ResourceManager {
 	}
 
 	public int getNumberOfAvailableResources() {
-		return free.size();
+		return this.free.size();
+	}
+
+	public int getNumberOfAllocatedResources() {
+		return this.allocated.size();
+	}
+
+	public int getNumberOfUnavailableResources() {
+		return this.unavailable.size();
 	}
 
 	public int getNumberOfResources() {

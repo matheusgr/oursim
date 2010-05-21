@@ -1,20 +1,19 @@
 package oursim.policy;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import oursim.entities.Job;
 import oursim.entities.Peer;
-import oursim.entities.Processor;
 import oursim.entities.Task;
 import oursim.entities.TaskExecution;
-import oursim.policy.NoFSharingPolicy;
 
 public class NoFSharingPolicyTest {
 

@@ -8,11 +8,13 @@ import java.util.Set;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
+import oursim.availability.AvailabilityRecord;
 import oursim.dispatchableevents.Event;
 import oursim.dispatchableevents.workerevents.WorkerEventListenerAdapter;
 import oursim.entities.util.ResourceAllocationManager;
 import oursim.entities.util.ResourceManager;
 import oursim.entities.util.TaskManager;
+import oursim.input.Input;
 import oursim.input.Workload;
 import oursim.policy.ResourceSharingPolicy;
 import oursim.policy.ranking.PeerRankingPolicy;
@@ -226,7 +228,14 @@ public class Peer extends WorkerEventListenerAdapter {
 	 *         it's possible to share.
 	 */
 	public long getNumberOfResourcesToShare() {
-		return this.resourceManager.getNumberOfResources() - this.taskManager.getNumberOfLocallyConsumedResources();
+		// TODO: there are a bug here: it's needed to account the volatility of
+		// the resources.
+		// The right way: return
+		// (this.resourceManager.getNumberOfAllocatedResources() +
+		// this.resourceManager.getNumberOfAvailableResources())
+		// - this.taskManager.getNumberOfLocalTasks();
+		return this.resourceManager.getNumberOfResources() - this.taskManager.getNumberOfLocalTasks();
+
 	}
 
 	/**
@@ -298,6 +307,7 @@ public class Peer extends WorkerEventListenerAdapter {
 	 */
 	public void preemptTask(Task task) throws IllegalArgumentException {
 		assert this.taskManager.isInExecution(task) : task;
+
 		if (this.taskManager.isInExecution(task)) {
 			this.resourceAllocationManager.deallocateTask(task);
 			this.resourceSharingPolicy.updateMutualBalance(this, task.getSourcePeer(), task);
@@ -354,6 +364,7 @@ public class Peer extends WorkerEventListenerAdapter {
 	@Override
 	public void workerUnavailable(Event<String> workerEvent) {
 		String machineName = workerEvent.getSource();
+
 		if (this.resourceManager.isAllocated(machineName)) {
 			Machine resource = this.resourceManager.getResource(machineName);
 			Task task = this.taskManager.getTask(resource);
@@ -415,7 +426,7 @@ public class Peer extends WorkerEventListenerAdapter {
 	 * @return the workload belonged to this peer.
 	 */
 	public Workload getWorkload() {
-		assert this.workload != null;
+		// assert this.workload != null;
 		return workload;
 	}
 
@@ -426,6 +437,13 @@ public class Peer extends WorkerEventListenerAdapter {
 
 	public void setEventQueue(EventQueue eventQueue) {
 		this.eventQueue = eventQueue;
+	}
+
+	public void scheduleWorkerEvents(Input<AvailabilityRecord> availability) {
+		while (availability.peek() != null) {
+			AvailabilityRecord av = availability.poll();
+			eventQueue.addWorkerAvailableEvent(av.getTime(), av.getMachineName(), av.getDuration());
+		}
 	}
 
 }

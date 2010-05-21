@@ -62,8 +62,8 @@ public class BidirectionalMap<K, V> implements Map<K, V> {
 	@Override
 	public V put(K key, V value) {
 		assert key != null && value != null;
-		assert !bidiMap.containsKey(key);
-		assert !bidiMap.containsValue(value);
+		assert !bidiMap.containsKey(key) : key;
+		assert !bidiMap.containsValue(value) : value;
 		return (V) bidiMap.put(key, value);
 	}
 
@@ -79,6 +79,7 @@ public class BidirectionalMap<K, V> implements Map<K, V> {
 		assert bidiMap.containsKey(key);
 		V removed = (V) bidiMap.remove(key);
 		assert !bidiMap.containsValue(removed);
+		assert !bidiMap.containsKey(key);
 		return removed;
 	}
 

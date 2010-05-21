@@ -1,8 +1,10 @@
 package oursim.input;
 
 import java.util.LinkedList;
-import org.apache.commons.lang.builder.ToStringStyle;
+import java.util.Queue;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
  * 
@@ -17,7 +19,7 @@ public abstract class InputAbstract<T> implements Input<T> {
 	/**
 	 * the memory managed collection of inputs.
 	 */
-	protected LinkedList<T> inputs;
+	protected Queue<T> inputs;
 
 	/**
 	 * An ordinary constructor.

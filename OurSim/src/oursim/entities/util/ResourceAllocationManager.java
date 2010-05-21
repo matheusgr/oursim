@@ -77,7 +77,8 @@ public class ResourceAllocationManager {
 	 * @see {@link #deallocateTask(Task)}
 	 */
 	public Machine allocateTask(Task task) {
-		Machine resource = this.resourceManager.hasAvailableResource() ? this.resourceManager.allocateResourceToTask(task) : forceAPreemptionOnBehalfOf(task);
+		Machine resource = this.resourceManager.hasAvailableResource() ? this.resourceManager.allocateResourceToTask(task)
+				: tryAllocateByPreemptionOnBehalfOfTask(task);
 
 		if (resource != null) {
 			this.taskManager.startTask(task, resource);
@@ -105,6 +106,7 @@ public class ResourceAllocationManager {
 			decreaseAccounting(task.getSourcePeer());
 			return true;
 		} else {
+			assert false;
 			return false;
 		}
 	}
@@ -116,7 +118,7 @@ public class ResourceAllocationManager {
 	 *            task that will benefit itself of the preemption.
 	 * @return the machine where the preempted task was running.
 	 */
-	private Machine forceAPreemptionOnBehalfOf(Task task) {
+	private Machine tryAllocateByPreemptionOnBehalfOfTask(Task task) {
 
 		Machine releasedMachine = null;
 
@@ -125,8 +127,12 @@ public class ResourceAllocationManager {
 
 		if (!preemptablePeers.isEmpty()) {
 			Task doomed = chooseATaskToBePreempted(preemptablePeers);
-			releasedMachine = this.taskManager.getMachine(doomed);
-			this.peer.preemptTask(doomed);
+			if (doomed != null) {
+				releasedMachine = this.taskManager.getMachine(doomed);
+				this.peer.preemptTask(doomed);
+				// allocate the resource for the benefited task.
+				this.resourceManager.makeResourceAllocated(releasedMachine);
+			}
 		}
 
 		return releasedMachine;
@@ -143,11 +149,19 @@ public class ResourceAllocationManager {
 	private Task chooseATaskToBePreempted(List<Peer> preemptablePeers) {
 		assert !preemptablePeers.isEmpty();
 
-		Peer chosen = preemptablePeers.get(preemptablePeers.size() - 1);
+		int i = 1;
+		Peer chosen = preemptablePeers.get(preemptablePeers.size() - i);
+		while (this.taskManager.getAllTasksFromPeer(chosen).isEmpty() && i < preemptablePeers.size()) {
+			i++;
+			chosen = preemptablePeers.get(preemptablePeers.size() - i);
+		}
 		List<Task> tasks = this.taskManager.getAllTasksFromPeer(chosen);
-
-		this.peer.prioritizeTasksToPreemption(tasks);
-		return tasks.get(0);
+		if (!tasks.isEmpty()) {
+			this.peer.prioritizeTasksToPreemption(tasks);
+			return tasks.get(0);
+		} else {
+			return null;
+		}
 
 	}
 
