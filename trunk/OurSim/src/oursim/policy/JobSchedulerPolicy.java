@@ -17,7 +17,9 @@ import oursim.input.Workload;
 public interface JobSchedulerPolicy extends JobEventListener, TaskEventListener, WorkerEventListener {
 
 	/**
-	 * Simply Adds the job to this scheduler.
+	 * Simply Adds the job to this scheduler. To This method, unlike
+	 * {@link JobSchedulerPolicy#addWorkload(Workload)}, doesn't matter the
+	 * time at which the job was originally submitted.
 	 * 
 	 * @param job
 	 *            The job to be added.
