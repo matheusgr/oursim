@@ -12,6 +12,8 @@ import oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
  */
 public class WorkerUnavailableEvent extends WorkerTimedEvent {
 
+	public static final int PRIORITY = 2;
+	
 	/**
 	 * Creates an event indicating that a worker has become unavailable.
 	 * 
@@ -21,7 +23,7 @@ public class WorkerUnavailableEvent extends WorkerTimedEvent {
 	 *            the name of the machine that has become unavailable.
 	 */
 	WorkerUnavailableEvent(long time, String machineName) {
-		super(time, 2, machineName);
+		super(time, PRIORITY, machineName);
 	}
 
 	@Override

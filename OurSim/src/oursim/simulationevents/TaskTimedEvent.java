@@ -28,6 +28,41 @@ public abstract class TaskTimedEvent extends TimedEventAbstract<Task> {
 	}
 
 	@Override
+	public int compareTo(TimedEvent ev) {
+		// TODO: Política
+		int compareToFromSuper = super.compareTo(ev);
+		// o super não foi conclusivo e o outro evento é igual a este?
+		if (compareToFromSuper == 0 && ev instanceof TaskTimedEvent) {
+			TaskTimedEvent o = (TaskTimedEvent) ev;
+			// essa task já foi preemptada?
+			if (this.content.getNumberOfpreemptions() > 0) {
+				// TODO: definir qual é a política nesse caso
+				// a outra também já foi preemptada?
+				if (o.content.getNumberOfpreemptions() > 0) {
+					// os numeros de preempcoes são diferentes?
+					if (o.content.getNumberOfpreemptions() != this.content.getNumberOfpreemptions()) {
+						// prioriza a que já foi preemptadas mais vezes
+						return (int) (o.content.getNumberOfpreemptions() - this.content.getNumberOfpreemptions());
+					} else {
+						// se eh tudo igual, então desempata pelo id.
+						return (int) (this.content.getId() - o.content.getId());
+					}
+				} else {
+					return -1;
+				}
+			} else if (o.content.getNumberOfpreemptions() > 0) {
+				// se esta não foi, a outra já foi?
+				return 1;
+			} else {
+				// se eh tudo igual, então desempata pelo id.
+				return (int) (this.content.getId() - o.content.getId());
+			}
+		} else {
+			return compareToFromSuper;
+		}
+	}
+
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		String type = this.getType();

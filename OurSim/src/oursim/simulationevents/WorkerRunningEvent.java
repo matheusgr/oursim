@@ -12,6 +12,8 @@ import oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
  */
 public class WorkerRunningEvent extends WorkerTimedEvent {
 
+	public static final int PRIORITY = 1;
+	
 	/**
 	 * Creates an event indicating that a worker starts to running a task.
 	 * 
@@ -21,7 +23,7 @@ public class WorkerRunningEvent extends WorkerTimedEvent {
 	 *            the name of the machine that starts to running a task.
 	 */
 	WorkerRunningEvent(long time, String machineName) {
-		super(time, 1, machineName);
+		super(time, PRIORITY, machineName);
 	}
 
 	@Override

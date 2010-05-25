@@ -8,12 +8,13 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import oursim.OurSimAPITest;
+import oursim.OurSimAPIVolatilityTest;
 import oursim.entities.ProcessorTest;
 import oursim.entities.TaskTest;
 import oursim.policy.NoFSharingPolicyTest;
 
 @RunWith(Suite.class)
-@SuiteClasses( { ProcessorTest.class, TaskTest.class, NoFSharingPolicyTest.class, OurSimAPITest.class, })
+@SuiteClasses( { ProcessorTest.class, TaskTest.class, NoFSharingPolicyTest.class, OurSimAPITest.class, OurSimAPIVolatilityTest.class, })
 public class TestSuite {
 
 	static class Compatibility {

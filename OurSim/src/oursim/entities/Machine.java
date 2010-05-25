@@ -18,6 +18,10 @@ public class Machine implements Comparable<Machine> {
 	 */
 	private String name;
 
+	private long id;
+
+	private static long nextMachineId = 0;
+
 	/**
 	 * The processor owned by this machine.
 	 * 
@@ -65,11 +69,14 @@ public class Machine implements Comparable<Machine> {
 			addProcessor(processorSpeed);
 		}
 
+		this.id = nextMachineId;
+		nextMachineId++;
+
 	}
 
 	private void addProcessor(long speed) {
 		int processorId = this.processors.size();
-		this.processors.add(new Processor(processorId, speed));
+		this.processors.add(new Processor(processorId, speed, this));
 	}
 
 	/**
@@ -110,7 +117,7 @@ public class Machine implements Comparable<Machine> {
 	@Override
 	public int compareTo(Machine o) {
 		// TODO: definir critério de comparação.
-		return name.compareTo(o.getName());
+		return (int) (this.id - o.id);
 	}
 
 	@Override

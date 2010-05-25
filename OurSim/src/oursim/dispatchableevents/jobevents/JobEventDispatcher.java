@@ -84,9 +84,14 @@ public class JobEventDispatcher extends EventDispatcher<Job, JobEventListener, J
 	/**
 	 * @see {@link JobEventListener#jobPreempted(Event)}
 	 * @param job
+	 * @param preemptionTime
 	 */
-	public void dispatchJobPreempted(Job job) {
-		dispatch(TYPE_OF_DISPATCHING.preempted, job);
+	public void dispatchJobPreempted(Job job, long preemptionTime) {
+		dispatch(TYPE_OF_DISPATCHING.preempted, job, preemptionTime);
+	}
+
+	private void dispatch(TYPE_OF_DISPATCHING type, Job job, long time) {
+		dispatch(type, new Event<Job>(time, job));
 	}
 
 	private void dispatch(TYPE_OF_DISPATCHING type, Job job) {

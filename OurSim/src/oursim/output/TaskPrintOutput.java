@@ -16,7 +16,7 @@ import oursim.entities.Task;
  * @since 18/05/2010
  * 
  */
-public class PrintOutput implements Output {
+public class TaskPrintOutput implements Output {
 
 	/**
 	 * the stream where the results will be printed out.
@@ -27,7 +27,7 @@ public class PrintOutput implements Output {
 	 * An default constructor. Using this constructor the results will be
 	 * printed out in the default output.
 	 */
-	public PrintOutput() {
+	public TaskPrintOutput() {
 		this.out = System.out;
 	}
 
@@ -38,7 +38,7 @@ public class PrintOutput implements Output {
 	 * @param fileName
 	 *            The name of the file where the results will be printed out.
 	 */
-	public PrintOutput(String fileName) {
+	public TaskPrintOutput(String fileName) {
 		try {
 			this.out = new PrintStream(new File(fileName));
 		} catch (FileNotFoundException e) {
@@ -48,47 +48,18 @@ public class PrintOutput implements Output {
 
 	@Override
 	public void jobSubmitted(Event<Job> jobEvent) {
-		Job job = jobEvent.getSource();
-
-		long id = job.getId();
-		long submissionTime = job.getSubmissionTime();
-
-		this.out.println("U:" + submissionTime + ":" + id);
 	}
 
 	@Override
 	public void jobStarted(Event<Job> jobEvent) {
-		Job job = jobEvent.getSource();
-
-		long id = job.getId();
-		long startTime = job.getStartTime();
-
-		this.out.println("S:" + startTime + ":" + id);
 	}
 
 	@Override
 	public void jobPreempted(Event<Job> jobEvent) {
-		Job job = jobEvent.getSource();
-
-		long id = job.getId();
-		long preemptionTime = jobEvent.getTime();
-
-		this.out.println("P:" + preemptionTime + ":" + id);
 	}
 
 	@Override
 	public void jobFinished(Event<Job> jobEvent) {
-
-		Job job = jobEvent.getSource();
-
-		long id = job.getId();
-		long finishTime = job.getFinishTime();
-		long submissionTime = job.getSubmissionTime();
-		long numberOfpreemptions = job.getNumberOfpreemptions();
-		long runTimeDuration = job.getRunningTime();
-
-		this.out.println("F:" + finishTime + ":" + id + ":" + submissionTime + ":" + runTimeDuration + ":" + numberOfpreemptions);
-
 	}
 
 	@Override
@@ -97,19 +68,30 @@ public class PrintOutput implements Output {
 	}
 
 	@Override
-	public void taskFinished(Event<Task> taskEvent) {
-	}
-
-	@Override
-	public void taskPreempted(Event<Task> taskEvent) {
+	public void taskSubmitted(Event<Task> taskEvent) {
+		Task task = taskEvent.getSource();
+		this.out.println("(U:" + task.getSubmissionTime() + ":" + task.getId() + ")");
 	}
 
 	@Override
 	public void taskStarted(Event<Task> taskEvent) {
+		Task task = taskEvent.getSource();
+		String machineName = task.getTaskExecution().getMachine().getName();
+		this.out.println("(S:" + task.getStartTime() + ":" + task.getId() + ":" + machineName + ")");
 	}
 
 	@Override
-	public void taskSubmitted(Event<Task> taskEvent) {
+	public void taskPreempted(Event<Task> taskEvent) {
+		Task task = taskEvent.getSource();
+		String machineName = task.getTaskExecution().getMachine().getName();
+		this.out.println("(P:" + taskEvent.getTime() + ":" + task.getId() + ":" + machineName + ")");
+	}
+
+	@Override
+	public void taskFinished(Event<Task> taskEvent) {
+		Task task = taskEvent.getSource();
+		String machineName = task.getTaskExecution().getMachine().getName();
+		this.out.println("(F:" + task.getFinishTime() + ":" + task.getId() + ":" + machineName + ")");
 	}
 
 }

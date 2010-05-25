@@ -14,6 +14,8 @@ import oursim.entities.Job;
 @Deprecated
 public class StartedJobEvent extends JobTimedEvent {
 
+	public static final int PRIORITY = 3;
+	
 	/**
 	 * Creates an event indicating that a job has been finished.
 	 * 
@@ -21,7 +23,7 @@ public class StartedJobEvent extends JobTimedEvent {
 	 *            the job that has been finished.
 	 */
 	StartedJobEvent(Job job) {
-		super(job.getStartTime(), 3, job);
+		super(job.getStartTime(), PRIORITY, job);
 	}
 
 	@Override

@@ -103,16 +103,16 @@ public abstract class TimedEvent implements Comparable<TimedEvent> {
 	@Override
 	public int compareTo(TimedEvent ev) {
 		long diffTime = this.time - ev.time;
+		// eventos no mesmo tempo?
 		if (diffTime == 0) {
-			if (this.priority >= ev.priority) {
-				return 1;
-			} else {
-				return -1;
+			// eventos de prioridades diferentes?
+			if (this.priority != ev.priority) {
+				return (this.priority > ev.priority) ? 1 : -1;
+			} else { // eventos de mesma prioridade
+				return 0;
 			}
-		} else if (diffTime > 0) {
-			return 2;
-		} else {
-			return -2;
+		} else { // eventos em tempos diferentes
+			return (diffTime > 0) ? 2 : -2;
 		}
 	}
 

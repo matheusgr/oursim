@@ -12,6 +12,8 @@ import oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
  */
 public class WorkerDownEvent extends WorkerTimedEvent {
 
+	public static final int PRIORITY = 1;
+	
 	/**
 	 * Creates an event indicating that a worker has become down.
 	 * 
@@ -21,7 +23,7 @@ public class WorkerDownEvent extends WorkerTimedEvent {
 	 *            the name of the machine that has become down.
 	 */
 	WorkerDownEvent(long time, String machineName) {
-		super(time, 1, machineName);
+		super(time, PRIORITY, machineName);
 	}
 
 	@Override

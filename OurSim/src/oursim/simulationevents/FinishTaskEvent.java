@@ -13,6 +13,8 @@ import oursim.entities.Task;
  */
 public class FinishTaskEvent extends TaskTimedEvent {
 
+	public static final int PRIORITY = 1;
+	
 	/**
 	 * Creates an event indicating that a task has been finished.
 	 * 
@@ -22,7 +24,7 @@ public class FinishTaskEvent extends TaskTimedEvent {
 	 *            the task that has been finished.
 	 */
 	FinishTaskEvent(long finishTime, Task task) {
-		super(finishTime, 1, task);
+		super(finishTime, PRIORITY, task);
 	}
 
 	@Override

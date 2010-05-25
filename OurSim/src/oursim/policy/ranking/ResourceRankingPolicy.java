@@ -33,7 +33,12 @@ public class ResourceRankingPolicy extends RankingPolicy<Job, Machine> {
 		Collections.sort(machines, new Comparator<Machine>() {
 			@Override
 			public int compare(Machine o1, Machine o2) {
-				return (int) (o2.getDefaultProcessor().getSpeed() - o1.getDefaultProcessor().getSpeed());
+				long diffSpeed = o2.getDefaultProcessor().getSpeed() - o1.getDefaultProcessor().getSpeed();
+				if (diffSpeed != 0) {
+					return (int) (diffSpeed);
+				} else {
+					return o1.compareTo(o2);
+				}
 			}
 		});
 	}

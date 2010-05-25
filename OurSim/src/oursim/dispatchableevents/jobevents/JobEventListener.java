@@ -29,6 +29,12 @@ public interface JobEventListener extends EventListener {
 	// TODO: qual a semântica de JobFinished?
 	void jobFinished(Event<Job> jobEvent);
 
+	/**
+	 * Event indicating that a job was preempted. A job is considered preempted
+	 * when all its tasks have been preempted.
+	 * 
+	 * @param jobEvent
+	 */
 	void jobPreempted(Event<Job> jobEvent);
 
 }

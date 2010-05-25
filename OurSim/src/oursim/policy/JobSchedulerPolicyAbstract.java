@@ -80,7 +80,9 @@ public abstract class JobSchedulerPolicyAbstract implements JobSchedulerPolicy {
 	public void addJob(Job job) {
 		assert !job.getTasks().isEmpty();
 		this.submittedJobs.add(job);
-		this.submittedTasks.addAll(job.getTasks());
+		for (Task task : job.getTasks()) {
+			this.eventQueue.addSubmitTaskEvent(this.eventQueue.getCurrentTime(), task);
+		}
 	}
 
 	@Override

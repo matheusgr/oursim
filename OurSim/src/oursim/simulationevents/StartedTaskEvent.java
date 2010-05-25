@@ -13,6 +13,8 @@ import oursim.entities.Task;
  */
 public class StartedTaskEvent extends TaskTimedEvent {
 
+	public static final int PRIORITY = 4;
+
 	/**
 	 * Creates an event indicating that a task has been started.
 	 * 
@@ -20,7 +22,7 @@ public class StartedTaskEvent extends TaskTimedEvent {
 	 *            the task that has been started.
 	 */
 	StartedTaskEvent(Task task) {
-		super(task.getStartTime(), 3, task);
+		super(task.getStartTime(), PRIORITY, task);
 	}
 
 	@Override

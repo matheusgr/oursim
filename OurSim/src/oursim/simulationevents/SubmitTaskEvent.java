@@ -14,6 +14,8 @@ import oursim.entities.Task;
  */
 public class SubmitTaskEvent extends TaskTimedEvent {
 
+	public static final int PRIORITY = 3;
+
 	/**
 	 * Creates an event indicating that a task was submitted.
 	 * 
@@ -23,7 +25,7 @@ public class SubmitTaskEvent extends TaskTimedEvent {
 	 *            the task that has been submitted.
 	 */
 	SubmitTaskEvent(long submitTime, Task task) {
-		super(submitTime, 4, task);
+		super(submitTime, PRIORITY, task);
 	}
 
 	@Override

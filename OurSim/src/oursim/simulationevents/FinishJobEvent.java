@@ -13,6 +13,8 @@ import oursim.entities.Job;
  */
 public class FinishJobEvent extends JobTimedEvent {
 
+	public static final int PRIORITY = 1;
+
 	/**
 	 * Creates an event indicating that a job has been finished.
 	 * 
@@ -22,7 +24,7 @@ public class FinishJobEvent extends JobTimedEvent {
 	 *            the job that has been finished.
 	 */
 	FinishJobEvent(long finishTime, Job job) {
-		super(finishTime, 1, job);
+		super(finishTime, PRIORITY, job);
 	}
 
 	@Override
