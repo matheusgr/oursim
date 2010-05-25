@@ -1,7 +1,6 @@
 package oursim.entities;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -252,17 +251,21 @@ public class Task extends ComputableElement implements Comparable<Task> {
 	@Override
 	public int compareTo(Task t) {
 		long diffTime = this.submissionTime - t.getSubmissionTime();
+		// os tempos de submissão são iguais?
 		if (diffTime == 0) {
 			if (id > t.getId()) {
 				return 2;
 			} else if (id == t.getId()) {
+//				assert false : "\n" + this + "\n" + t;
 				return this.hashCode() == t.hashCode() ? 0 : (this.hashCode() > t.hashCode() ? 1 : -1);
 			} else {
 				return -2;
 			}
-		} else if (diffTime > 0) {
+		} else if (diffTime > 0) { // os tempos de submissão são diferentes
+			// o meu veio depois?
 			return 5;
 		} else {
+			// o meu veio antes
 			return -5;
 		}
 	}

@@ -32,7 +32,7 @@ public class Job extends ComputableElement implements Comparable<Job> {
 	private final List<Task> tasks;
 
 	private final ResourceRankingPolicy resourceRankingPolicy;
-	
+
 	/**
 	 * Field to assure the uniqueness of the id of each task.
 	 */
@@ -60,7 +60,7 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		sourcePeer.addJob(this);
 
 		this.tasks = new ArrayList<Task>();
-		
+
 		this.resourceRankingPolicy = new ResourceRankingPolicy(this);
 
 	}
@@ -76,12 +76,12 @@ public class Job extends ComputableElement implements Comparable<Job> {
 	 *            lifetime.
 	 * @param submissionTime
 	 *            The instant at which this job must be submitted.
-	 * @param sourcePeer
-	 *            The peer to which this job belongs.
 	 * @param duration
 	 *            The duration in unit of simulation (seconds) of the only task
 	 *            contained in this job, considered when executed in an
 	 *            reference machine.
+	 * @param sourcePeer
+	 *            The peer to which this job belongs.
 	 */
 	public Job(long id, long submissionTime, long duration, Peer sourcePeer) {
 		this(id, submissionTime, sourcePeer);
@@ -273,17 +273,21 @@ public class Job extends ComputableElement implements Comparable<Job> {
 	@Override
 	public int compareTo(Job j) {
 		long diffTime = this.submissionTime - j.getSubmissionTime();
+		// o tempo de submission é o mesmo?
 		if (diffTime == 0) {
 			if (id > j.getId()) {
 				return 2;
 			} else if (id == j.getId()) {
+				assert false;
 				return this.hashCode() == j.hashCode() ? 0 : (this.hashCode() > j.hashCode() ? 1 : -1);
 			} else {
 				return -2;
 			}
-		} else if (diffTime > 0) {
+		} else if (diffTime > 0) { // tempos de sumissão diferentes
+			// o meu veio depois?
 			return 5;
 		} else {
+			// o meu veio antes
 			return -5;
 		}
 	}

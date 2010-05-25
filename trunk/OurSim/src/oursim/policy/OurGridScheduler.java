@@ -58,6 +58,9 @@ public class OurGridScheduler extends JobSchedulerPolicyAbstract {
 		Task task = taskEvent.getSource();
 		task.getTargetPeer().finishTask(task);
 		if (task.getSourceJob().isFinished()) {
+			// TODO: colocar essa ação em taskfinished event. Refatorar o pacote
+			// simulationsevents para que os eventos tenham acesso indiscrimado
+			// à fila de eventos para poderem gerar eventos secundários.
 			eventQueue.addFinishJobEvent(eventQueue.getCurrentTime(), task.getSourceJob());
 		}
 	}
@@ -65,6 +68,7 @@ public class OurGridScheduler extends JobSchedulerPolicyAbstract {
 	@Override
 	public void taskPreempted(Event<Task> taskEvent) {
 		Task task = taskEvent.getSource();
+		// TODO: Política: o que fazer quando uma task for preemptada.
 		this.rescheduleTask(task);
 	}
 

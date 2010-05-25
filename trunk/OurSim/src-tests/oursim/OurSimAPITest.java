@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -18,10 +17,9 @@ import oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import oursim.dispatchableevents.taskevents.TaskEventCounter;
 import oursim.dispatchableevents.taskevents.TaskEventDispatcher;
 import oursim.entities.Job;
-import oursim.entities.Machine;
 import oursim.entities.Peer;
+import oursim.input.DedicatedResourcesAvailabilityCharacterization;
 import oursim.input.Input;
-import oursim.input.InputAbstract;
 import oursim.input.Workload;
 import oursim.input.WorkloadAbstract;
 import oursim.policy.ResourceSharingPolicy;
@@ -30,6 +28,7 @@ import oursim.simulationevents.FinishJobEvent;
 import oursim.simulationevents.FinishTaskEvent;
 import oursim.simulationevents.StartedTaskEvent;
 import oursim.simulationevents.SubmitJobEvent;
+import oursim.simulationevents.SubmitTaskEvent;
 import oursim.simulationevents.WorkerAvailableEvent;
 import oursim.simulationevents.WorkerUnavailableEvent;
 
@@ -82,6 +81,7 @@ public class OurSimAPITest {
 		jobEvents.add(FinishJobEvent.class);
 
 		taskEvents = new HashSet<Class>();
+		taskEvents.add(SubmitTaskEvent.class);
 		taskEvents.add(StartedTaskEvent.class);
 		taskEvents.add(FinishTaskEvent.class);
 
@@ -127,7 +127,7 @@ public class OurSimAPITest {
 		// Define os eventos de disponibilidade para cada recurso de cada peer.
 		// Nesse cenário os recursos ficarão disponíveis o tempo suficiente para
 		// terminar as demandas de cada job.
-		Input<AvailabilityRecord> availability = generateResourceAvailability(JOB_SUBMISSION_TIME, JOB_LENGTH);
+		Input<AvailabilityRecord> availability = new DedicatedResourcesAvailabilityCharacterization(peers, JOB_SUBMISSION_TIME, JOB_LENGTH);
 
 		oursim.run(peers, workload, availability);
 
@@ -206,7 +206,8 @@ public class OurSimAPITest {
 		// Define os eventos de disponibilidade para cada recurso de cada peer.
 		// Nesse cenário os recursos ficarão disponíveis o tempo suficiente para
 		// terminar as demandas de cada job.
-		Input<AvailabilityRecord> availability = generateResourceAvailability(0, JOB_LENGTH * 2);
+
+		Input<AvailabilityRecord> availability = new DedicatedResourcesAvailabilityCharacterization(peers, JOB_SUBMISSION_TIME, JOB_LENGTH * 2);
 
 		oursim.run(peers, workload, availability);
 
@@ -252,22 +253,6 @@ public class OurSimAPITest {
 		assertEquals(NUMBER_OF_OVERLOADED_PEERS * NUMBER_OF_JOBS_BY_PEER, numberOfJobsFromOverloadedPeersTimelyFinished);
 		assertEquals(NUMBER_OF_OVERLOADED_PEERS * NUMBER_OF_JOBS_BY_PEER, numberOfEnqueuedJobsFromOverloadedPeers);
 
-	}
-
-	private Input<AvailabilityRecord> generateResourceAvailability(final long timestamp, final long duration) {
-		Input<AvailabilityRecord> availability = new InputAbstract<AvailabilityRecord>() {
-			@Override
-			protected void setUp() {
-				this.inputs = new LinkedList<AvailabilityRecord>();
-				for (Peer peer : peers) {
-					for (Machine machine : peer.getResources()) {
-						this.inputs.add(new AvailabilityRecord(machine.getName(), timestamp, duration));
-					}
-				}
-
-			}
-		};
-		return availability;
 	}
 
 	private Workload generateDefaultWorkload() {

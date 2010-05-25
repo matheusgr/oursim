@@ -13,6 +13,8 @@ import oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
  */
 public class WorkerIdleEvent extends WorkerTimedEvent {
 
+	public static final int PRIORITY = 1;
+	
 	/**
 	 * Creates an event indicating that a worker has become idle.
 	 * 
@@ -22,7 +24,7 @@ public class WorkerIdleEvent extends WorkerTimedEvent {
 	 *            the name of the machine that has become idle.
 	 */
 	WorkerIdleEvent(long time, String machineName) {
-		super(time, 1, machineName);
+		super(time, PRIORITY, machineName);
 	}
 
 	@Override

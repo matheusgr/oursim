@@ -13,8 +13,10 @@ import oursim.entities.Job;
  */
 public class SubmitJobEvent extends JobTimedEvent {
 
+	public static final int PRIORITY = 4;
+	
 	SubmitJobEvent(long time, Job job) {
-		super(time, 4, job);
+		super(time, PRIORITY, job);
 	}
 
 	@Override

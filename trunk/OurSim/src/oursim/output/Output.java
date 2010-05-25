@@ -3,6 +3,7 @@ package oursim.output;
 import java.io.Closeable;
 
 import oursim.dispatchableevents.jobevents.JobEventListener;
+import oursim.dispatchableevents.taskevents.TaskEventListener;
 
 /**
  * 
@@ -12,7 +13,7 @@ import oursim.dispatchableevents.jobevents.JobEventListener;
  * @since 18/05/2010
  * 
  */
-public interface Output extends JobEventListener, Closeable {
+public interface Output extends JobEventListener, TaskEventListener, Closeable {
 
 	/*
 	 * (non-Javadoc)

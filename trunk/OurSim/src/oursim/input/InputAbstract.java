@@ -1,6 +1,6 @@
 package oursim.input;
 
-import java.util.LinkedList;
+import java.util.PriorityQueue;
 import java.util.Queue;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -25,7 +25,7 @@ public abstract class InputAbstract<T> implements Input<T> {
 	 * An ordinary constructor.
 	 */
 	public InputAbstract() {
-		this.inputs = new LinkedList<T>();
+		this.inputs = new PriorityQueue<T>();
 		setUp();
 	}
 

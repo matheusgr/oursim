@@ -51,4 +51,8 @@ public class TaskExecution {
 		this.processor = processor;
 	}
 
+	public Machine getMachine() {
+		return this.processor.getMachine();
+	}
+
 }

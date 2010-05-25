@@ -84,9 +84,14 @@ public class TaskEventDispatcher extends EventDispatcher<Task, TaskEventListener
 	/**
 	 * @see {@link TaskEventListener#taskPreempted(Event)
 	 * @param task
+	 * @param preemptionTime
 	 */
-	public void dispatchTaskPreempted(Task task) {
-		dispatch(TYPE_OF_DISPATCHING.preempted, task);
+	public void dispatchTaskPreempted(Task task, long preemptionTime) {
+		dispatch(TYPE_OF_DISPATCHING.preempted, task, preemptionTime);
+	}
+
+	private void dispatch(TYPE_OF_DISPATCHING type, Task task, long preemptionTime) {
+		dispatch(type, new Event<Task>(preemptionTime, task));
 	}
 
 	private void dispatch(TYPE_OF_DISPATCHING type, Task task) {

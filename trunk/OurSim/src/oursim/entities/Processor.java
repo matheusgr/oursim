@@ -33,15 +33,49 @@ public class Processor {
 	 */
 	private boolean busy = false;
 
+	/**
+	 * the machine this processor belongs to.
+	 */
+	private Machine machine;
+
+	/**
+	 * An ordinary constructor for a processor.
+	 * 
+	 * @param id
+	 *            the processor's id.
+	 * @param speed
+	 *            the rating of this processor.
+	 */
 	Processor(int id, long speed) {
-		this.id = id;
-		this.speed = speed;
+		this(id, speed, null);
 	}
 
+	/**
+	 * An ordinary constructor for a processor.
+	 * 
+	 * @param id
+	 *            the processor's id.
+	 * @param speed
+	 *            the rating of this processor.
+	 * @param machine
+	 *            the machine this processor belongs to.
+	 */
+	Processor(int id, long speed, Machine machine) {
+		this.id = id;
+		this.speed = speed;
+		this.machine = machine;
+	}
+
+	/**
+	 * @return the processor's id.
+	 */
 	public int getId() {
 		return id;
 	}
 
+	/**
+	 * @return the rating of this processor.
+	 */
 	public long getSpeed() {
 		return speed;
 	}
@@ -114,6 +148,10 @@ public class Processor {
 		long estimatedFinishTimeL = (long) estimatedFinishTimeD;
 		long adjustment = (estimatedFinishTimeL < estimatedFinishTimeD) ? 1 : 0;
 		return estimatedFinishTimeL + adjustment;
+	}
+
+	public Machine getMachine() {
+		return machine;
 	}
 
 }
