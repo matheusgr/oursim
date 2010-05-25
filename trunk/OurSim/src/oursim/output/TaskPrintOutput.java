@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
 import oursim.dispatchableevents.Event;
-import oursim.entities.Job;
 import oursim.entities.Task;
 
 /**
@@ -16,7 +15,7 @@ import oursim.entities.Task;
  * @since 18/05/2010
  * 
  */
-public class TaskPrintOutput implements Output {
+public class TaskPrintOutput extends OutputAdapter {
 
 	/**
 	 * the stream where the results will be printed out.
@@ -47,27 +46,6 @@ public class TaskPrintOutput implements Output {
 	}
 
 	@Override
-	public void jobSubmitted(Event<Job> jobEvent) {
-	}
-
-	@Override
-	public void jobStarted(Event<Job> jobEvent) {
-	}
-
-	@Override
-	public void jobPreempted(Event<Job> jobEvent) {
-	}
-
-	@Override
-	public void jobFinished(Event<Job> jobEvent) {
-	}
-
-	@Override
-	public void close() {
-		this.out.close();
-	}
-
-	@Override
 	public void taskSubmitted(Event<Task> taskEvent) {
 		Task task = taskEvent.getSource();
 		this.out.println("(U:" + task.getSubmissionTime() + ":" + task.getId() + ")");
@@ -92,6 +70,11 @@ public class TaskPrintOutput implements Output {
 		Task task = taskEvent.getSource();
 		String machineName = task.getTaskExecution().getMachine().getName();
 		this.out.println("(F:" + task.getFinishTime() + ":" + task.getId() + ":" + machineName + ")");
+	}
+
+	@Override
+	public void close() {
+		this.out.close();
 	}
 
 }
