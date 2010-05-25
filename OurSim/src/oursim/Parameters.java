@@ -16,7 +16,7 @@ public class Parameters {
 
 	private static String argsString =
 	// execTime execTimeVar subInterval   #Jobs  #TasksByJob #Peers #nodesByPeer nodeMIPSRating
-	"       100         50            5    1000           50     10 		  10           3000";
+	"       100         50            5    1000           50     10 		  100           3000";
 
 	// 100000
 
