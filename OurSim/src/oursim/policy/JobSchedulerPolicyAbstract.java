@@ -14,7 +14,9 @@ import oursim.simulationevents.EventQueue;
 
 /**
  * 
- * An mininal interface to define a grid Scheduler.
+ * An abstract definition of a grid Scheduler. The concrete class must implement
+ * the method {@link JobSchedulerPolicyAbstract#performScheduling()} instead of
+ * {@link JobSchedulerPolicy#schedule()} 
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @since 18/05/2010

@@ -12,6 +12,8 @@ public class Parameters {
 
 	public static final boolean LOG = false;
 
+	public static final int NUMBER_OF_REPLIES = 3;
+
 	public static Random RANDOM = new Random(9354269l);
 
 	private static String argsString =

@@ -34,8 +34,8 @@ public class PreemptedTaskEvent extends TaskTimedEvent {
 		task.preempt(time);
 		TaskEventDispatcher.getInstance().dispatchTaskPreempted(task,time);
 		// XXX: se for um job de uma task só, avisa que o job foi preemptado
-		if (task.getSourceJob().getTasks().size() == 1) {
-			JobEventDispatcher.getInstance().dispatchJobPreempted(task.getSourceJob(),time);
+		if (task.getSourceJob().getTasks().size() == 1 && task.hasAllReplyFailed()) {
+				JobEventDispatcher.getInstance().dispatchJobPreempted(task.getSourceJob(), time);
 		}
 	}
 
