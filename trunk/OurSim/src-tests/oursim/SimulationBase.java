@@ -21,7 +21,9 @@ import oursim.dispatchableevents.jobevents.JobEventListener;
 import oursim.entities.Job;
 import oursim.entities.Peer;
 import oursim.input.Workload;
+import oursim.policy.JobSchedulerPolicy;
 import oursim.policy.NoFSharingPolicy;
+import oursim.policy.OurGridPersistentScheduler;
 import oursim.simulationevents.EventQueue;
 
 public class SimulationBase {
@@ -153,7 +155,8 @@ public class SimulationBase {
 	public final void testRun() {
 		TestOutput to = new TestOutput(100, 100, 100, 100);
 		JobEventDispatcher.getInstance().addListener(to);
-		new OurSimAPI(EventQueue.getInstance()).run(peers, workload);
+		JobSchedulerPolicy jobScheduler = new OurGridPersistentScheduler(EventQueue.getInstance(), peers, workload);
+		new OurSimAPI(EventQueue.getInstance()).run(peers, workload, jobScheduler);
 		to.verify();
 	}
 

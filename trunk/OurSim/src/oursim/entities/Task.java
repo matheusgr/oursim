@@ -1,6 +1,8 @@
 package oursim.entities;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -16,7 +18,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * @see Job
  * @see Processor
  */
-public class Task extends ComputableElement implements Comparable<Task> {
+public class Task extends ComputableElement implements Comparable<Task>, Cloneable {
 
 	/**
 	 * The duration in unit of simulation (seconds) of this Task, considered
@@ -83,11 +85,22 @@ public class Task extends ComputableElement implements Comparable<Task> {
 	 */
 	private int numberOfpreemptions;
 
+	/**
+	 * all the replies of this tasks, including itself
+	 */
+	private Set<Task> replies = new HashSet<Task>();
+
+	private long replyId;
+
 	public Task(long id, String executable, long duration, long submissionTime, Job sourceJob) {
 		super(id, submissionTime);
 		this.executable = new File(executable, -1);
 		this.duration = duration;
 		this.sourceJob = sourceJob;
+
+		// toda task também é uma réplica de si mesma.
+		this.replies.add(this);
+		this.replyId = 0l;
 	}
 
 	/**
@@ -256,7 +269,7 @@ public class Task extends ComputableElement implements Comparable<Task> {
 			if (id > t.getId()) {
 				return 2;
 			} else if (id == t.getId()) {
-//				assert false : "\n" + this + "\n" + t;
+				// assert false : "\n" + this + "\n" + t;
 				return this.hashCode() == t.hashCode() ? 0 : (this.hashCode() > t.hashCode() ? 1 : -1);
 			} else {
 				return -2;
@@ -271,17 +284,83 @@ public class Task extends ComputableElement implements Comparable<Task> {
 	}
 
 	@Override
+	public Task clone() {
+		Task theClone;
+		try {
+			theClone = (Task) super.clone();
+		} catch (CloneNotSupportedException e) {
+			assert false;
+			e.printStackTrace();
+			return null;
+		}
+		theClone.replyId = this.replies.size();
+		this.replies.add(theClone);
+		theClone.replies = this.replies;
+		return theClone;
+	}
+
+	public boolean hasAnyReplyFinished() {
+		for (Task reply : replies) {
+			if (reply.isFinished()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public Long getAnyReplyFinishTime() {
+		for (Task reply : replies) {
+			if (reply.isFinished()) {
+				return reply.getFinishTime();
+			}
+		}
+		return null;
+	}
+
+	public boolean wasPreempted() {
+		return this.numberOfpreemptions > 0;
+	}
+
+	public boolean hasAllReplyFailed() {
+		boolean hasAllReplyFailed = true;
+		for (Task reply : replies) {
+			hasAllReplyFailed &= reply.wasPreempted();
+		}
+		return hasAllReplyFailed;
+	}
+
+	@Override
 	public String toString() {
 		// [id, duration, submissionTime, startTime, finishTime,
 		// numberOfpreemptions]
-		// return new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE)
+		// return this.id+"";
 		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("id", id).append("sourceJob", sourceJob.getId()).append("sourcePeer",
-				getSourcePeer().getName()).append("duration", duration)
-		// .append("executable", executable)
-				// .append("inputs",inputs)
-				// .append("outputs", outputs)
-				.append("submissionTime", submissionTime).append("startTime", startTime).append("finishTime", finishTime).append("targetPeer",
-						targetPeer != null ? targetPeer.getName() : "").append("numberOfpreemptions", numberOfpreemptions).toString();
+				getSourcePeer().getName()).append("duration", duration).append("submissionTime", submissionTime).append("startTime", startTime).append(
+				"finishTime", finishTime).append("targetPeer", targetPeer != null ? targetPeer.getName() : "").append("numberOfpreemptions",
+				numberOfpreemptions).append("replyId", replyId).toString();
+	}
+
+	public Set<Task> getReplies() {
+		assert replies.contains(this);
+		Set<Task> onlyTheReplies = new HashSet<Task>(replies);
+		onlyTheReplies.remove(this);
+		assert !onlyTheReplies.contains(this);
+		return onlyTheReplies;
+	}
+
+	public Set<Task> getActiveReplies() {
+		Set<Task> onlyTheActiveReplies = new HashSet<Task>();
+		for (Task replies : getReplies()) {
+			if (replies.isActive()) {
+				onlyTheActiveReplies.add(replies);
+			}
+		}
+		return onlyTheActiveReplies;
+	}
+
+	private boolean isActive() {
+		// TODO: hora de adicionar uma máquina de estados!
+		return this.isRunning() || (!this.isFinished() && !this.wasPreempted());
 	}
 
 }

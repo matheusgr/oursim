@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+import oursim.Parameters;
 import oursim.policy.ranking.ResourceRankingPolicy;
 
 /**
@@ -32,6 +33,8 @@ public class Job extends ComputableElement implements Comparable<Job> {
 	private final List<Task> tasks;
 
 	private final ResourceRankingPolicy resourceRankingPolicy;
+
+	private int replicationLevel = Parameters.NUMBER_OF_REPLIES;
 
 	/**
 	 * Field to assure the uniqueness of the id of each task.
@@ -239,11 +242,10 @@ public class Job extends ComputableElement implements Comparable<Job> {
 	@Override
 	public Long getFinishTime() {
 		long lastFinishTime = Long.MIN_VALUE;
-		boolean allTasksAreFinished = true;
 		// TODO verificar se isFinished() antes
 		for (Task task : tasks) {
-			if (allTasksAreFinished && task.isFinished()) {
-				lastFinishTime = Math.max(lastFinishTime, task.getFinishTime());
+			if (task.hasAnyReplyFinished()) {
+				lastFinishTime = Math.max(lastFinishTime, task.getAnyReplyFinishTime());
 			} else {
 				return null;
 			}
@@ -300,6 +302,10 @@ public class Job extends ComputableElement implements Comparable<Job> {
 
 	public ResourceRankingPolicy getResourceRequestPolicy() {
 		return resourceRankingPolicy;
+	}
+
+	public int getReplicationLevel() {
+		return replicationLevel;
 	}
 
 }

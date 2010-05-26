@@ -22,6 +22,8 @@ import oursim.input.DedicatedResourcesAvailabilityCharacterization;
 import oursim.input.Input;
 import oursim.input.Workload;
 import oursim.input.WorkloadAbstract;
+import oursim.policy.JobSchedulerPolicy;
+import oursim.policy.OurGridPersistentScheduler;
 import oursim.policy.ResourceSharingPolicy;
 import oursim.simulationevents.EventQueue;
 import oursim.simulationevents.FinishJobEvent;
@@ -129,7 +131,8 @@ public class OurSimAPITest {
 		// terminar as demandas de cada job.
 		Input<AvailabilityRecord> availability = new DedicatedResourcesAvailabilityCharacterization(peers, JOB_SUBMISSION_TIME, JOB_LENGTH);
 
-		oursim.run(peers, workload, availability);
+		JobSchedulerPolicy jobScheduler = new OurGridPersistentScheduler(EventQueue.getInstance(), peers, workload);
+		oursim.run(peers, workload, availability, jobScheduler);
 
 		int totalDeTasks = TOTAL_OF_JOBS * NUMBER_OF_TASKS_BY_JOB;
 		int totalDeWorkers = NUMBER_OF_PEERS * NUMBER_OF_RESOURCES_BY_PEER;
@@ -209,7 +212,8 @@ public class OurSimAPITest {
 
 		Input<AvailabilityRecord> availability = new DedicatedResourcesAvailabilityCharacterization(peers, JOB_SUBMISSION_TIME, JOB_LENGTH * 2);
 
-		oursim.run(peers, workload, availability);
+		JobSchedulerPolicy jobScheduler = new OurGridPersistentScheduler(EventQueue.getInstance(), peers, workload);
+		oursim.run(peers, workload, availability, jobScheduler);
 
 		int totalDeJobs = (int) (TOTAL_OF_JOBS * 1.5);
 		int totalDeTasks = totalDeJobs * NUMBER_OF_TASKS_BY_JOB;

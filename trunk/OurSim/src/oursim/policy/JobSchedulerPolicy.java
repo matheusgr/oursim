@@ -8,7 +8,18 @@ import oursim.input.Workload;
 
 /**
  * 
- * An mininal interface to define a grid Scheduler.
+ * An mininal interface to define a grid Scheduler. A Scheduler defines
+ * inplicitly many policies to decide what to do when events occurs, like
+ * finishs or preemptions of tasks and jobs, through the implementation of
+ * methods from the interfaces {@link JobEventListener},
+ * {@link TaskEventListener} and {@link WorkerEventListener}. For example, the
+ * definition of what to do face a task's preemption must to be done by the
+ * implementation of
+ * {@link TaskEventListener#taskPreempted(oursim.dispatchableevents.Event)}.
+ * Though the concrete schedulers could implement directly this interface, it's
+ * recomended to <i>all</i> concrete schedulers to implement this interface by
+ * extending the abstract class {@link JobSchedulerPolicyAbstract} that
+ * implements an skeleton of how an ordinary scheduler should perform.
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @since 18/05/2010

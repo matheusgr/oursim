@@ -19,7 +19,9 @@ import oursim.input.Input;
 import oursim.input.SyntheticWorkload;
 import oursim.input.Workload;
 import oursim.output.PrintOutput;
+import oursim.policy.JobSchedulerPolicy;
 import oursim.policy.NoFSharingPolicy;
+import oursim.policy.OurGridScheduler;
 import oursim.policy.ResourceSharingPolicy;
 import oursim.simulationevents.EventQueue;
 
@@ -87,7 +89,9 @@ public class OurSim {
 
 		System.out.println("Starting Simulation...");
 
-		new OurSimAPI(EventQueue.getInstance()).run(peers, workload, availability);
+		JobSchedulerPolicy jobScheduler = new OurGridScheduler(EventQueue.getInstance(), peers, workload);
+
+		new OurSimAPI(EventQueue.getInstance()).run(peers, workload, availability, jobScheduler);
 
 		System.out.println("# Total of  finished  jobs: " + jobEventCounter.getNumberOfFinishedJobs());
 		System.out.println("# Total of preempted  jobs: " + jobEventCounter.getNumberOfPreemptionsForAllJobs());

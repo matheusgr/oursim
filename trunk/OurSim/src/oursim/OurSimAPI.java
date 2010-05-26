@@ -25,14 +25,12 @@ public class OurSimAPI {
 		this.eventQueue = eventQueue;
 	}
 
-	public void run(List<Peer> peers, Workload workload) {
+	public void run(List<Peer> peers, Workload workload, JobSchedulerPolicy jobScheduler) {
 		Input<AvailabilityRecord> defaultResourceAvailability = new DedicatedResourcesAvailabilityCharacterization(peers);
-		run(peers, workload, defaultResourceAvailability);
+		run(peers, workload, defaultResourceAvailability, jobScheduler);
 	}
 
-	public void run(List<Peer> peers, Workload workload, Input<AvailabilityRecord> availability) {
-
-		JobSchedulerPolicy jobScheduler = new OurGridScheduler(eventQueue, peers, workload);
+	public void run(List<Peer> peers, Workload workload, Input<AvailabilityRecord> availability, JobSchedulerPolicy jobScheduler) {
 
 		prepareListeners(peers, jobScheduler);
 
@@ -79,8 +77,8 @@ public class OurSimAPI {
 			AvailabilityRecord av = availability.poll();
 			eventQueue.addWorkerAvailableEvent(av.getTime(), av.getMachineName(), av.getDuration());
 		}
-	}	
-	
+	}
+
 	private static void prepareListeners(List<Peer> peers, JobSchedulerPolicy sp) {
 		JobEventDispatcher.getInstance().addListener(sp);
 		TaskEventDispatcher.getInstance().addListener(sp);
