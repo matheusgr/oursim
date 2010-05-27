@@ -7,12 +7,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import oursim.OurGridPersistentSchedulerTest;
-import oursim.OurGridReplicationSchedulerTest;
-import oursim.OurSimAPIVolatilityTest;
-import oursim.entities.ProcessorTest;
-import oursim.entities.TaskTest;
-import oursim.policy.NoFSharingPolicyTest;
+import br.edu.ufcg.lsd.oursim.OurGridPersistentSchedulerTest;
+import br.edu.ufcg.lsd.oursim.OurGridReplicationSchedulerTest;
+import br.edu.ufcg.lsd.oursim.OurSimAPIVolatilityTest;
+import br.edu.ufcg.lsd.oursim.entities.ProcessorTest;
+import br.edu.ufcg.lsd.oursim.entities.TaskTest;
+import br.edu.ufcg.lsd.oursim.policy.NoFSharingPolicyTest;
+
 
 @RunWith(Suite.class)
 @SuiteClasses( { ProcessorTest.class, TaskTest.class, NoFSharingPolicyTest.class, OurGridPersistentSchedulerTest.class, OurSimAPIVolatilityTest.class,
