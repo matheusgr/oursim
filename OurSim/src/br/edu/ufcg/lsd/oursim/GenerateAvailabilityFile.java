@@ -9,7 +9,6 @@ import org.apache.commons.lang.time.StopWatch;
 import br.edu.ufcg.lsd.oursim.availability.HostAvailabilityGenerator;
 import br.edu.ufcg.lsd.oursim.availability.HostAvailabilityGeneratorImp;
 
-
 public class GenerateAvailabilityFile {
 
 	private static void generateAvailabilityFile(int quantMachines, int periodoDeObservacaoEmHoras, String outputFileName) throws java.io.IOException {
@@ -66,7 +65,7 @@ public class GenerateAvailabilityFile {
 
 		generateAvailabilityFile(quantMachines, periodoDeObservacaoEmHoras, outputFileName);
 
-		generateMachinesDescription(quantMachines, "machinesDescription.txt");
+		generateMachinesDescription(quantMachines, "machines_description.txt");
 
 		c.stop();
 		System.out.println(c);
