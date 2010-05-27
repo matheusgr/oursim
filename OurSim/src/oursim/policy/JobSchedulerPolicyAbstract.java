@@ -16,7 +16,7 @@ import oursim.simulationevents.EventQueue;
  * 
  * An abstract definition of a grid Scheduler. The concrete class must implement
  * the method {@link JobSchedulerPolicyAbstract#performScheduling()} instead of
- * {@link JobSchedulerPolicy#schedule()} 
+ * {@link JobSchedulerPolicy#schedule()}
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @since 18/05/2010
@@ -58,10 +58,9 @@ public abstract class JobSchedulerPolicyAbstract implements JobSchedulerPolicy {
 	 * @param peers
 	 *            All the peers that compound of the grid.
 	 */
-	public JobSchedulerPolicyAbstract(EventQueue eventQueue, List<Peer> peers, Workload workload) {
+	public JobSchedulerPolicyAbstract(EventQueue eventQueue, List<Peer> peers) {
 		this.peers = peers;
 		this.eventQueue = eventQueue;
-		this.workload = workload;
 		this.submittedJobs = new HashSet<Job>();
 		this.submittedTasks = new TreeSet<Task>();
 	}
@@ -98,7 +97,11 @@ public abstract class JobSchedulerPolicyAbstract implements JobSchedulerPolicy {
 
 	@Override
 	public void addWorkload(Workload workload) {
-		this.workload.merge(workload);
+		if (this.workload != null) {
+			this.workload.merge(workload);
+		} else {
+			this.workload = workload;
+		}
 	}
 
 	/**

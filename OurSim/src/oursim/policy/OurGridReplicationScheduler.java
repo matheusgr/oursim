@@ -4,9 +4,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import oursim.dispatchableevents.Event;
+import oursim.entities.Job;
 import oursim.entities.Peer;
 import oursim.entities.Task;
-import oursim.input.Workload;
 import oursim.simulationevents.EventQueue;
 
 /**
@@ -21,15 +21,28 @@ import oursim.simulationevents.EventQueue;
 public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 
 	/**
+	 * the level of replication of the tasks that comprise this job. A <i>value</i>
+	 * less than or equal 1 means no replication. A <i>value</i> greater than 1
+	 * means that <i>value</i> replies will be created for each task.
+	 */
+	private int replicationLevel;
+
+	/**
 	 * An ordinary constructor.
 	 * 
 	 * @param eventQueue
 	 *            The queue with the events to be processed.
 	 * @param peers
 	 *            All the peers that compound of the grid.
+	 * @param replicationLevel
+	 *            the level of replication of the tasks that comprise this job.
+	 *            A <i>value</i> less than or equal 1 means no replication. A
+	 *            <i>value</i> greater than 1 means that <i>value</i> replies
+	 *            will be created for each task.
 	 */
-	public OurGridReplicationScheduler(EventQueue eventQueue, List<Peer> peers, Workload workload) {
-		super(eventQueue, peers, workload);
+	public OurGridReplicationScheduler(EventQueue eventQueue, List<Peer> peers, int replicationLevel) {
+		super(eventQueue, peers);
+		this.replicationLevel = replicationLevel;
 	}
 
 	@Override
@@ -46,6 +59,12 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 				}
 			}
 		}
+	}
+
+	@Override
+	public void addJob(Job job) {
+		job.setReplicationLevel(this.replicationLevel);
+		super.addJob(job);
 	}
 
 	@Override
