@@ -10,7 +10,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 
 import oursim.availability.AvailabilityRecord;
 import oursim.dispatchableevents.Event;
-import oursim.dispatchableevents.workerevents.WorkerEventListenerAdapter;
+import oursim.dispatchableevents.workerevents.WorkerEventListener;
 import oursim.entities.util.ResourceAllocationManager;
 import oursim.entities.util.ResourceManager;
 import oursim.entities.util.TaskManager;
@@ -20,7 +20,7 @@ import oursim.policy.ResourceSharingPolicy;
 import oursim.policy.ranking.PeerRankingPolicy;
 import oursim.policy.ranking.ResourceRankingPolicy;
 import oursim.policy.ranking.TaskPreemptionRankingPolicy;
-import oursim.simulationevents.EventQueue;
+import oursim.simulationevents.ActiveEntityAbstract;
 
 /**
  * 
@@ -33,7 +33,7 @@ import oursim.simulationevents.EventQueue;
  * @since 18/05/2010
  * 
  */
-public class Peer extends WorkerEventListenerAdapter {
+public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 
 	/**
 	 * The peer's name.
@@ -56,11 +56,6 @@ public class Peer extends WorkerEventListenerAdapter {
 	private final ResourceManager resourceManager;
 
 	private final TaskManager taskManager;
-
-	/**
-	 * The event queue that will be processed by this peer.
-	 */
-	private EventQueue eventQueue;
 
 	/**
 	 * The workload originated by this peer, that is, all the jobs in this
@@ -208,8 +203,8 @@ public class Peer extends WorkerEventListenerAdapter {
 		for (Task task : this.taskManager.getRunningTasks()) {
 			Long estimatedFinishTime = task.getTaskExecution().updateProcessing(currentTime);
 			if (estimatedFinishTime != null) {
-				long finishTime = this.eventQueue.getCurrentTime() + estimatedFinishTime;
-				this.eventQueue.addFinishTaskEvent(finishTime, task);
+				long finishTime = getCurrentTime() + estimatedFinishTime;
+				getEventQueue().addFinishTaskEvent(finishTime, task);
 			}
 		}
 	}
@@ -268,7 +263,7 @@ public class Peer extends WorkerEventListenerAdapter {
 	public boolean executeTask(Task task) {
 		Machine allocatedMachine = this.resourceAllocationManager.allocateTask(task);
 		if (allocatedMachine != null) {
-			long currentTime = this.eventQueue.getCurrentTime();
+			long currentTime = getCurrentTime();
 			Processor defaultProcessor = allocatedMachine.getDefaultProcessor();
 			task.setTaskExecution(new TaskExecution(task, defaultProcessor, currentTime));
 			task.setStartTime(currentTime);
@@ -311,7 +306,7 @@ public class Peer extends WorkerEventListenerAdapter {
 		if (this.taskManager.isInExecution(task)) {
 			this.resourceAllocationManager.deallocateTask(task);
 			this.resourceSharingPolicy.updateMutualBalance(this, task.getSourcePeer(), task);
-			this.eventQueue.addPreemptedTaskEvent(this.eventQueue.getCurrentTime(), task);
+			this.getEventQueue().addPreemptedTaskEvent(getCurrentTime(), task);
 		} else {
 			throw new IllegalArgumentException("The task was not being executed in this peer.");
 		}
@@ -354,6 +349,8 @@ public class Peer extends WorkerEventListenerAdapter {
 		return this.resourceManager.hasResource(machineName);
 	}
 
+	// B-- beginning of implementation of WorkerEventListener
+
 	@Override
 	public void workerAvailable(Event<String> workerEvent) {
 		String machineName = workerEvent.getSource();
@@ -372,6 +369,24 @@ public class Peer extends WorkerEventListenerAdapter {
 		}
 		this.resourceManager.makeResourceUnavailable(machineName);
 	}
+
+	@Override
+	public void workerUp(Event<String> workerEvent) {
+	}
+
+	@Override
+	public void workerDown(Event<String> workerEvent) {
+	}
+
+	@Override
+	public void workerIdle(Event<String> workerEvent) {
+	}
+
+	@Override
+	public void workerRunning(Event<String> workerEvent) {
+	}
+
+	// E-- end of implementation of WorkerEventListener
 
 	/**
 	 * Sorts the collection of peer in a way that the preferable peers to
@@ -435,14 +450,10 @@ public class Peer extends WorkerEventListenerAdapter {
 		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("name", name).append("#resources", resources.size()).toString();
 	}
 
-	public void setEventQueue(EventQueue eventQueue) {
-		this.eventQueue = eventQueue;
-	}
-
 	public void scheduleWorkerEvents(Input<AvailabilityRecord> availability) {
 		while (availability.peek() != null) {
 			AvailabilityRecord av = availability.poll();
-			eventQueue.addWorkerAvailableEvent(av.getTime(), av.getMachineName(), av.getDuration());
+			this.getEventQueue().addWorkerAvailableEvent(av.getTime(), av.getMachineName(), av.getDuration());
 		}
 	}
 

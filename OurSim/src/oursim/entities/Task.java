@@ -321,7 +321,7 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 		return this.numberOfpreemptions > 0;
 	}
 
-	public boolean hasAllReplyFailed() {
+	public boolean isAllRepliesFailed() {
 		boolean hasAllReplyFailed = true;
 		for (Task reply : replies) {
 			hasAllReplyFailed &= reply.wasPreempted();

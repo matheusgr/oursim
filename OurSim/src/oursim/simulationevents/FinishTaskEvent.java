@@ -31,6 +31,7 @@ public class FinishTaskEvent extends TaskTimedEvent {
 	protected final void doAction() {
 		Task task = (Task) content;
 		task.finish(time);
+//		EventQueue.getInstance().
 		TaskEventDispatcher.getInstance().dispatchTaskFinished(task);
 	}
 

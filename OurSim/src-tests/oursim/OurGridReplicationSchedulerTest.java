@@ -81,7 +81,7 @@ public class OurGridReplicationSchedulerTest extends AbstractOurSimAPITest {
 
 		};
 
-		JobSchedulerPolicy jobScheduler = new OurGridReplicationScheduler(EventQueue.getInstance(), peers, REPLICATION_LEVEL);
+		JobSchedulerPolicy jobScheduler = new OurGridReplicationScheduler(peers, REPLICATION_LEVEL);
 
 		oursim = new OurSimAPI(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
 		oursim.start();

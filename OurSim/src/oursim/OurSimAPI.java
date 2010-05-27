@@ -99,9 +99,12 @@ public class OurSimAPI {
 	public void start() {
 		prepareListeners(peers, jobScheduler);
 
+		// shares the eventQueue with the scheduler
+		this.jobScheduler.setEventQueue(eventQueue);
+
 		// setUP the peers to the simulation
 		for (Peer peer : peers) {
-			// shpeersntQueue with the peers.
+			// shares the eventQueue with the peers.
 			peer.setEventQueue(eventQueue);
 			// adds the workload of all peers to the jobScheduler
 			if (peer.getWorkload() != null) {

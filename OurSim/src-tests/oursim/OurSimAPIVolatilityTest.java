@@ -105,7 +105,7 @@ public class OurSimAPIVolatilityTest extends AbstractOurSimAPITest {
 
 		};
 
-		JobSchedulerPolicy jobScheduler = new OurGridPersistentScheduler(EventQueue.getInstance(), peers);
+		JobSchedulerPolicy jobScheduler = new OurGridPersistentScheduler(peers);
 
 		oursim = new OurSimAPI(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
 		oursim.start();

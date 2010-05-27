@@ -18,6 +18,14 @@ public abstract class WorkerEventListenerAdapter implements WorkerEventListener,
 	}
 
 	@Override
+	public void workerUnavailable(Event<String> workerEvent) {
+	}
+
+	@Override
+	public void workerUp(Event<String> workerEvent) {
+	}
+
+	@Override
 	public void workerDown(Event<String> workerEvent) {
 	}
 
@@ -27,14 +35,6 @@ public abstract class WorkerEventListenerAdapter implements WorkerEventListener,
 
 	@Override
 	public void workerRunning(Event<String> workerEvent) {
-	}
-
-	@Override
-	public void workerUnavailable(Event<String> workerEvent) {
-	}
-
-	@Override
-	public void workerUp(Event<String> workerEvent) {
 	}
 
 }

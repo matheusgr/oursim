@@ -10,7 +10,7 @@ import oursim.entities.Job;
 import oursim.entities.Peer;
 import oursim.entities.Task;
 import oursim.input.Workload;
-import oursim.simulationevents.EventQueue;
+import oursim.simulationevents.ActiveEntityAbstract;
 
 /**
  * 
@@ -22,12 +22,7 @@ import oursim.simulationevents.EventQueue;
  * @since 18/05/2010
  * 
  */
-public abstract class JobSchedulerPolicyAbstract implements JobSchedulerPolicy {
-
-	/**
-	 * The event queue that will be processed by this scheduler.
-	 */
-	protected EventQueue eventQueue;
+public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract implements JobSchedulerPolicy {
 
 	/**
 	 * The jobs that have been submitted to this scheduler.
@@ -53,14 +48,11 @@ public abstract class JobSchedulerPolicyAbstract implements JobSchedulerPolicy {
 	/**
 	 * An ordinary constructor.
 	 * 
-	 * @param eventQueue
-	 *            The queue with the events to be processed.
 	 * @param peers
 	 *            All the peers that compound of the grid.
 	 */
-	public JobSchedulerPolicyAbstract(EventQueue eventQueue, List<Peer> peers) {
+	public JobSchedulerPolicyAbstract(List<Peer> peers) {
 		this.peers = peers;
-		this.eventQueue = eventQueue;
 		this.submittedJobs = new HashSet<Job>();
 		this.submittedTasks = new TreeSet<Task>();
 	}
@@ -74,7 +66,7 @@ public abstract class JobSchedulerPolicyAbstract implements JobSchedulerPolicy {
 	 *            The task to be rescheduled.
 	 */
 	protected void rescheduleTask(Task task) {
-		eventQueue.addSubmitTaskEvent(eventQueue.getCurrentTime(), task);
+		this.getEventQueue().addSubmitTaskEvent(getCurrentTime(), task);
 	}
 
 	@Override
@@ -82,7 +74,7 @@ public abstract class JobSchedulerPolicyAbstract implements JobSchedulerPolicy {
 		assert !job.getTasks().isEmpty();
 		this.submittedJobs.add(job);
 		for (Task task : job.getTasks()) {
-			this.eventQueue.addSubmitTaskEvent(this.eventQueue.getCurrentTime(), task);
+			this.getEventQueue().addSubmitTaskEvent(this.getCurrentTime(), task);
 		}
 	}
 
@@ -95,6 +87,12 @@ public abstract class JobSchedulerPolicyAbstract implements JobSchedulerPolicy {
 
 	}
 
+	/**
+	 * The only mandatory method to be implemented by the subclasses. The
+	 * semantic is the same of {@link JobSchedulerPolicy#schedule()}
+	 */
+	protected abstract void performScheduling();
+
 	@Override
 	public void addWorkload(Workload workload) {
 		if (this.workload != null) {
@@ -104,18 +102,12 @@ public abstract class JobSchedulerPolicyAbstract implements JobSchedulerPolicy {
 		}
 	}
 
-	/**
-	 * The only mandatory method to be implemented by the subclasses. The
-	 * semantic is the same of {@link JobSchedulerPolicy#schedule()}
-	 */
-	protected abstract void performScheduling();
-
 	protected final void addFutureJobEventsToEventQueue() {
 		long nextSubmissionTime = (workload.peek() != null) ? workload.peek().getSubmissionTime() : -1;
 		while (workload.peek() != null && workload.peek().getSubmissionTime() == nextSubmissionTime) {
 			Job job = workload.poll();
 			long time = job.getSubmissionTime();
-			eventQueue.addSubmitJobEvent(time, job);
+			this.getEventQueue().addSubmitJobEvent(time, job);
 		}
 	}
 

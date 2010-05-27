@@ -5,6 +5,7 @@ import oursim.dispatchableevents.taskevents.TaskEventListener;
 import oursim.dispatchableevents.workerevents.WorkerEventListener;
 import oursim.entities.Job;
 import oursim.input.Workload;
+import oursim.simulationevents.ActiveEntity;
 
 /**
  * 
@@ -25,7 +26,7 @@ import oursim.input.Workload;
  * @since 18/05/2010
  * 
  */
-public interface JobSchedulerPolicy extends JobEventListener, TaskEventListener, WorkerEventListener {
+public interface JobSchedulerPolicy extends JobEventListener, TaskEventListener, WorkerEventListener, ActiveEntity {
 
 	/**
 	 * Simply Adds the job to this scheduler. To This method, unlike

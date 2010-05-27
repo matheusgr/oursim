@@ -89,7 +89,7 @@ public class OurSim {
 
 		System.out.println("Starting Simulation...");
 
-		JobSchedulerPolicy jobScheduler = new OurGridScheduler(EventQueue.getInstance(), peers);
+		JobSchedulerPolicy jobScheduler = new OurGridScheduler(peers);
 
 		new OurSimAPI(EventQueue.getInstance(), peers, jobScheduler, workload, availability).start();
 
