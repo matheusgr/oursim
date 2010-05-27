@@ -2,10 +2,10 @@ package oursim.entities;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.commons.lang.builder.ToStringBuilder;
 
-import oursim.Parameters;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+
 import oursim.policy.ranking.ResourceRankingPolicy;
 
 /**
@@ -34,7 +34,12 @@ public class Job extends ComputableElement implements Comparable<Job> {
 
 	private final ResourceRankingPolicy resourceRankingPolicy;
 
-	private int replicationLevel = Parameters.NUMBER_OF_REPLIES;
+	/**
+	 * the level of replication of the tasks that comprise this job. A <i>value</i>
+	 * less than or equal 1 means no replication. A <i>value</i> greater than 1
+	 * means that <i>value</i> replies will be created for each task.
+	 */
+	private int replicationLevel = 0;
 
 	/**
 	 * Field to assure the uniqueness of the id of each task.
@@ -272,6 +277,35 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		return getFinishTime() != null;
 	}
 
+	public ResourceRankingPolicy getResourceRequestPolicy() {
+		return resourceRankingPolicy;
+	}
+
+	/**
+	 * Gets the level of replication of the tasks that comprise this job. A
+	 * <i>value</i> less than or equal 1 means no replication. A <i>value</i>
+	 * greater than 1 means that <i>value</i> replies will be created for each
+	 * task.
+	 * 
+	 * @return the level of replication of the tasks that comprise this job.
+	 */
+	public int getReplicationLevel() {
+		return replicationLevel;
+	}
+
+	/**
+	 * Sets the level of replication of the tasks that comprise this job. A
+	 * <i>value</i> less than or equal 1 means no replication. A <i>value</i>
+	 * greater than 1 means that <i>value</i> replies will be created for each
+	 * task.
+	 * 
+	 * @param replicationLevel
+	 *            the level of replication of the tasks that comprise this job
+	 */
+	public void setReplicationLevel(int replicationLevel) {
+		this.replicationLevel = replicationLevel;
+	}
+
 	@Override
 	public int compareTo(Job j) {
 		long diffTime = this.submissionTime - j.getSubmissionTime();
@@ -298,14 +332,6 @@ public class Job extends ComputableElement implements Comparable<Job> {
 	public String toString() {
 		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("id", id).append("submissionTime", submissionTime).append("sourcePeer",
 				sourcePeer.getName()).append("#tasks", tasks.size()).toString();
-	}
-
-	public ResourceRankingPolicy getResourceRequestPolicy() {
-		return resourceRankingPolicy;
-	}
-
-	public int getReplicationLevel() {
-		return replicationLevel;
 	}
 
 }

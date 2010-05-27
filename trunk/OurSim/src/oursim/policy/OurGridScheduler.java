@@ -27,8 +27,8 @@ public class OurGridScheduler extends JobSchedulerPolicyAbstract {
 	 * @param peers
 	 *            All the peers that compound of the grid.
 	 */
-	public OurGridScheduler(EventQueue eventQueue, List<Peer> peers, Workload workload) {
-		super(eventQueue, peers, workload);
+	public OurGridScheduler(EventQueue eventQueue, List<Peer> peers) {
+		super(eventQueue, peers);
 	}
 
 	@Override

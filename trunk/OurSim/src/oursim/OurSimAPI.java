@@ -13,25 +13,90 @@ import oursim.input.DedicatedResourcesAvailabilityCharacterization;
 import oursim.input.Input;
 import oursim.input.Workload;
 import oursim.policy.JobSchedulerPolicy;
-import oursim.policy.OurGridScheduler;
 import oursim.simulationevents.EventQueue;
 import oursim.simulationevents.TimedEvent;
 
+/**
+ * 
+ * The base class to a simulation. This is intended to be a seamless class, so
+ * ui facilities should be implemented in client's classes.
+ * 
+ * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
+ * @since 27/05/2010
+ * 
+ */
 public class OurSimAPI {
 
+	/**
+	 * The event queue to drive the simulation.
+	 */
 	private EventQueue eventQueue;
 
-	public OurSimAPI(EventQueue eventQueue) {
+	/**
+	 * the peers that comprise the grid.
+	 */
+	private List<Peer> peers;
+
+	/**
+	 * the scheduler of the jobs.
+	 */
+	private JobSchedulerPolicy jobScheduler;
+
+	/**
+	 * the workload to be processed by the resources of the peers.
+	 */
+	private Workload workload;
+
+	/**
+	 * the characterization of the availability of all resources belonging to
+	 * the peers.
+	 */
+	private Input<AvailabilityRecord> availabilityCharacterization;
+
+	/**
+	 * An convenient constructor to simulations that deals <b>only</b> with
+	 * dedicated resources.
+	 * 
+	 * @param eventQueue
+	 *            The event queue to drive the simulation.
+	 * @param peers
+	 *            the peers that comprise the grid.
+	 * @param jobScheduler
+	 *            the scheduler of the jobs.
+	 * @param workload
+	 *            the workload to be processed by the resources of the peers.
+	 */
+	public OurSimAPI(EventQueue eventQueue, List<Peer> peers, JobSchedulerPolicy jobScheduler, Workload workload) {
+		this(eventQueue, peers, jobScheduler, workload, new DedicatedResourcesAvailabilityCharacterization(peers));
+	}
+
+	/**
+	 * An ordinary constructor to simulations that deals with resources possibly
+	 * volatile.
+	 * 
+	 * @param peers
+	 *            the peers that comprise the grid.
+	 * @param jobScheduler
+	 *            the scheduler of the jobs.
+	 * @param workload
+	 *            the workload to be processed by the resources of the peers.
+	 * @param availabilityCharacterization
+	 *            the characterization of the availability of all resources
+	 *            belonging to the peers.
+	 */
+	public OurSimAPI(EventQueue eventQueue, List<Peer> peers, JobSchedulerPolicy jobScheduler, Workload workload,
+			Input<AvailabilityRecord> availabilityCharacterization) {
 		this.eventQueue = eventQueue;
+		this.peers = peers;
+		this.jobScheduler = jobScheduler;
+		this.workload = workload;
+		this.availabilityCharacterization = availabilityCharacterization;
 	}
 
-	public void run(List<Peer> peers, Workload workload, JobSchedulerPolicy jobScheduler) {
-		Input<AvailabilityRecord> defaultResourceAvailability = new DedicatedResourcesAvailabilityCharacterization(peers);
-		run(peers, workload, defaultResourceAvailability, jobScheduler);
-	}
-
-	public void run(List<Peer> peers, Workload workload, Input<AvailabilityRecord> availability, JobSchedulerPolicy jobScheduler) {
-
+	/**
+	 * Starts the simulation.
+	 */
+	public void start() {
 		prepareListeners(peers, jobScheduler);
 
 		// setUP the peers to the simulation
@@ -44,14 +109,28 @@ public class OurSimAPI {
 			}
 		}
 
-		run(eventQueue, jobScheduler, availability);
+		// adds the workload to the scheduler
+		this.jobScheduler.addWorkload(workload);
+
+		run(eventQueue, jobScheduler, availabilityCharacterization);
 
 		clearListeners(peers, jobScheduler);
-
 	}
 
-	private void run(EventQueue queue, JobSchedulerPolicy jobScheduler, Input<AvailabilityRecord> availability) {
-		addFutureWorkerEventsToEventQueue(availability);
+	/**
+	 * the method that effectively performs the simulation. This method contains
+	 * the main loop guiding the whole simulation.
+	 * 
+	 * @param queue
+	 *            The event queue to drive the simulation.
+	 * @param jobScheduler
+	 *            the scheduler of the jobs.
+	 * @param availability
+	 *            the characterization of the availability of all resources
+	 *            belonging to the peers.
+	 */
+	private static void run(EventQueue queue, JobSchedulerPolicy jobScheduler, Input<AvailabilityRecord> availability) {
+		addFutureWorkerEventsToEventQueue(queue, availability);
 		while (queue.peek() != null) {
 
 			long currentTime = queue.peek().getTime();
@@ -66,12 +145,12 @@ public class OurSimAPI {
 			// time, the scheduler must be invoked
 			jobScheduler.schedule();
 
-			addFutureWorkerEventsToEventQueue(availability);
+			addFutureWorkerEventsToEventQueue(queue, availability);
 
 		}
 	}
 
-	void addFutureWorkerEventsToEventQueue(Input<AvailabilityRecord> availability) {
+	private static void addFutureWorkerEventsToEventQueue(EventQueue eventQueue, Input<AvailabilityRecord> availability) {
 		long nextAvRecordTime = (availability.peek() != null) ? availability.peek().getTime() : -1;
 		while (availability.peek() != null && availability.peek().getTime() == nextAvRecordTime) {
 			AvailabilityRecord av = availability.poll();
@@ -97,7 +176,7 @@ public class OurSimAPI {
 		}
 
 		// the scheduler must be added to WorkerEventDispatcher always
-		// after of all peers
+		// after of all peers because of the preference at the process
 		WorkerEventDispatcher.getInstance().addListener(sp);
 
 	}

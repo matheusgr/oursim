@@ -89,9 +89,9 @@ public class OurSim {
 
 		System.out.println("Starting Simulation...");
 
-		JobSchedulerPolicy jobScheduler = new OurGridScheduler(EventQueue.getInstance(), peers, workload);
+		JobSchedulerPolicy jobScheduler = new OurGridScheduler(EventQueue.getInstance(), peers);
 
-		new OurSimAPI(EventQueue.getInstance()).run(peers, workload, availability, jobScheduler);
+		new OurSimAPI(EventQueue.getInstance(), peers, jobScheduler, workload, availability).start();
 
 		System.out.println("# Total of  finished  jobs: " + jobEventCounter.getNumberOfFinishedJobs());
 		System.out.println("# Total of preempted  jobs: " + jobEventCounter.getNumberOfPreemptionsForAllJobs());

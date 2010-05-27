@@ -155,8 +155,8 @@ public class SimulationBase {
 	public final void testRun() {
 		TestOutput to = new TestOutput(100, 100, 100, 100);
 		JobEventDispatcher.getInstance().addListener(to);
-		JobSchedulerPolicy jobScheduler = new OurGridPersistentScheduler(EventQueue.getInstance(), peers, workload);
-		new OurSimAPI(EventQueue.getInstance()).run(peers, workload, jobScheduler);
+		JobSchedulerPolicy jobScheduler = new OurGridPersistentScheduler(EventQueue.getInstance(), peers);
+		new OurSimAPI(EventQueue.getInstance(), peers, jobScheduler, workload).start();
 		to.verify();
 	}
 
