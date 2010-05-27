@@ -1,4 +1,4 @@
-package br.edu.ufcg.lsd.oursim;
+package br.edu.ufcg.lsd.oursim.policy;
 
 import static org.junit.Assert.assertEquals;
 
@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 
+import br.edu.ufcg.lsd.oursim.AbstractOurSimAPITest;
 import br.edu.ufcg.lsd.oursim.OurSimAPI;
 import br.edu.ufcg.lsd.oursim.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.entities.Job;

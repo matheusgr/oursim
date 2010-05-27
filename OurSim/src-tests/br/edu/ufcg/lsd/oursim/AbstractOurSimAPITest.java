@@ -28,38 +28,37 @@ import br.edu.ufcg.lsd.oursim.simulationevents.SubmitTaskEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.WorkerAvailableEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.WorkerUnavailableEvent;
 
-
 public abstract class AbstractOurSimAPITest {
 
-	OurSimAPI oursim;
+	protected OurSimAPI oursim;
 
-	JobEventCounter jobEventCounter;
+	protected JobEventCounter jobEventCounter;
 
-	TaskEventCounter taskEventCounter;
-
-	@SuppressWarnings("unchecked")
-	Set<Class> jobEvents;
+	protected TaskEventCounter taskEventCounter;
 
 	@SuppressWarnings("unchecked")
-	Set<Class> taskEvents;
+	protected Set<Class> jobEvents;
 
 	@SuppressWarnings("unchecked")
-	Set<Class> workerEvents;
+	protected Set<Class> taskEvents;
 
-	final int NUMBER_OF_JOBS_BY_PEER = 10;
-	final int NUMBER_OF_TASKS_BY_JOB = 1;
-	final int NUMBER_OF_PEERS = 10;
-	final int NUMBER_OF_RESOURCES_BY_PEER = 10;
-	final int RESOURCE_MIPS_RATING = 3000;
-	final int TOTAL_OF_JOBS = NUMBER_OF_PEERS * NUMBER_OF_JOBS_BY_PEER;
+	@SuppressWarnings("unchecked")
+	protected Set<Class> workerEvents;
 
-	final long JOB_LENGTH = 100;
-	final long JOB_SUBMISSION_TIME = 0;
+	protected final int NUMBER_OF_JOBS_BY_PEER = 10;
+	protected final int NUMBER_OF_TASKS_BY_JOB = 1;
+	protected final int NUMBER_OF_PEERS = 10;
+	protected final int NUMBER_OF_RESOURCES_BY_PEER = 10;
+	protected final int RESOURCE_MIPS_RATING = 3000;
+	protected final int TOTAL_OF_JOBS = NUMBER_OF_PEERS * NUMBER_OF_JOBS_BY_PEER;
 
-	List<Job> jobs;
-	List<Peer> peers;
+	protected final long JOB_LENGTH = 100;
+	protected final long JOB_SUBMISSION_TIME = 0;
 
-	long nextJobId = 0;
+	protected List<Job> jobs;
+	protected List<Peer> peers;
+
+	protected long nextJobId = 0;
 
 	@SuppressWarnings("unchecked")
 	@Before
