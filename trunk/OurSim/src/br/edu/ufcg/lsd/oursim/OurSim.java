@@ -1,7 +1,6 @@
 package br.edu.ufcg.lsd.oursim;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +23,6 @@ import br.edu.ufcg.lsd.oursim.policy.NoFSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.OurGridScheduler;
 import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
-
 
 public class OurSim {
 
@@ -56,12 +54,6 @@ public class OurSim {
 		int numTasksByJobs = Parameters.NUM_TASKS_BY_JOB;
 
 		SyntheticWorkload workload = new SyntheticWorkload(execTime, execTimeVariance, submissionInterval, numJobs, numTasksByJobs, peers);
-
-		try {
-			workload.save("workload_oursim.txt");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 
 		return workload;
 
