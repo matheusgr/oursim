@@ -1,6 +1,5 @@
 package oursim.simulationevents;
 
-import oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import oursim.dispatchableevents.taskevents.TaskEventDispatcher;
 import oursim.entities.Task;
 
@@ -15,7 +14,7 @@ import oursim.entities.Task;
 public class PreemptedTaskEvent extends TaskTimedEvent {
 
 	public static final int PRIORITY = 2;
-	
+
 	/**
 	 * Creates an event indicating that a task has been preempted.
 	 * 
@@ -32,10 +31,10 @@ public class PreemptedTaskEvent extends TaskTimedEvent {
 	protected void doAction() {
 		Task task = content;
 		task.preempt(time);
-		TaskEventDispatcher.getInstance().dispatchTaskPreempted(task,time);
-		// XXX: se for um job de uma task só, avisa que o job foi preemptado
+		TaskEventDispatcher.getInstance().dispatchTaskPreempted(task, time);
+		// TODO: se for um job de uma task só, avisa que o job foi preemptado
 		if (task.getSourceJob().getTasks().size() == 1 && task.isAllRepliesFailed()) {
-				JobEventDispatcher.getInstance().dispatchJobPreempted(task.getSourceJob(), time);
+			EventQueue.getInstance().addPreemptedJobEvent(EventQueue.getInstance().getCurrentTime(), task.getSourceJob());
 		}
 	}
 

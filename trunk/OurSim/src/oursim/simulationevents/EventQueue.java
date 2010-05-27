@@ -146,9 +146,10 @@ public class EventQueue implements Closeable {
 	 *            the job that has been preempted.
 	 */
 	public void addPreemptedJobEvent(long preemptionTime, Job job) {
-		assert job2FinishJobEvent.containsKey(job);
-		this.job2FinishJobEvent.remove(job).cancel();
-		this.addEvent(new PreemptJobEvent(preemptionTime, job));
+		// TODO: definir o que significa a preempção de um job.
+		// assert job2FinishJobEvent.containsKey(job);
+		// this.job2FinishJobEvent.remove(job).cancel();
+		this.addEvent(new PreemptedJobEvent(preemptionTime, job));
 	}
 
 	/**

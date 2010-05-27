@@ -7,7 +7,6 @@ import oursim.dispatchableevents.Event;
 import oursim.entities.Job;
 import oursim.entities.Peer;
 import oursim.entities.Task;
-import oursim.simulationevents.EventQueue;
 
 /**
  * 
@@ -67,22 +66,13 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 
 	@Override
 	public void taskSubmitted(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		this.submittedTasks.add(task);
-		addReplies(task);
+		super.taskSubmitted(taskEvent);
+		addReplies(taskEvent.getSource());
 	}
 
-	@Override
 	public void taskFinished(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		task.getTargetPeer().finishTask(task);
-		stopRemainderReplies(task);
-		if (task.getSourceJob().isFinished()) {
-			// TODO: colocar essa ação em taskfinished event. Refatorar o pacote
-			// simulationsevents para que os eventos tenham acesso indiscrimado
-			// à fila de eventos para poderem gerar eventos secundários.
-			this.getEventQueue().addFinishJobEvent(this.getCurrentTime(), task.getSourceJob());
-		}
+		super.taskFinished(taskEvent);
+		stopRemainderReplies(taskEvent.getSource());
 	}
 
 	private void addReplies(Task task) {
@@ -103,11 +93,6 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 				assert false;
 			}
 		}
-	}
-
-	@Override
-	public void workerAvailable(Event<String> workerEvent) {
-		this.schedule();
 	}
 
 }

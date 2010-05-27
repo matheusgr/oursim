@@ -12,18 +12,17 @@ import oursim.entities.Job;
  * @since 20/05/2010
  * 
  */
-public class PreemptJobEvent extends JobTimedEvent {
+public class PreemptedJobEvent extends JobTimedEvent {
 
 	public static final int PRIORITY = 2;
-	
-	PreemptJobEvent(long time, Job job) {
+
+	PreemptedJobEvent(long time, Job job) {
 		super(time, PRIORITY, job);
 	}
 
 	@Override
 	protected void doAction() {
 		Job job = (Job) content;
-		job.preempt(time);
 		JobEventDispatcher.getInstance().dispatchJobPreempted(job, time);
 	}
 

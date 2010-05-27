@@ -140,10 +140,14 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract im
 
 	@Override
 	public void taskFinished(Event<Task> taskEvent) {
+		Task task = taskEvent.getSource();
+		task.getTargetPeer().finishTask(task);
 	}
 
 	@Override
 	public void taskSubmitted(Event<Task> taskEvent) {
+		Task task = taskEvent.getSource();
+		this.submittedTasks.add(task);
 	}
 
 	@Override
@@ -156,6 +160,7 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract im
 
 	@Override
 	public void workerAvailable(Event<String> workerEvent) {
+		this.schedule();
 	}
 
 	@Override

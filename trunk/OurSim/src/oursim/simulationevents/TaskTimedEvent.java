@@ -31,7 +31,7 @@ public abstract class TaskTimedEvent extends TimedEventAbstract<Task> {
 	public int compareTo(TimedEvent ev) {
 		// TODO: Política
 		int compareToFromSuper = super.compareTo(ev);
-		// o super não foi conclusivo e o outro evento é igual a este?
+		// o super não foi conclusivo e o outro evento é do mesmo tipo deste?
 		if (compareToFromSuper == 0 && ev instanceof TaskTimedEvent) {
 			TaskTimedEvent o = (TaskTimedEvent) ev;
 			// essa task já foi preemptada?

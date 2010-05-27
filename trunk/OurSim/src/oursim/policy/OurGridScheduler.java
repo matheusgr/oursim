@@ -3,10 +3,8 @@ package oursim.policy;
 import java.util.Iterator;
 import java.util.List;
 
-import oursim.dispatchableevents.Event;
 import oursim.entities.Peer;
 import oursim.entities.Task;
-import oursim.simulationevents.EventQueue;
 
 /**
  * 
@@ -42,36 +40,6 @@ public class OurGridScheduler extends JobSchedulerPolicyAbstract {
 				}
 			}
 		}
-	}
-
-	@Override
-	public void taskSubmitted(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		this.submittedTasks.add(task);
-	}
-
-	@Override
-	public void taskFinished(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		task.getTargetPeer().finishTask(task);
-		if (task.getSourceJob().isFinished()) {
-			// TODO: colocar essa ação em taskfinished event. Refatorar o pacote
-			// simulationsevents para que os eventos tenham acesso indiscrimado
-			// à fila de eventos para poderem gerar eventos secundários.
-			this.getEventQueue().addFinishJobEvent(this.getCurrentTime(), task.getSourceJob());
-		}
-	}
-
-	@Override
-	public void taskPreempted(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		// TODO: Política: o que fazer quando uma task for preemptada.
-		this.rescheduleTask(task);
-	}
-
-	@Override
-	public void workerAvailable(Event<String> workerEvent) {
-		this.schedule();
 	}
 
 }
