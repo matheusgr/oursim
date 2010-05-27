@@ -30,7 +30,7 @@ public class TaskPreemptionRankingPolicy extends RankingPolicy<Peer, Task> {
 	@Override
 	public void rank(List<Task> tasks) {
 		// get recently started job first
-		// XXX Política para preemptar task por peer
+		// TODO Política para preemptar task por peer
 		Collections.sort(tasks, new Comparator<Task>() {
 			@Override
 			public int compare(Task t1, Task t2) {

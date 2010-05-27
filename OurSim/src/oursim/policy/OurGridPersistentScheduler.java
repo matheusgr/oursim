@@ -9,7 +9,8 @@ import oursim.entities.Task;
 
 /**
  * 
- * An reference implementation of a {@link JobSchedulerPolicy}.
+ * An implementation of a {@link JobSchedulerPolicy} that persistently resubmits
+ * the tasks that have been preempted.
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @since 18/05/2010
@@ -44,34 +45,9 @@ public class OurGridPersistentScheduler extends JobSchedulerPolicyAbstract {
 	}
 
 	@Override
-	public void taskSubmitted(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		this.submittedTasks.add(task);
-	}
-
-	@Override
-	public void taskFinished(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		task.getTargetPeer().finishTask(task);
-		if (task.getSourceJob().isFinished()) {
-			// TODO: colocar essa ação em taskfinished event. Refatorar o pacote
-			// simulationsevents para que os eventos tenham acesso indiscrimado
-			// à fila de eventos para poderem gerar eventos secundários.
-			this.getEventQueue().addFinishJobEvent(this.getCurrentTime(), task.getSourceJob());
-		}
-	}
-
-	@Override
 	public void taskPreempted(Event<Task> taskEvent) {
 		Task task = taskEvent.getSource();
-		// TODO: Política: o que fazer quando uma task for preemptada.
-		// se pelo menos um das replicas já tiver terminado, não tem problemas.
 		this.rescheduleTask(task);
-	}
-
-	@Override
-	public void workerAvailable(Event<String> workerEvent) {
-		this.schedule();
 	}
 
 }

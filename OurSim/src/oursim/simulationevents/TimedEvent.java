@@ -62,7 +62,7 @@ public abstract class TimedEvent implements Comparable<TimedEvent> {
 	 */
 	public String getType() {
 		String thisClassSimpleName = this.getClass().getSimpleName();
-		// TODO: following a implicit name convention
+		// TODO: following an implicit name convention
 		String eventName = thisClassSimpleName.substring(0, thisClassSimpleName.indexOf("Event"));
 		return eventName;
 	}
