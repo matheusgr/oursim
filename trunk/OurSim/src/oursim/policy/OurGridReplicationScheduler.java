@@ -30,8 +30,6 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 	/**
 	 * An ordinary constructor.
 	 * 
-	 * @param eventQueue
-	 *            The queue with the events to be processed.
 	 * @param peers
 	 *            All the peers that compound of the grid.
 	 * @param replicationLevel
@@ -40,8 +38,8 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 	 *            <i>value</i> greater than 1 means that <i>value</i> replies
 	 *            will be created for each task.
 	 */
-	public OurGridReplicationScheduler(EventQueue eventQueue, List<Peer> peers, int replicationLevel) {
-		super(eventQueue, peers);
+	public OurGridReplicationScheduler(List<Peer> peers, int replicationLevel) {
+		super(peers);
 		this.replicationLevel = replicationLevel;
 	}
 
@@ -53,7 +51,7 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 			for (Peer provider : peers) {
 				boolean isTaskRunning = provider.executeTask(task);
 				if (isTaskRunning) {
-					eventQueue.addStartedTaskEvent(task);
+					this.getEventQueue().addStartedTaskEvent(task);
 					iterator.remove();
 					break;
 				}
@@ -83,7 +81,7 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 			// TODO: colocar essa ação em taskfinished event. Refatorar o pacote
 			// simulationsevents para que os eventos tenham acesso indiscrimado
 			// à fila de eventos para poderem gerar eventos secundários.
-			eventQueue.addFinishJobEvent(eventQueue.getCurrentTime(), task.getSourceJob());
+			this.getEventQueue().addFinishJobEvent(this.getCurrentTime(), task.getSourceJob());
 		}
 	}
 

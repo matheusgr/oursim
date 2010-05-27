@@ -40,7 +40,7 @@ public class OurGridPersistentSchedulerTest extends AbstractOurSimAPITest {
 		// terminar as demandas de cada job.
 		Input<AvailabilityRecord> availability = new DedicatedResourcesAvailabilityCharacterization(peers, JOB_SUBMISSION_TIME, JOB_LENGTH);
 
-		JobSchedulerPolicy jobScheduler = new OurGridPersistentScheduler(EventQueue.getInstance(), peers);
+		JobSchedulerPolicy jobScheduler = new OurGridPersistentScheduler(peers);
 		oursim = new OurSimAPI(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
 		oursim.start();
 
@@ -122,7 +122,7 @@ public class OurGridPersistentSchedulerTest extends AbstractOurSimAPITest {
 
 		Input<AvailabilityRecord> availability = new DedicatedResourcesAvailabilityCharacterization(peers, JOB_SUBMISSION_TIME, JOB_LENGTH * 2);
 
-		JobSchedulerPolicy jobScheduler = new OurGridPersistentScheduler(EventQueue.getInstance(), peers);
+		JobSchedulerPolicy jobScheduler = new OurGridPersistentScheduler(peers);
 
 		oursim = new OurSimAPI(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
 		oursim.start();

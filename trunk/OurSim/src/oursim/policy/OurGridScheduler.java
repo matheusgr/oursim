@@ -6,7 +6,6 @@ import java.util.List;
 import oursim.dispatchableevents.Event;
 import oursim.entities.Peer;
 import oursim.entities.Task;
-import oursim.input.Workload;
 import oursim.simulationevents.EventQueue;
 
 /**
@@ -22,13 +21,11 @@ public class OurGridScheduler extends JobSchedulerPolicyAbstract {
 	/**
 	 * An ordinary constructor.
 	 * 
-	 * @param eventQueue
-	 *            The queue with the events to be processed.
 	 * @param peers
 	 *            All the peers that compound of the grid.
 	 */
-	public OurGridScheduler(EventQueue eventQueue, List<Peer> peers) {
-		super(eventQueue, peers);
+	public OurGridScheduler(List<Peer> peers) {
+		super(peers);
 	}
 
 	@Override
@@ -39,7 +36,7 @@ public class OurGridScheduler extends JobSchedulerPolicyAbstract {
 			for (Peer provider : peers) {
 				boolean isTaskRunning = provider.executeTask(task);
 				if (isTaskRunning) {
-					eventQueue.addStartedTaskEvent(task);
+					this.getEventQueue().addStartedTaskEvent(task);
 					iterator.remove();
 					break;
 				}
@@ -61,7 +58,7 @@ public class OurGridScheduler extends JobSchedulerPolicyAbstract {
 			// TODO: colocar essa ação em taskfinished event. Refatorar o pacote
 			// simulationsevents para que os eventos tenham acesso indiscrimado
 			// à fila de eventos para poderem gerar eventos secundários.
-			eventQueue.addFinishJobEvent(eventQueue.getCurrentTime(), task.getSourceJob());
+			this.getEventQueue().addFinishJobEvent(this.getCurrentTime(), task.getSourceJob());
 		}
 	}
 
