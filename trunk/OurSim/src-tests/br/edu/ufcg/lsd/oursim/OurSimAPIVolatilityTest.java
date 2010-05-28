@@ -44,7 +44,7 @@ public class OurSimAPIVolatilityTest extends AbstractOurSimAPITest {
 			@Override
 			protected void setUp() {
 				int currentMachineIndex = 0;
-				Machine currentMachine = peer.getResources().get(currentMachineIndex++);
+				Machine currentMachine = peer.getMachines().get(currentMachineIndex++);
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 0, 10));
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 15, 10));
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 30, 25));
@@ -52,27 +52,27 @@ public class OurSimAPIVolatilityTest extends AbstractOurSimAPITest {
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 73, 4));
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 80, 6));
 
-				currentMachine = peer.getResources().get(currentMachineIndex++);
+				currentMachine = peer.getMachines().get(currentMachineIndex++);
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 20, 20));
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 60, 10));
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 80, 20));
 
-				currentMachine = peer.getResources().get(currentMachineIndex++);
+				currentMachine = peer.getMachines().get(currentMachineIndex++);
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 40, 10));
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 70, 10));
 
-				currentMachine = peer.getResources().get(currentMachineIndex++);
+				currentMachine = peer.getMachines().get(currentMachineIndex++);
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 0, 20));
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 30, 10));
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 60, 10));
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 75, 10));
 
-				currentMachine = peer.getResources().get(currentMachineIndex++);
+				currentMachine = peer.getMachines().get(currentMachineIndex++);
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 15, 10));
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 40, 20));
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 80, 20));
 
-				currentMachine = peer.getResources().get(currentMachineIndex++);
+				currentMachine = peer.getMachines().get(currentMachineIndex++);
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 0, 10));
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 20, 50));
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 74, 2));

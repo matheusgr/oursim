@@ -180,7 +180,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 			resourcesBeingConsumedClone.put(consumer, resourcesBeingConsumedClone.get(consumer) + 1);
 		}
 
-		long resourcesLeft = provider.getNumberOfResourcesToShare();
+		long resourcesLeft = provider.getNumberOfMachinesToShare();
 
 		while (resourcesLeft > 0) {
 
