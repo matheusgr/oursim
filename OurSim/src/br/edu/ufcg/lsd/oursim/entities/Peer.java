@@ -8,14 +8,11 @@ import java.util.Set;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-import br.edu.ufcg.lsd.oursim.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventListener;
 import br.edu.ufcg.lsd.oursim.entities.util.ResourceAllocationManager;
 import br.edu.ufcg.lsd.oursim.entities.util.ResourceManager;
 import br.edu.ufcg.lsd.oursim.entities.util.TaskManager;
-import br.edu.ufcg.lsd.oursim.input.Input;
-import br.edu.ufcg.lsd.oursim.input.Workload;
 import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.ranking.PeerRankingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.ranking.ResourceRankingPolicy;
@@ -57,14 +54,6 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	private final ResourceManager resourceManager;
 
 	private final TaskManager taskManager;
-
-	/**
-	 * The workload originated by this peer, that is, all the jobs in this
-	 * workloads belongs to this peer. Unlike {@link #jobs} the content of this
-	 * collections changes as long the method of {@link Workload} is been
-	 * called.
-	 */
-	private Workload workload;
 
 	/**
 	 * All the jobs originated by this peer, that is, all the jobs that belongs
@@ -426,36 +415,9 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 		return this.resourceSharingPolicy.getPreemptablePeers(this, consumer, allocatedMachinesByPeer, foreignTasks);
 	}
 
-	/**
-	 * Sets the workload belonged to this peer.
-	 * 
-	 * @param workload
-	 *            the workload.
-	 */
-	public void setWorkload(Workload workload) {
-		assert this.workload == null;
-		// TODO: Verificar a adequabilidade desse tratamento com o workload
-		this.workload = workload;
-	}
-
-	/**
-	 * @return the workload belonged to this peer.
-	 */
-	public Workload getWorkload() {
-		// assert this.workload != null;
-		return workload;
-	}
-
 	@Override
 	public String toString() {
 		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("name", name).append("#machines", machines.size()).toString();
-	}
-
-	public void scheduleWorkerEvents(Input<AvailabilityRecord> availability) {
-		while (availability.peek() != null) {
-			AvailabilityRecord av = availability.poll();
-			this.getEventQueue().addWorkerAvailableEvent(av.getTime(), av.getMachineName(), av.getDuration());
-		}
 	}
 
 }

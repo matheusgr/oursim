@@ -132,7 +132,6 @@ public abstract class AbstractOurSimAPITest {
 				}
 			};
 
-			peer.setWorkload(workloadForPeer);
 			allWorkloads.merge(workloadForPeer);
 		}
 

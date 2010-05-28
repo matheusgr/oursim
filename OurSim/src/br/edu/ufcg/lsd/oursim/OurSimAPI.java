@@ -107,10 +107,6 @@ public class OurSimAPI {
 		for (Peer peer : peers) {
 			// shares the eventQueue with the peers.
 			peer.setEventQueue(eventQueue);
-			// adds the workload of all peers to the jobScheduler
-			if (peer.getWorkload() != null) {
-				jobScheduler.addWorkload(peer.getWorkload());
-			}
 		}
 
 		// adds the workload to the scheduler
