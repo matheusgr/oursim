@@ -10,9 +10,9 @@ import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventDispatc
 import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventFilter;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
-import br.edu.ufcg.lsd.oursim.input.DedicatedResourcesAvailabilityCharacterization;
-import br.edu.ufcg.lsd.oursim.input.Input;
-import br.edu.ufcg.lsd.oursim.input.Workload;
+import br.edu.ufcg.lsd.oursim.io.input.DedicatedResourcesAvailabilityCharacterization;
+import br.edu.ufcg.lsd.oursim.io.input.Input;
+import br.edu.ufcg.lsd.oursim.io.input.Workload;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 import br.edu.ufcg.lsd.oursim.simulationevents.TimedEvent;
