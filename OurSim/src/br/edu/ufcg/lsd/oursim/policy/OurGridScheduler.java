@@ -7,7 +7,6 @@ import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicyAbstract;
 
-
 /**
  * 
  * An reference implementation of a {@link JobSchedulerPolicy}.
@@ -29,7 +28,7 @@ public class OurGridScheduler extends JobSchedulerPolicyAbstract {
 	}
 
 	@Override
-	protected void performScheduling() {
+	public void schedule() {
 		for (Iterator<Task> iterator = submittedTasks.iterator(); iterator.hasNext();) {
 			Task task = iterator.next();
 			task.getSourcePeer().prioritizePeersToConsume(peers);

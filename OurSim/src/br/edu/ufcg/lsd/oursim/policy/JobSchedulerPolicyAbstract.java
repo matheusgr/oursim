@@ -12,12 +12,11 @@ import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.input.Workload;
 import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityAbstract;
 
-
 /**
  * 
- * An abstract definition of a grid Scheduler. The concrete class must implement
- * the method {@link JobSchedulerPolicyAbstract#performScheduling()} instead of
- * {@link JobSchedulerPolicy#schedule()}
+ * An abstract definition of a grid Scheduler. The only mandatory method to be
+ * implemented by the subclasses is the method
+ * {@link JobSchedulerPolicy#schedule()}.
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @since 18/05/2010
@@ -78,21 +77,6 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract im
 			this.getEventQueue().addSubmitTaskEvent(this.getCurrentTime(), task);
 		}
 	}
-
-	@Override
-	public final void schedule() {
-
-		performScheduling();
-
-		addFutureJobEventsToEventQueue();
-
-	}
-
-	/**
-	 * The only mandatory method to be implemented by the subclasses. The
-	 * semantic is the same of {@link JobSchedulerPolicy#schedule()}
-	 */
-	protected abstract void performScheduling();
 
 	@Override
 	public void addWorkload(Workload workload) {
