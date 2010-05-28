@@ -9,7 +9,7 @@ import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.entities.Task;
-import br.edu.ufcg.lsd.oursim.input.Workload;
+import br.edu.ufcg.lsd.oursim.io.input.Workload;
 import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityAbstract;
 
 /**
