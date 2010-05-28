@@ -152,11 +152,35 @@ public class OurSimAPI {
 		} while (queue.peek() != null);
 	}
 
+	/**
+	 * Adds all the workers'related and job's submission events to the
+	 * simulation event queue.
+	 * 
+	 * @param queue
+	 *            The event queue to drive the simulation.
+	 * @param jobScheduler
+	 *            the scheduler of the jobs.
+	 * @param availability
+	 *            the characterization of the availability of all resources
+	 *            belonging to the peers.
+	 * @see {@link #addFutureWorkerEventsToEventQueue(EventQueue, Input)}
+	 * @see {@link #addFutureJobEventsToEventQueue(EventQueue, Workload)}
+	 */
 	private static void addFutureEvents(EventQueue queue, Workload workload, Input<AvailabilityRecord> availability) {
 		addFutureWorkerEventsToEventQueue(queue, availability);
 		addFutureJobEventsToEventQueue(queue, workload);
 	}
 
+	/**
+	 * Adds all the next worker's related events to the queue, that is, all the
+	 * events schedulled to occurs in the next simulation time.
+	 * 
+	 * @param queue
+	 *            The event queue to drive the simulation.
+	 * @param availability
+	 *            the characterization of the availability of all resources
+	 *            belonging to the peers.
+	 */
 	private static void addFutureWorkerEventsToEventQueue(EventQueue eventQueue, Input<AvailabilityRecord> availability) {
 		long nextAvRecordTime = (availability.peek() != null) ? availability.peek().getTime() : -1;
 		while (availability.peek() != null && availability.peek().getTime() == nextAvRecordTime) {
@@ -165,6 +189,15 @@ public class OurSimAPI {
 		}
 	}
 
+	/**
+	 * Adds all the next job's submission events to the queue, that is, all the
+	 * events schedulled to occurs in the next simulation time.
+	 * 
+	 * @param queue
+	 *            The event queue to drive the simulation.
+	 * @param jobScheduler
+	 *            the scheduler of the jobs.
+	 */
 	private static void addFutureJobEventsToEventQueue(EventQueue eventQueue, Workload workload) {
 		long nextSubmissionTime = (workload.peek() != null) ? workload.peek().getSubmissionTime() : -1;
 		while (workload.peek() != null && workload.peek().getSubmissionTime() == nextSubmissionTime) {
@@ -174,6 +207,21 @@ public class OurSimAPI {
 		}
 	}
 
+	/**
+	 * Registers all the listeners to the respective dispatchers. This performs
+	 * the registering of the listeners obeying the <i>right</i> order: the
+	 * peers are firstly added to the WorkerEventDispatcher, only after the
+	 * scheduler is added.To remove, call the method
+	 * {@link #clearListeners(List, JobSchedulerPolicy)}.
+	 * 
+	 * @param peers
+	 *            the peers to be registered in {@link WorkerEventDispatcher}.
+	 * @param sp
+	 *            the scheduler to be registered in
+	 *            {@linkplain JobEventDispatcher}, {@link TaskEventDispatcher}
+	 *            and {@link WorkerEventDispatcher}.
+	 * @see {@link #clearListeners(List, JobSchedulerPolicy)}.
+	 */
 	private static void prepareListeners(List<Peer> peers, JobSchedulerPolicy sp) {
 		JobEventDispatcher.getInstance().addListener(sp);
 		TaskEventDispatcher.getInstance().addListener(sp);
@@ -197,6 +245,18 @@ public class OurSimAPI {
 
 	}
 
+	/**
+	 * Removes all the listeners added to the respective dispatchers in
+	 * {@link #prepareListeners(List, JobSchedulerPolicy)}.
+	 * 
+	 * @param peers
+	 *            the peers to be removed from {@link WorkerEventDispatcher}.
+	 * @param sp
+	 *            the scheduler to be removed from
+	 *            {@linkplain JobEventDispatcher}, {@link TaskEventDispatcher}
+	 *            and {@link WorkerEventDispatcher}.
+	 * @see {@link #prepareListeners(List, JobSchedulerPolicy)}.
+	 */
 	private static void clearListeners(List<Peer> peers, JobSchedulerPolicy sp) {
 
 		for (Peer peer : peers) {
