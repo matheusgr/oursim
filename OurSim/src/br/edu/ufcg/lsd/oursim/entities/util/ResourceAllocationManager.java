@@ -12,7 +12,7 @@ import br.edu.ufcg.lsd.oursim.entities.Task;
 
 /**
  * 
- * A manager to help in allocation of resource to tasks..
+ * A manager to help in allocation of resource to tasks.
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @since 18/05/2010

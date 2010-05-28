@@ -173,7 +173,7 @@ public class OurSimAPI {
 				@Override
 				public boolean accept(Event<String> workerEvent) {
 					String machineName = (String) workerEvent.getSource();
-					return peer.hasResource(machineName);
+					return peer.hasMachine(machineName);
 				}
 
 			});

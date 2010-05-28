@@ -40,7 +40,7 @@ public class ResourceManager {
 		this.allocated = new HashMap<String, Machine>();
 		this.unavailable = new HashMap<String, Machine>();
 
-		for (Machine machine : this.peer.getResources()) {
+		for (Machine machine : this.peer.getMachines()) {
 			this.unavailable.put(machine.getName(), machine);
 		}
 
@@ -125,7 +125,7 @@ public class ResourceManager {
 	}
 
 	public int getNumberOfResources() {
-		return this.peer.getNumberOfResources();
+		return this.peer.getNumberOfMachines();
 	}
 
 	public Machine getResource(String machineName) {
@@ -148,7 +148,7 @@ public class ResourceManager {
 	 * this resource addition.
 	 */
 	public void update() {
-		for (Machine machine : this.peer.getResources()) {
+		for (Machine machine : this.peer.getMachines()) {
 			update(machine);
 		}
 	}

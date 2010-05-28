@@ -48,24 +48,24 @@ public class OurGridReplicationSchedulerTest extends AbstractOurSimAPITest {
 			@Override
 			protected void setUp() {
 				int currentMachineIndex = 0;
-				Machine currentMachine = peer.getResources().get(currentMachineIndex++);
+				Machine currentMachine = peer.getMachines().get(currentMachineIndex++);
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 0, 10));
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 15, 10));
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 30, 2));
 
-				currentMachine = peer.getResources().get(currentMachineIndex++);
+				currentMachine = peer.getMachines().get(currentMachineIndex++);
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 20, 12));
 
-				currentMachine = peer.getResources().get(currentMachineIndex++);
+				currentMachine = peer.getMachines().get(currentMachineIndex++);
 
-				currentMachine = peer.getResources().get(currentMachineIndex++);
+				currentMachine = peer.getMachines().get(currentMachineIndex++);
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 0, 20));
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 30, 2));
 
-				currentMachine = peer.getResources().get(currentMachineIndex++);
+				currentMachine = peer.getMachines().get(currentMachineIndex++);
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 15, 10));
 
-				currentMachine = peer.getResources().get(currentMachineIndex++);
+				currentMachine = peer.getMachines().get(currentMachineIndex++);
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 0, 10));
 				this.inputs.add(new AvailabilityRecord(currentMachine.getName(), 20, 12));
 

@@ -47,7 +47,7 @@ public class DedicatedResourcesAvailabilityCharacterization extends InputAbstrac
 		this.inputs = new PriorityQueue<AvailabilityRecord>();
 
 		for (Peer peer : peers) {
-			for (Machine machine : peer.getResources()) {
+			for (Machine machine : peer.getMachines()) {
 				this.inputs.add(new AvailabilityRecord(machine.getName(), timestamp, duration));
 			}
 		}
