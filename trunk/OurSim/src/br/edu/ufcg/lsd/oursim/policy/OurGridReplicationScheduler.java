@@ -8,7 +8,6 @@ import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.entities.Task;
 
-
 /**
  * 
  * An implementation of a {@link JobSchedulerPolicy} that replies tasks
@@ -44,7 +43,7 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 	}
 
 	@Override
-	protected void performScheduling() {
+	public void schedule() {
 		for (Iterator<Task> iterator = submittedTasks.iterator(); iterator.hasNext();) {
 			Task task = iterator.next();
 			task.getSourcePeer().prioritizePeersToConsume(peers);

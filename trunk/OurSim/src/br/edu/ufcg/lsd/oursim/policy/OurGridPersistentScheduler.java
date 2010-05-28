@@ -7,7 +7,6 @@ import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.entities.Task;
 
-
 /**
  * 
  * An implementation of a {@link JobSchedulerPolicy} that persistently resubmits
@@ -30,7 +29,7 @@ public class OurGridPersistentScheduler extends JobSchedulerPolicyAbstract {
 	}
 
 	@Override
-	protected void performScheduling() {
+	public void schedule() {
 		for (Iterator<Task> iterator = submittedTasks.iterator(); iterator.hasNext();) {
 			Task task = iterator.next();
 			task.getSourcePeer().prioritizePeersToConsume(peers);

@@ -10,7 +10,7 @@ import br.edu.ufcg.lsd.oursim.entities.Task;
 
 /**
  * 
- * An policy to prioritize the tasks that can be preempted.
+ * A policy to prioritize the tasks that can be preempted.
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @since 18/05/2010
@@ -30,8 +30,7 @@ public class TaskPreemptionRankingPolicy extends RankingPolicy<Peer, Task> {
 
 	@Override
 	public void rank(List<Task> tasks) {
-		// get recently started job first
-		// TODO Política para preemptar task por peer
+		// get recently started task first
 		Collections.sort(tasks, new Comparator<Task>() {
 			@Override
 			public int compare(Task t1, Task t2) {

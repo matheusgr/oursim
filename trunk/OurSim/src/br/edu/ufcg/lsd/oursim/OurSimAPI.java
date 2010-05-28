@@ -8,6 +8,7 @@ import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventDispatcher;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventFilter;
+import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.input.DedicatedResourcesAvailabilityCharacterization;
 import br.edu.ufcg.lsd.oursim.input.Input;
@@ -16,11 +17,10 @@ import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 import br.edu.ufcg.lsd.oursim.simulationevents.TimedEvent;
 
-
 /**
  * 
  * The base class to a simulation. This is intended to be a seamless class, so
- * ui facilities should be implemented in client's classes.
+ * user interface's facilities should be implemented in client's classes.
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @since 27/05/2010
@@ -114,9 +114,9 @@ public class OurSimAPI {
 		}
 
 		// adds the workload to the scheduler
-		this.jobScheduler.addWorkload(workload);
+		// this.jobScheduler.addWorkload(workload);
 
-		run(eventQueue, jobScheduler, availabilityCharacterization);
+		run(eventQueue, jobScheduler, workload, availabilityCharacterization);
 
 		clearListeners(peers, jobScheduler);
 	}
@@ -133,11 +133,11 @@ public class OurSimAPI {
 	 *            the characterization of the availability of all resources
 	 *            belonging to the peers.
 	 */
-	private static void run(EventQueue queue, JobSchedulerPolicy jobScheduler, Input<AvailabilityRecord> availability) {
-		addFutureWorkerEventsToEventQueue(queue, availability);
-		while (queue.peek() != null) {
+	private static void run(EventQueue queue, JobSchedulerPolicy jobScheduler, Workload workload, Input<AvailabilityRecord> availability) {
+		do {
+			addFutureEvents(queue, workload, availability);
 
-			long currentTime = queue.peek().getTime();
+			long currentTime = (queue.peek() != null) ? queue.peek().getTime() : -1;
 
 			// dispatch all the events in current time
 			while (queue.peek() != null && queue.peek().getTime() == currentTime) {
@@ -149,9 +149,12 @@ public class OurSimAPI {
 			// time, the scheduler must be invoked
 			jobScheduler.schedule();
 
-			addFutureWorkerEventsToEventQueue(queue, availability);
+		} while (queue.peek() != null);
+	}
 
-		}
+	private static void addFutureEvents(EventQueue queue, Workload workload, Input<AvailabilityRecord> availability) {
+		addFutureWorkerEventsToEventQueue(queue, availability);
+		addFutureJobEventsToEventQueue(queue, workload);
 	}
 
 	private static void addFutureWorkerEventsToEventQueue(EventQueue eventQueue, Input<AvailabilityRecord> availability) {
@@ -159,6 +162,15 @@ public class OurSimAPI {
 		while (availability.peek() != null && availability.peek().getTime() == nextAvRecordTime) {
 			AvailabilityRecord av = availability.poll();
 			eventQueue.addWorkerAvailableEvent(av.getTime(), av.getMachineName(), av.getDuration());
+		}
+	}
+
+	private static void addFutureJobEventsToEventQueue(EventQueue eventQueue, Workload workload) {
+		long nextSubmissionTime = (workload.peek() != null) ? workload.peek().getSubmissionTime() : -1;
+		while (workload.peek() != null && workload.peek().getSubmissionTime() == nextSubmissionTime) {
+			Job job = workload.poll();
+			long time = job.getSubmissionTime();
+			eventQueue.addSubmitJobEvent(time, job);
 		}
 	}
 
