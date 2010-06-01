@@ -28,7 +28,7 @@ public abstract class TimedEventAbstract<T> extends TimedEvent {
 	 * @param priority
 	 *            the priority of the event.
 	 */
-	TimedEventAbstract(long time, int priority) {
+	protected TimedEventAbstract(long time, int priority) {
 		super(time, priority);
 	}
 
@@ -40,7 +40,7 @@ public abstract class TimedEventAbstract<T> extends TimedEvent {
 	 * @param content
 	 *            the content holded by the event.
 	 */
-	TimedEventAbstract(long time, T content) {
+	protected TimedEventAbstract(long time, T content) {
 		super(time);
 		this.content = content;
 	}
@@ -55,7 +55,7 @@ public abstract class TimedEventAbstract<T> extends TimedEvent {
 	 * @param content
 	 *            the content holded by the event.
 	 */
-	TimedEventAbstract(long time, int priority, T content) {
+	protected TimedEventAbstract(long time, int priority, T content) {
 		super(time, priority);
 		this.content = content;
 	}

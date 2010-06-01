@@ -1,7 +1,8 @@
-package br.edu.ufcg.lsd.oursim.simulationevents;
+package br.edu.ufcg.lsd.oursim.simulationevents.taskevents;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventDispatcher;
 import br.edu.ufcg.lsd.oursim.entities.Task;
+import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 
 /**
  * 
@@ -23,7 +24,7 @@ public class FinishTaskEvent extends TaskTimedEvent {
 	 * @param task
 	 *            the task that has been finished.
 	 */
-	FinishTaskEvent(long finishTime, Task task) {
+	public FinishTaskEvent(long finishTime, Task task) {
 		super(finishTime, PRIORITY, task);
 	}
 

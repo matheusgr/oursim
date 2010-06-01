@@ -1,4 +1,4 @@
-package br.edu.ufcg.lsd.oursim.simulationevents;
+package br.edu.ufcg.lsd.oursim.simulationevents.workerevents;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
 
@@ -22,7 +22,7 @@ public class WorkerUnavailableEvent extends WorkerTimedEvent {
 	 * @param machineName
 	 *            the name of the machine that has become unavailable.
 	 */
-	WorkerUnavailableEvent(long time, String machineName) {
+	public WorkerUnavailableEvent(long time, String machineName) {
 		super(time, PRIORITY, machineName);
 	}
 

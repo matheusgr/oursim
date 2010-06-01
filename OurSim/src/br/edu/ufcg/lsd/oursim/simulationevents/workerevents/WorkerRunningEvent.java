@@ -1,4 +1,4 @@
-package br.edu.ufcg.lsd.oursim.simulationevents;
+package br.edu.ufcg.lsd.oursim.simulationevents.workerevents;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
 
@@ -22,7 +22,7 @@ public class WorkerRunningEvent extends WorkerTimedEvent {
 	 * @param machineName
 	 *            the name of the machine that starts to running a task.
 	 */
-	WorkerRunningEvent(long time, String machineName) {
+	public WorkerRunningEvent(long time, String machineName) {
 		super(time, PRIORITY, machineName);
 	}
 

@@ -1,4 +1,4 @@
-package br.edu.ufcg.lsd.oursim.simulationevents;
+package br.edu.ufcg.lsd.oursim.simulationevents.jobevents;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import br.edu.ufcg.lsd.oursim.entities.Job;
@@ -22,7 +22,7 @@ public class StartedJobEvent extends JobTimedEvent {
 	 * @param job
 	 *            the job that has been finished.
 	 */
-	StartedJobEvent(Job job) {
+	public StartedJobEvent(Job job) {
 		super(job.getStartTime(), PRIORITY, job);
 	}
 

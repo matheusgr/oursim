@@ -1,4 +1,4 @@
-package br.edu.ufcg.lsd.oursim.simulationevents;
+package br.edu.ufcg.lsd.oursim.simulationevents.taskevents;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventDispatcher;
 import br.edu.ufcg.lsd.oursim.entities.Task;
@@ -24,7 +24,7 @@ public class SubmitTaskEvent extends TaskTimedEvent {
 	 * @param task
 	 *            the task that has been submitted.
 	 */
-	SubmitTaskEvent(long submitTime, Task task) {
+	public SubmitTaskEvent(long submitTime, Task task) {
 		super(submitTime, PRIORITY, task);
 	}
 
