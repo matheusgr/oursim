@@ -19,12 +19,11 @@ import br.edu.ufcg.lsd.oursim.policy.ranking.ResourceRankingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.ranking.TaskPreemptionRankingPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityAbstract;
 
-
 /**
  * 
  * Represents a peer in a Peer-to-Peer grid. A peer is a administrative domain
- * that holds and manages a collection of machines. The management is based in
- * a group of policies represented by {@link ResourceAllocationManager},
+ * that holds and manages a collection of machines. The management is based in a
+ * group of policies represented by {@link ResourceAllocationManager},
  * {@link ResourceSharingPolicy} and {@link ResourceRankingPolicy}.
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
@@ -70,8 +69,8 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	/**
 	 * 
 	 * An convenient constructs for peers that have only homogeneous machines,
-	 * that is, the peer have <code>numberOfMachines</code> machines and
-	 * each machine represents an reference machine.
+	 * that is, the peer have <code>numberOfMachines</code> machines and each
+	 * machine represents an reference machine.
 	 * 
 	 * @param name
 	 *            The peer's name.
@@ -91,8 +90,8 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	/**
 	 * 
 	 * An convenient constructs for peers that have only homogeneous machines,
-	 * that is, the peer have <code>numberOfMachines</code> machines and
-	 * each machine has the same speed <code>nodeMIPSRating</code>.
+	 * that is, the peer have <code>numberOfMachines</code> machines and each
+	 * machine has the same speed <code>nodeMIPSRating</code>.
 	 * 
 	 * @param name
 	 *            The peer's name.
@@ -121,8 +120,8 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	/**
 	 * 
 	 * An generic constructor for a peer. After instantiated, it must be called
-	 * the method {@link #addMachine(Machine)} to explicitly add the machines
-	 * to this peer.
+	 * the method {@link #addMachine(Machine)} to explicitly add the machines to
+	 * this peer.
 	 * 
 	 * @param name
 	 *            The peer's name.
@@ -183,8 +182,8 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	}
 
 	/**
-	 * Update the status of the all tasks being executed in the machines of
-	 * this peer.
+	 * Update the status of the all tasks being executed in the machines of this
+	 * peer.
 	 * 
 	 * @param currentTime
 	 *            The instante at which the update refers to.
@@ -296,7 +295,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 		if (this.taskManager.isInExecution(task)) {
 			this.resourceAllocationManager.deallocateTask(task);
 			this.resourceSharingPolicy.updateMutualBalance(this, task.getSourcePeer(), task);
-			this.addPreemptedTaskEvent(getCurrentTime(), task);
+			this.addPreemptedTaskEvent(task);
 		} else {
 			throw new IllegalArgumentException("The task was not being executed in this peer.");
 		}
@@ -332,8 +331,8 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	 * 
 	 * @param machineName
 	 *            the name of the resource being queried.
-	 * @return <code>true</code> if this peer has the machine with the given name,
-	 *         <code>false</code> otherwise.
+	 * @return <code>true</code> if this peer has the machine with the given
+	 *         name, <code>false</code> otherwise.
 	 */
 	public boolean hasMachine(String machineName) {
 		return this.resourceManager.hasResource(machineName);

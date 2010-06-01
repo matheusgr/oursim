@@ -97,6 +97,8 @@ public interface ActiveEntity {
 	 *            the task that has been preempted.
 	 */
 	public void addPreemptedTaskEvent(long preemptionTime, Task task);
+	
+	void addPreemptedTaskEvent(Task task);
 
 	/**
 	 * Adds an event indicating that a task has been finished.
