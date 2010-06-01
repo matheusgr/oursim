@@ -27,7 +27,7 @@ public class StartedTaskEvent extends TaskTimedEvent {
 
 	@Override
 	protected void doAction() {
-		TaskEventDispatcher.getInstance().dispatchTaskStarted((Task) content);
+		TaskEventDispatcher.getInstance().dispatchTaskStarted(this.source);
 	}
 
 }

@@ -22,8 +22,7 @@ public class PreemptedJobEvent extends JobTimedEvent {
 
 	@Override
 	protected void doAction() {
-		Job job = (Job) content;
-		JobEventDispatcher.getInstance().dispatchJobPreempted(job, time);
+		JobEventDispatcher.getInstance().dispatchJobPreempted(this.source, this.time);
 	}
 
 }

@@ -37,27 +37,27 @@ public abstract class TaskTimedEvent extends TimedEventAbstract<Task> {
 		if (compareToFromSuper == 0 && ev instanceof TaskTimedEvent) {
 			TaskTimedEvent o = (TaskTimedEvent) ev;
 			// essa task já foi preemptada?
-			if (this.content.getNumberOfpreemptions() > 0) {
+			if (this.source.getNumberOfpreemptions() > 0) {
 				// TODO: definir qual é a política nesse caso
 				// a outra também já foi preemptada?
-				if (o.content.getNumberOfpreemptions() > 0) {
+				if (o.source.getNumberOfpreemptions() > 0) {
 					// os numeros de preempcoes são diferentes?
-					if (o.content.getNumberOfpreemptions() != this.content.getNumberOfpreemptions()) {
+					if (o.source.getNumberOfpreemptions() != this.source.getNumberOfpreemptions()) {
 						// prioriza a que já foi preemptadas mais vezes
-						return (int) (o.content.getNumberOfpreemptions() - this.content.getNumberOfpreemptions());
+						return (int) (o.source.getNumberOfpreemptions() - this.source.getNumberOfpreemptions());
 					} else {
 						// se eh tudo igual, então desempata pelo id.
-						return (int) (this.content.getId() - o.content.getId());
+						return (int) (this.source.getId() - o.source.getId());
 					}
 				} else {
 					return -1;
 				}
-			} else if (o.content.getNumberOfpreemptions() > 0) {
+			} else if (o.source.getNumberOfpreemptions() > 0) {
 				// se esta não foi, a outra já foi?
 				return 1;
 			} else {
 				// se eh tudo igual, então desempata pelo id.
-				return (int) (this.content.getId() - o.content.getId());
+				return (int) (this.source.getId() - o.source.getId());
 			}
 		} else {
 			return compareToFromSuper;
@@ -69,12 +69,12 @@ public abstract class TaskTimedEvent extends TimedEventAbstract<Task> {
 		StringBuilder sb = new StringBuilder();
 		String type = this.getType();
 		String time = Long.toString(this.getTime());
-		String peer = this.content.getSourcePeer().getName();
-		String taskId = Long.toString(this.content.getId());
-		String jobId = Long.toString(this.content.getSourceJob().getId());
-		String makespan = this.content.getMakeSpan() + "";
-		String runningTime = this.content.getRunningTime() + "";
-		String queuingTime = this.content.getQueueingTime() + "";
+		String peer = this.source.getSourcePeer().getName();
+		String taskId = Long.toString(this.source.getId());
+		String jobId = Long.toString(this.source.getSourceJob().getId());
+		String makespan = this.source.getMakeSpan() + "";
+		String runningTime = this.source.getRunningTime() + "";
+		String queuingTime = this.source.getQueueingTime() + "";
 		sb.append(type).append(" ").append(time).append(" ").append(taskId).append(" ").append(jobId).append(" ").append(peer).append(" ").append(makespan)
 				.append(" ").append(runningTime).append(" ").append(queuingTime);
 		return sb.toString();

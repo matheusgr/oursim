@@ -1,5 +1,8 @@
 package br.edu.ufcg.lsd.oursim.simulationevents;
 
+import br.edu.ufcg.lsd.oursim.entities.Job;
+import br.edu.ufcg.lsd.oursim.entities.Task;
+
 /**
  * 
  * This is a convenient interface to state all the entity that might alter the
@@ -19,13 +22,104 @@ public interface ActiveEntity {
 	 * @param eventQueue
 	 *            the eventqueue to be shared.
 	 */
-	void setEventQueue(EventQueue eventQueue);
+	public void setEventQueue(EventQueue eventQueue);
 
 	/**
 	 * @return the active eventqueue.
 	 */
-	EventQueue getEventQueue();
+	public EventQueue getEventQueue();
 
-	long getCurrentTime();
+	public long getCurrentTime();
+
+	/**
+	 * Adds an event indicating that a job was submitted.
+	 * 
+	 * @param submitTime
+	 *            the time at which the job has been submitted.
+	 * @param job
+	 *            the job that has been submitted.
+	 */
+	public void addSubmitJobEvent(long submitTime, Job job);
+
+	/**
+	 * Adds an event indicating that a job has been started.
+	 * 
+	 * @param job
+	 *            the job that has been started.
+	 */
+	@Deprecated
+	public void addStartedJobEvent(Job job);
+
+	/**
+	 * Adds an event indicating that a job has been preempted.
+	 * 
+	 * @param preemptionTime
+	 *            the time at which the job has been preempted.
+	 * @param job
+	 *            the job that has been preempted.
+	 */
+	public void addPreemptedJobEvent(long preemptionTime, Job job);
+
+	/**
+	 * Adds an event indicating that a job has been finished.
+	 * 
+	 * @param finishTime
+	 *            the time at which the job has been finished.
+	 * @param job
+	 *            the job that has been finished.
+	 */
+	public void addFinishJobEvent(long finishTime, Job job);
+
+	/**
+	 * Adds an event indicating that a task was submitted.
+	 * 
+	 * @param submitTime
+	 *            the time at which the job has been submitted.
+	 * @param task
+	 *            the task that has been submitted.
+	 */
+	public void addSubmitTaskEvent(long submitTime, Task task);
+
+	/**
+	 * Adds an event indicating that a task has been started.
+	 * 
+	 * @param task
+	 *            the task that has been started.
+	 */
+	public void addStartedTaskEvent(Task task);
+
+	/**
+	 * Adds an event indicating that a task has been preempted.
+	 * 
+	 * @param preemptionTime
+	 *            the time at which the task has been preempted.
+	 * @param task
+	 *            the task that has been preempted.
+	 */
+	public void addPreemptedTaskEvent(long preemptionTime, Task task);
+
+	/**
+	 * Adds an event indicating that a task has been finished.
+	 * 
+	 * @param finishTime
+	 *            the time at which the task has been finished.
+	 * @param task
+	 *            the task that has been finished.
+	 */
+	public void addFinishTaskEvent(long finishTime, Task task);
+
+	/**
+	 * Adds an event indicating that a worker has become available. It's
+	 * automatically added a future event indicating that the worker has become
+	 * unavailable after the duration of the availability period.
+	 * 
+	 * @param time
+	 *            the time at which the machine has become available.
+	 * @param machineName
+	 *            the name of the machine that has become available.
+	 * @param duration
+	 *            the duration of the availability period.
+	 */
+	public void addWorkerAvailableEvent(long time, String machineName, long duration);
 
 }

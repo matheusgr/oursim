@@ -12,16 +12,8 @@ import br.edu.ufcg.lsd.oursim.Parameters;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.FinishJobEvent;
-import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.PreemptedJobEvent;
-import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.StartedJobEvent;
-import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.SubmitJobEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.FinishTaskEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.PreemptedTaskEvent;
-import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.StartedTaskEvent;
-import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.SubmitTaskEvent;
-import br.edu.ufcg.lsd.oursim.simulationevents.workerevents.WorkerAvailableEvent;
-import br.edu.ufcg.lsd.oursim.simulationevents.workerevents.WorkerUnavailableEvent;
-
 
 /**
  * 
@@ -99,8 +91,28 @@ public class EventQueue implements Closeable {
 	 * @param event
 	 *            the event to be added.
 	 */
-	private void addEvent(TimedEvent event) {
+	public void addEvent(TimedEvent event) {
 		assert event.getTime() >= currentTime : event.getTime() + ">=" + currentTime;
+
+		if (event instanceof FinishJobEvent) {
+			FinishJobEvent ev = (FinishJobEvent) event;
+			this.job2FinishJobEvent.put(ev.source, ev);
+		} else if (event instanceof PreemptedTaskEvent) {
+			PreemptedTaskEvent ev = (PreemptedTaskEvent) event;
+			assert task2FinishTaskEvent.containsKey(ev.source);
+			this.task2FinishTaskEvent.remove(ev.source).cancel();
+		} else if (event instanceof FinishTaskEvent) {
+			FinishTaskEvent ev = (FinishTaskEvent) event;
+			if (task2FinishTaskEvent.containsKey(ev.source)) {
+				this.task2FinishTaskEvent.remove(ev.source).cancel();
+			}
+			this.task2FinishTaskEvent.put(ev.source, ev);
+		} else {
+			// TODO: definir o que significa a preempção de um job.
+			// assert job2FinishJobEvent.containsKey(job);
+			// this.job2FinishJobEvent.remove(job).cancel();
+		}
+
 		totalNumberOfEvents++;
 		// TODO: Verificar a necessidade desse método
 		if (Parameters.LOG) {
@@ -121,137 +133,6 @@ public class EventQueue implements Closeable {
 	 */
 	public void removeEvent(TimedEvent event) {
 		pq.remove(event);
-	}
-
-	/**
-	 * Adds an event indicating that a job was submitted.
-	 * 
-	 * @param submitTime
-	 *            the time at which the job has been submitted.
-	 * @param job
-	 *            the job that has been submitted.
-	 */
-	public void addSubmitJobEvent(long submitTime, Job job) {
-		assert submitTime >= currentTime;
-		this.addEvent(new SubmitJobEvent(submitTime, job));
-	}
-
-	/**
-	 * Adds an event indicating that a job has been started.
-	 * 
-	 * @param job
-	 *            the job that has been started.
-	 */
-	@Deprecated
-	public void addStartedJobEvent(Job job) {
-		this.addEvent(new StartedJobEvent(job));
-		this.addFinishJobEvent(job.getEstimatedFinishTime(), job);
-	}
-
-	/**
-	 * Adds an event indicating that a job has been preempted.
-	 * 
-	 * @param preemptionTime
-	 *            the time at which the job has been preempted.
-	 * @param job
-	 *            the job that has been preempted.
-	 */
-	public void addPreemptedJobEvent(long preemptionTime, Job job) {
-		// TODO: definir o que significa a preempção de um job.
-		// assert job2FinishJobEvent.containsKey(job);
-		// this.job2FinishJobEvent.remove(job).cancel();
-		this.addEvent(new PreemptedJobEvent(preemptionTime, job));
-	}
-
-	/**
-	 * Adds an event indicating that a job has been finished.
-	 * 
-	 * @param finishTime
-	 *            the time at which the job has been finished.
-	 * @param job
-	 *            the job that has been finished.
-	 */
-	public void addFinishJobEvent(long finishTime, Job job) {
-		assert finishTime >= this.getCurrentTime();
-		FinishJobEvent finishJobEvent = new FinishJobEvent(finishTime, job);
-		this.addEvent(finishJobEvent);
-		this.job2FinishJobEvent.put(job, finishJobEvent);
-	}
-
-	/**
-	 * Adds an event indicating that a task was submitted.
-	 * 
-	 * @param submitTime
-	 *            the time at which the job has been submitted.
-	 * @param task
-	 *            the task that has been submitted.
-	 */
-	public void addSubmitTaskEvent(long submitTime, Task task) {
-		this.addEvent(new SubmitTaskEvent(submitTime, task));
-	}
-
-	/**
-	 * Adds an event indicating that a task has been started.
-	 * 
-	 * @param task
-	 *            the task that has been started.
-	 */
-	public void addStartedTaskEvent(Task task) {
-		this.addEvent(new StartedTaskEvent(task));
-		this.addFinishTaskEvent(task.getEstimatedFinishTime(), task);
-	}
-
-	/**
-	 * Adds an event indicating that a task has been preempted.
-	 * 
-	 * @param preemptionTime
-	 *            the time at which the task has been preempted.
-	 * @param task
-	 *            the task that has been preempted.
-	 */
-	public void addPreemptedTaskEvent(long preemptionTime, Task task) {
-		assert task2FinishTaskEvent.containsKey(task);
-		this.task2FinishTaskEvent.remove(task).cancel();
-		this.addEvent(new PreemptedTaskEvent(preemptionTime, task));
-	}
-
-	/**
-	 * Adds an event indicating that a task has been finished.
-	 * 
-	 * @param finishTime
-	 *            the time at which the task has been finished.
-	 * @param task
-	 *            the task that has been finished.
-	 */
-	public void addFinishTaskEvent(long finishTime, Task task) {
-		assert finishTime > this.getCurrentTime();
-
-		FinishTaskEvent finishTaskEvent = new FinishTaskEvent(finishTime, task);
-		this.addEvent(finishTaskEvent);
-
-		if (task2FinishTaskEvent.containsKey(task)) {
-			this.task2FinishTaskEvent.remove(task).cancel();
-		}
-
-		this.task2FinishTaskEvent.put(task, finishTaskEvent);
-	}
-
-	/**
-	 * Adds an event indicating that a worker has become available. It's
-	 * automatically added a future event indicating that the worker has become
-	 * unavailable after the duration of the availability period.
-	 * 
-	 * @param time
-	 *            the time at which the machine has become available.
-	 * @param machineName
-	 *            the name of the machine that has become available.
-	 * @param duration
-	 *            the duration of the availability period.
-	 */
-	public void addWorkerAvailableEvent(long time, String machineName, long duration) {
-		assert duration > 0 && time >= 0;
-		addEvent(new WorkerAvailableEvent(time, machineName));
-		addEvent(new WorkerUnavailableEvent(time + duration, machineName));
 	}
 
 	/**

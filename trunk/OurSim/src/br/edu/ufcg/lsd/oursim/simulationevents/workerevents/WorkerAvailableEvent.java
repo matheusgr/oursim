@@ -27,7 +27,7 @@ public class WorkerAvailableEvent extends WorkerTimedEvent {
 
 	@Override
 	protected void doAction() {
-		WorkerEventDispatcher.getInstance().dispatchWorkerAvailable(this.content, this.time);
+		WorkerEventDispatcher.getInstance().dispatchWorkerAvailable(this.source, this.time);
 	}
 
 }

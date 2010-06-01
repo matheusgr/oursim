@@ -57,7 +57,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 
 	/**
 	 * All the jobs originated by this peer, that is, all the jobs that belongs
-	 * to this peer. Unlike {@link #workload} the content of this collections
+	 * to this peer. Unlike {@link #workload} the source of this collections
 	 * must remais unchanged through the entire life of simulation.
 	 */
 	private List<Job> jobs;
@@ -194,7 +194,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 			Long estimatedFinishTime = task.getTaskExecution().updateProcessing(currentTime);
 			if (estimatedFinishTime != null) {
 				long finishTime = getCurrentTime() + estimatedFinishTime;
-				getEventQueue().addFinishTaskEvent(finishTime, task);
+				this.addFinishTaskEvent(finishTime, task);
 			}
 		}
 	}
@@ -296,7 +296,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 		if (this.taskManager.isInExecution(task)) {
 			this.resourceAllocationManager.deallocateTask(task);
 			this.resourceSharingPolicy.updateMutualBalance(this, task.getSourcePeer(), task);
-			this.getEventQueue().addPreemptedTaskEvent(getCurrentTime(), task);
+			this.addPreemptedTaskEvent(getCurrentTime(), task);
 		} else {
 			throw new IllegalArgumentException("The task was not being executed in this peer.");
 		}

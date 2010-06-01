@@ -50,7 +50,7 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 			for (Peer provider : peers) {
 				boolean isTaskRunning = provider.executeTask(task);
 				if (isTaskRunning) {
-					this.getEventQueue().addStartedTaskEvent(task);
+					this.addStartedTaskEvent(task);
 					iterator.remove();
 					break;
 				}

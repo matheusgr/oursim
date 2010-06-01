@@ -3,6 +3,7 @@ package br.edu.ufcg.lsd.oursim.simulationevents.taskevents;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventDispatcher;
 import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
+import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.FinishJobEvent;
 
 /**
  * 
@@ -30,10 +31,12 @@ public class FinishTaskEvent extends TaskTimedEvent {
 
 	@Override
 	protected final void doAction() {
-		Task task = (Task) content;
+		Task task = (Task) source;
 		task.finish(time);
 		if (task.getSourceJob().isFinished()) {
-			EventQueue.getInstance().addFinishJobEvent(EventQueue.getInstance().getCurrentTime(), task.getSourceJob());
+			// EventQueue.getInstance().addFinishJobEvent(EventQueue.getInstance().getCurrentTime(),
+			// task.getSourceJob());
+			EventQueue.getInstance().addEvent(new FinishJobEvent(EventQueue.getInstance().getCurrentTime(), task.getSourceJob()));
 		}
 		TaskEventDispatcher.getInstance().dispatchTaskFinished(task);
 	}

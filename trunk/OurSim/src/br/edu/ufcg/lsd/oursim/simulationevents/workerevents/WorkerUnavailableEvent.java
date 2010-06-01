@@ -28,7 +28,7 @@ public class WorkerUnavailableEvent extends WorkerTimedEvent {
 
 	@Override
 	protected void doAction() {
-		WorkerEventDispatcher.getInstance().dispatchWorkerUnavailable(this.content, this.time);
+		WorkerEventDispatcher.getInstance().dispatchWorkerUnavailable(this.source, this.time);
 	}
 
 }
