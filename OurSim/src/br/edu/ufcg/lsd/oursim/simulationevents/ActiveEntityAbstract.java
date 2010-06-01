@@ -85,6 +85,11 @@ public class ActiveEntityAbstract implements ActiveEntity {
 	}
 
 	@Override
+	public void addPreemptedTaskEvent(Task task) {
+		addPreemptedTaskEvent(getCurrentTime(), task);
+	}
+
+	@Override
 	public void addFinishTaskEvent(long finishTime, Task task) {
 		assert finishTime > this.getCurrentTime();
 		FinishTaskEvent finishTaskEvent = new FinishTaskEvent(finishTime, task);
