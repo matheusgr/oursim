@@ -32,12 +32,12 @@ public abstract class JobTimedEvent extends TimedEventAbstract<Job> {
 		StringBuilder sb = new StringBuilder();
 		String type = this.getType();
 		String time = Long.toString(this.getTime());
-		String peer = this.content.getSourcePeer().getName();
+		String peer = this.source.getSourcePeer().getName();
 		String taskId = null;
-		String jobId = Long.toString(this.content.getId());
-		String makespan = this.content.getMakeSpan() + "";
-		String runningTime = this.content.getRunningTime() + "";
-		String queuingTime = this.content.getQueueingTime() + "";
+		String jobId = Long.toString(this.source.getId());
+		String makespan = this.source.getMakeSpan() + "";
+		String runningTime = this.source.getRunningTime() + "";
+		String queuingTime = this.source.getQueueingTime() + "";
 		sb.append(type).append(" ").append(time).append(" ").append(taskId).append(" ").append(jobId).append(" ").append(peer).append(" ").append(makespan)
 				.append(" ").append(runningTime).append(" ").append(queuingTime);
 		return sb.toString();

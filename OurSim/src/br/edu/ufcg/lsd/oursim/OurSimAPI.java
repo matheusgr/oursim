@@ -14,6 +14,7 @@ import br.edu.ufcg.lsd.oursim.io.input.DedicatedResourcesAvailabilityCharacteriz
 import br.edu.ufcg.lsd.oursim.io.input.Input;
 import br.edu.ufcg.lsd.oursim.io.input.Workload;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
+import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityAbstract;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 import br.edu.ufcg.lsd.oursim.simulationevents.TimedEvent;
 
@@ -26,12 +27,7 @@ import br.edu.ufcg.lsd.oursim.simulationevents.TimedEvent;
  * @since 27/05/2010
  * 
  */
-public class OurSimAPI {
-
-	/**
-	 * The event queue to drive the simulation.
-	 */
-	private EventQueue eventQueue;
+public class OurSimAPI extends ActiveEntityAbstract {
 
 	/**
 	 * the peers that comprise the grid.
@@ -58,7 +54,7 @@ public class OurSimAPI {
 	 * An convenient constructor to simulations that deals <b>only</b> with
 	 * dedicated resources.
 	 * 
-	 * @param eventQueue
+	 * @param queue
 	 *            The event queue to drive the simulation.
 	 * @param peers
 	 *            the peers that comprise the grid.
@@ -67,14 +63,16 @@ public class OurSimAPI {
 	 * @param workload
 	 *            the workload to be processed by the resources of the peers.
 	 */
-	public OurSimAPI(EventQueue eventQueue, List<Peer> peers, JobSchedulerPolicy jobScheduler, Workload workload) {
-		this(eventQueue, peers, jobScheduler, workload, new DedicatedResourcesAvailabilityCharacterization(peers));
+	public OurSimAPI(EventQueue queue, List<Peer> peers, JobSchedulerPolicy jobScheduler, Workload workload) {
+		this(queue, peers, jobScheduler, workload, new DedicatedResourcesAvailabilityCharacterization(peers));
 	}
 
 	/**
 	 * An ordinary constructor to simulations that deals with resources possibly
 	 * volatile.
 	 * 
+	 * @param queue
+	 *            The event queue to drive the simulation.
 	 * @param peers
 	 *            the peers that comprise the grid.
 	 * @param jobScheduler
@@ -85,9 +83,9 @@ public class OurSimAPI {
 	 *            the characterization of the availability of all resources
 	 *            belonging to the peers.
 	 */
-	public OurSimAPI(EventQueue eventQueue, List<Peer> peers, JobSchedulerPolicy jobScheduler, Workload workload,
+	public OurSimAPI(EventQueue queue, List<Peer> peers, JobSchedulerPolicy jobScheduler, Workload workload,
 			Input<AvailabilityRecord> availabilityCharacterization) {
-		this.eventQueue = eventQueue;
+		this.setEventQueue(queue);
 		this.peers = peers;
 		this.jobScheduler = jobScheduler;
 		this.workload = workload;
@@ -101,18 +99,18 @@ public class OurSimAPI {
 		prepareListeners(peers, jobScheduler);
 
 		// shares the eventQueue with the scheduler
-		this.jobScheduler.setEventQueue(eventQueue);
+		this.jobScheduler.setEventQueue(this.getEventQueue());
 
 		// setUP the peers to the simulation
 		for (Peer peer : peers) {
 			// shares the eventQueue with the peers.
-			peer.setEventQueue(eventQueue);
+			peer.setEventQueue(this.getEventQueue());
 		}
 
 		// adds the workload to the scheduler
 		// this.jobScheduler.addWorkload(workload);
 
-		run(eventQueue, jobScheduler, workload, availabilityCharacterization);
+		run(getEventQueue(), jobScheduler, workload, availabilityCharacterization);
 
 		clearListeners(peers, jobScheduler);
 	}
@@ -129,9 +127,9 @@ public class OurSimAPI {
 	 *            the characterization of the availability of all resources
 	 *            belonging to the peers.
 	 */
-	private static void run(EventQueue queue, JobSchedulerPolicy jobScheduler, Workload workload, Input<AvailabilityRecord> availability) {
+	private void run(EventQueue queue, JobSchedulerPolicy jobScheduler, Workload workload, Input<AvailabilityRecord> availability) {
 		do {
-			addFutureEvents(queue, workload, availability);
+			this.addFutureEvents(workload, availability);
 
 			long currentTime = (queue.peek() != null) ? queue.peek().getTime() : -1;
 
@@ -152,8 +150,6 @@ public class OurSimAPI {
 	 * Adds all the workers'related and job's submission events to the
 	 * simulation event queue.
 	 * 
-	 * @param queue
-	 *            The event queue to drive the simulation.
 	 * @param jobScheduler
 	 *            the scheduler of the jobs.
 	 * @param availability
@@ -162,26 +158,24 @@ public class OurSimAPI {
 	 * @see {@link #addFutureWorkerEventsToEventQueue(EventQueue, Input)}
 	 * @see {@link #addFutureJobEventsToEventQueue(EventQueue, Workload)}
 	 */
-	private static void addFutureEvents(EventQueue queue, Workload workload, Input<AvailabilityRecord> availability) {
-		addFutureWorkerEventsToEventQueue(queue, availability);
-		addFutureJobEventsToEventQueue(queue, workload);
+	private void addFutureEvents(Workload workload, Input<AvailabilityRecord> availability) {
+		this.addFutureWorkerEventsToEventQueue(availability);
+		this.addFutureJobEventsToEventQueue(workload);
 	}
 
 	/**
 	 * Adds all the next worker's related events to the queue, that is, all the
 	 * events schedulled to occurs in the next simulation time.
 	 * 
-	 * @param queue
-	 *            The event queue to drive the simulation.
 	 * @param availability
 	 *            the characterization of the availability of all resources
 	 *            belonging to the peers.
 	 */
-	private static void addFutureWorkerEventsToEventQueue(EventQueue eventQueue, Input<AvailabilityRecord> availability) {
+	private void addFutureWorkerEventsToEventQueue(Input<AvailabilityRecord> availability) {
 		long nextAvRecordTime = (availability.peek() != null) ? availability.peek().getTime() : -1;
 		while (availability.peek() != null && availability.peek().getTime() == nextAvRecordTime) {
 			AvailabilityRecord av = availability.poll();
-			eventQueue.addWorkerAvailableEvent(av.getTime(), av.getMachineName(), av.getDuration());
+			this.addWorkerAvailableEvent(av.getTime(), av.getMachineName(), av.getDuration());
 		}
 	}
 
@@ -189,17 +183,15 @@ public class OurSimAPI {
 	 * Adds all the next job's submission events to the queue, that is, all the
 	 * events schedulled to occurs in the next simulation time.
 	 * 
-	 * @param queue
-	 *            The event queue to drive the simulation.
 	 * @param jobScheduler
 	 *            the scheduler of the jobs.
 	 */
-	private static void addFutureJobEventsToEventQueue(EventQueue eventQueue, Workload workload) {
+	private void addFutureJobEventsToEventQueue(Workload workload) {
 		long nextSubmissionTime = (workload.peek() != null) ? workload.peek().getSubmissionTime() : -1;
 		while (workload.peek() != null && workload.peek().getSubmissionTime() == nextSubmissionTime) {
 			Job job = workload.poll();
 			long time = job.getSubmissionTime();
-			eventQueue.addSubmitJobEvent(time, job);
+			this.addSubmitJobEvent(time, job);
 		}
 	}
 

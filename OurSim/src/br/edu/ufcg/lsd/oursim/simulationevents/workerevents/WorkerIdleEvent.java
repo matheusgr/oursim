@@ -29,7 +29,7 @@ public class WorkerIdleEvent extends WorkerTimedEvent {
 
 	@Override
 	protected void doAction() {
-		WorkerEventDispatcher.getInstance().dispatchWorkerIdle(this.content, this.time);
+		WorkerEventDispatcher.getInstance().dispatchWorkerIdle(this.source, this.time);
 	}
 
 }

@@ -28,7 +28,7 @@ public class WorkerDownEvent extends WorkerTimedEvent {
 
 	@Override
 	protected void doAction() {
-		WorkerEventDispatcher.getInstance().dispatchWorkerDown(this.content, this.time);
+		WorkerEventDispatcher.getInstance().dispatchWorkerDown(this.source, this.time);
 	}
 
 }

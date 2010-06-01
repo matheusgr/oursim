@@ -66,7 +66,7 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract im
 	 *            The task to be rescheduled.
 	 */
 	protected void rescheduleTask(Task task) {
-		this.getEventQueue().addSubmitTaskEvent(getCurrentTime(), task);
+		this.addSubmitTaskEvent(getCurrentTime(), task);
 	}
 
 	@Override
@@ -74,7 +74,7 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract im
 		assert !job.getTasks().isEmpty();
 		this.submittedJobs.add(job);
 		for (Task task : job.getTasks()) {
-			this.getEventQueue().addSubmitTaskEvent(this.getCurrentTime(), task);
+			this.addSubmitTaskEvent(this.getCurrentTime(), task);
 		}
 	}
 
@@ -92,7 +92,7 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract im
 		while (workload.peek() != null && workload.peek().getSubmissionTime() == nextSubmissionTime) {
 			Job job = workload.poll();
 			long time = job.getSubmissionTime();
-			this.getEventQueue().addSubmitJobEvent(time, job);
+			this.addSubmitJobEvent(time, job);
 		}
 	}
 

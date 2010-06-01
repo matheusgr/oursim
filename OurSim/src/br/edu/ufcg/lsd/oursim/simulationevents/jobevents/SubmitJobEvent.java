@@ -21,7 +21,7 @@ public class SubmitJobEvent extends JobTimedEvent {
 
 	@Override
 	protected final void doAction() {
-		JobEventDispatcher.getInstance().dispatchJobSubmitted((Job) content);
+		JobEventDispatcher.getInstance().dispatchJobSubmitted(this.source);
 	}
 
 }

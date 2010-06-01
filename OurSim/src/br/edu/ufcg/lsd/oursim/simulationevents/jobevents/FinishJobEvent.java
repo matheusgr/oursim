@@ -29,8 +29,8 @@ public class FinishJobEvent extends JobTimedEvent {
 
 	@Override
 	protected final void doAction() {
-		Job job = (Job) content;
-		job.finish(time);
+		Job job = (Job) this.source;
+		job.finish(this.time);
 		JobEventDispatcher.getInstance().dispatchJobFinished(job);
 	}
 
