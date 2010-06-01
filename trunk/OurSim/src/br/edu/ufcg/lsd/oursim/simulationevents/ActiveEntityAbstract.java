@@ -1,5 +1,13 @@
 package br.edu.ufcg.lsd.oursim.simulationevents;
 
+/**
+ * 
+ * A default, convenient implementation of an {@link ActiveEntity}
+ * 
+ * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
+ * @since 01/06/2010
+ * 
+ */
 public class ActiveEntityAbstract implements ActiveEntity {
 
 	/**
@@ -7,10 +15,12 @@ public class ActiveEntityAbstract implements ActiveEntity {
 	 */
 	private EventQueue eventQueue;
 
+	@Override
 	public final void setEventQueue(EventQueue eventQueue) {
 		this.eventQueue = eventQueue;
 	}
 
+	@Override
 	public EventQueue getEventQueue() {
 		return eventQueue;
 	}
