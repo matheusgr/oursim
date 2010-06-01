@@ -1,4 +1,4 @@
-package br.edu.ufcg.lsd.oursim.simulationevents;
+package br.edu.ufcg.lsd.oursim.simulationevents.workerevents;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
 
@@ -23,7 +23,7 @@ public class WorkerIdleEvent extends WorkerTimedEvent {
 	 * @param machineName
 	 *            the name of the machine that has become idle.
 	 */
-	WorkerIdleEvent(long time, String machineName) {
+	public WorkerIdleEvent(long time, String machineName) {
 		super(time, PRIORITY, machineName);
 	}
 

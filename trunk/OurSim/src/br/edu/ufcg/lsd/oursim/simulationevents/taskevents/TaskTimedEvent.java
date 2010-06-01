@@ -1,6 +1,8 @@
-package br.edu.ufcg.lsd.oursim.simulationevents;
+package br.edu.ufcg.lsd.oursim.simulationevents.taskevents;
 
 import br.edu.ufcg.lsd.oursim.entities.Task;
+import br.edu.ufcg.lsd.oursim.simulationevents.TimedEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.TimedEventAbstract;
 
 /**
  * 
@@ -23,7 +25,7 @@ public abstract class TaskTimedEvent extends TimedEventAbstract<Task> {
 	 * @param task
 	 *            the task this event relates to.
 	 */
-	TaskTimedEvent(long time, int priority, Task task) {
+	public TaskTimedEvent(long time, int priority, Task task) {
 		super(time, priority, task);
 	}
 

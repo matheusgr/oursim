@@ -1,7 +1,8 @@
-package br.edu.ufcg.lsd.oursim.simulationevents;
+package br.edu.ufcg.lsd.oursim.simulationevents.taskevents;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventDispatcher;
 import br.edu.ufcg.lsd.oursim.entities.Task;
+import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 
 /**
  * 
@@ -23,7 +24,7 @@ public class PreemptedTaskEvent extends TaskTimedEvent {
 	 * @param task
 	 *            the task that has been preempted.
 	 */
-	PreemptedTaskEvent(long preemptionTime, Task task) {
+	public PreemptedTaskEvent(long preemptionTime, Task task) {
 		super(preemptionTime, PRIORITY, task);
 	}
 

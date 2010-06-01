@@ -1,4 +1,4 @@
-package br.edu.ufcg.lsd.oursim.simulationevents;
+package br.edu.ufcg.lsd.oursim.simulationevents.taskevents;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventDispatcher;
 import br.edu.ufcg.lsd.oursim.entities.Task;
@@ -21,7 +21,7 @@ public class StartedTaskEvent extends TaskTimedEvent {
 	 * @param task
 	 *            the task that has been started.
 	 */
-	StartedTaskEvent(Task task) {
+	public StartedTaskEvent(Task task) {
 		super(task.getStartTime(), PRIORITY, task);
 	}
 

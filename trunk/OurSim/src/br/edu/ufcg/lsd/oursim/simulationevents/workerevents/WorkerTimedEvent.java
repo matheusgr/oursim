@@ -1,4 +1,6 @@
-package br.edu.ufcg.lsd.oursim.simulationevents;
+package br.edu.ufcg.lsd.oursim.simulationevents.workerevents;
+
+import br.edu.ufcg.lsd.oursim.simulationevents.TimedEventAbstract;
 
 /**
  * 
@@ -20,7 +22,7 @@ public abstract class WorkerTimedEvent extends TimedEventAbstract<String> {
 	 * @param machineName
 	 *            the name of the machine this event relates to.
 	 */
-	WorkerTimedEvent(long time, int priority, String machineName) {
+	public WorkerTimedEvent(long time, int priority, String machineName) {
 		super(time, priority, machineName);
 	}
 

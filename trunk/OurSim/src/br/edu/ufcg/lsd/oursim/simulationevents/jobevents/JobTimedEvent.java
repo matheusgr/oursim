@@ -1,6 +1,7 @@
-package br.edu.ufcg.lsd.oursim.simulationevents;
+package br.edu.ufcg.lsd.oursim.simulationevents.jobevents;
 
 import br.edu.ufcg.lsd.oursim.entities.Job;
+import br.edu.ufcg.lsd.oursim.simulationevents.TimedEventAbstract;
 
 /**
  * 
@@ -22,7 +23,7 @@ public abstract class JobTimedEvent extends TimedEventAbstract<Job> {
 	 * @param job
 	 *            the job this event relates to.
 	 */
-	JobTimedEvent(long time, int priority, Job job) {
+	public JobTimedEvent(long time, int priority, Job job) {
 		super(time, priority, job);
 	}
 

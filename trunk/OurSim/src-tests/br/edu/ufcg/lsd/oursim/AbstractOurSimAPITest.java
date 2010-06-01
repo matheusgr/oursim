@@ -9,7 +9,6 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 
-import br.edu.ufcg.lsd.oursim.OurSimAPI;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventCounter;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventCounter;
@@ -20,13 +19,13 @@ import br.edu.ufcg.lsd.oursim.io.input.Workload;
 import br.edu.ufcg.lsd.oursim.io.input.WorkloadAbstract;
 import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
-import br.edu.ufcg.lsd.oursim.simulationevents.FinishJobEvent;
-import br.edu.ufcg.lsd.oursim.simulationevents.FinishTaskEvent;
-import br.edu.ufcg.lsd.oursim.simulationevents.StartedTaskEvent;
-import br.edu.ufcg.lsd.oursim.simulationevents.SubmitJobEvent;
-import br.edu.ufcg.lsd.oursim.simulationevents.SubmitTaskEvent;
-import br.edu.ufcg.lsd.oursim.simulationevents.WorkerAvailableEvent;
-import br.edu.ufcg.lsd.oursim.simulationevents.WorkerUnavailableEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.FinishJobEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.SubmitJobEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.FinishTaskEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.StartedTaskEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.SubmitTaskEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.workerevents.WorkerAvailableEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.workerevents.WorkerUnavailableEvent;
 
 public abstract class AbstractOurSimAPITest {
 

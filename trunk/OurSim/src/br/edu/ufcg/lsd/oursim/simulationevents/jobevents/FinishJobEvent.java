@@ -1,4 +1,4 @@
-package br.edu.ufcg.lsd.oursim.simulationevents;
+package br.edu.ufcg.lsd.oursim.simulationevents.jobevents;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import br.edu.ufcg.lsd.oursim.entities.Job;
@@ -23,7 +23,7 @@ public class FinishJobEvent extends JobTimedEvent {
 	 * @param job
 	 *            the job that has been finished.
 	 */
-	FinishJobEvent(long finishTime, Job job) {
+	public FinishJobEvent(long finishTime, Job job) {
 		super(finishTime, PRIORITY, job);
 	}
 

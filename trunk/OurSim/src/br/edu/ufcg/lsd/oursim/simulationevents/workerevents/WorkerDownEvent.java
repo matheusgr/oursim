@@ -1,4 +1,4 @@
-package br.edu.ufcg.lsd.oursim.simulationevents;
+package br.edu.ufcg.lsd.oursim.simulationevents.workerevents;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
 
@@ -22,7 +22,7 @@ public class WorkerDownEvent extends WorkerTimedEvent {
 	 * @param machineName
 	 *            the name of the machine that has become down.
 	 */
-	WorkerDownEvent(long time, String machineName) {
+	public WorkerDownEvent(long time, String machineName) {
 		super(time, PRIORITY, machineName);
 	}
 

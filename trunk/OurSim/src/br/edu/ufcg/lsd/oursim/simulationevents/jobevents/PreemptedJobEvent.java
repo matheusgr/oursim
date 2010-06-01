@@ -1,4 +1,4 @@
-package br.edu.ufcg.lsd.oursim.simulationevents;
+package br.edu.ufcg.lsd.oursim.simulationevents.jobevents;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import br.edu.ufcg.lsd.oursim.entities.Job;
@@ -16,7 +16,7 @@ public class PreemptedJobEvent extends JobTimedEvent {
 
 	public static final int PRIORITY = 2;
 
-	PreemptedJobEvent(long time, Job job) {
+	public PreemptedJobEvent(long time, Job job) {
 		super(time, PRIORITY, job);
 	}
 

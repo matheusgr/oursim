@@ -11,6 +11,16 @@ import java.util.PriorityQueue;
 import br.edu.ufcg.lsd.oursim.Parameters;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Task;
+import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.FinishJobEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.PreemptedJobEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.StartedJobEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.SubmitJobEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.FinishTaskEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.PreemptedTaskEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.StartedTaskEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.SubmitTaskEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.workerevents.WorkerAvailableEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.workerevents.WorkerUnavailableEvent;
 
 
 /**
