@@ -19,7 +19,7 @@ public abstract class RankingPolicy<T, R> {
 	/**
 	 * that who are are requesting.
 	 */
-	protected T requester;
+	private final T requester;
 
 	/**
 	 * An ordinary constructor.
@@ -39,5 +39,9 @@ public abstract class RankingPolicy<T, R> {
 	 *            the resources available to be consumed.
 	 */
 	public abstract void rank(List<R> resources);
+
+	public T getRequester() {
+		return requester;
+	}
 
 }

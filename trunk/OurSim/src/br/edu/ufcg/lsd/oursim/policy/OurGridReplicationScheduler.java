@@ -44,10 +44,10 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 
 	@Override
 	public void schedule() {
-		for (Iterator<Task> iterator = submittedTasks.iterator(); iterator.hasNext();) {
+		for (Iterator<Task> iterator = this.getSubmittedTasks().iterator(); iterator.hasNext();) {
 			Task task = iterator.next();
-			task.getSourcePeer().prioritizePeersToConsume(peers);
-			for (Peer provider : peers) {
+			task.getSourcePeer().prioritizePeersToConsume(this.getPeers());
+			for (Peer provider : this.getPeers()) {
 				boolean isTaskRunning = provider.executeTask(task);
 				if (isTaskRunning) {
 					this.addStartedTaskEvent(task);
@@ -77,7 +77,7 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 
 	private void addReplies(Task task) {
 		for (int i = 0; i < task.getSourceJob().getReplicationLevel() - 1; i++) {
-			this.submittedTasks.add(task.clone());
+			this.getSubmittedTasks().add(task.clone());
 		}
 	}
 
@@ -86,9 +86,9 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 			// para as replicas que ainda estiverem rodando
 			if (reply.isRunning()) {
 				reply.getTargetPeer().preemptTask(reply);
-			} else if (this.submittedTasks.contains(reply)) {// está
+			} else if (this.getSubmittedTasks().contains(reply)) {// está
 				// aguardando
-				this.submittedTasks.remove(reply);
+				this.getSubmittedTasks().remove(reply);
 			} else {
 				assert false;
 			}

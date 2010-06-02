@@ -6,13 +6,12 @@ import java.util.Set;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.entities.Task;
 
-
 public class TaskEventCounter extends TaskEventListenerAdapter {
 
 	private int numberOfFinishedTasks = 0;
 
 	private int numberOfPreemptionsForAllTasks = 0;
-	
+
 	private Set<Long> idsOfFinishedTasks = new HashSet<Long>();
 
 	@Override
@@ -22,16 +21,16 @@ public class TaskEventCounter extends TaskEventListenerAdapter {
 	}
 
 	@Override
-	public void taskPreempted(Event<Task> taskEvent) {
+	public final void taskPreempted(Event<Task> taskEvent) {
 		this.numberOfPreemptionsForAllTasks++;
 	}
 
-	public int getNumberOfFinishedTasks() {
-//		return numberOfFinishedTasks;
+	public final int getNumberOfFinishedTasks() {
+		assert numberOfFinishedTasks == idsOfFinishedTasks.size();
 		return idsOfFinishedTasks.size();
 	}
 
-	public int getNumberOfPreemptionsForAllTasks() {
+	public final int getNumberOfPreemptionsForAllTasks() {
 		return numberOfPreemptionsForAllTasks;
 	}
 

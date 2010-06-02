@@ -27,18 +27,18 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract im
 	/**
 	 * The jobs that have been submitted to this scheduler.
 	 */
-	protected Set<Job> submittedJobs;
+	private Set<Job> submittedJobs;
 
 	/**
 	 * The tasks of all jobs that have been submitted to this scheduler. The
 	 * schedulling is effectively performed in this collection.
 	 */
-	protected Set<Task> submittedTasks;
+	private Set<Task> submittedTasks;
 
 	/**
 	 * All the peers that participate of the grid.
 	 */
-	protected List<Peer> peers;
+	private List<Peer> peers;
 
 	/**
 	 * The workload to be processed by this scheduler.
@@ -96,6 +96,18 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract im
 		}
 	}
 
+	protected Set<Job> getSubmittedJobs() {
+		return submittedJobs;
+	}
+
+	protected Set<Task> getSubmittedTasks() {
+		return submittedTasks;
+	}
+
+	protected List<Peer> getPeers() {
+		return peers;
+	}
+	
 	// B-- beginning of implementation of JobEventListener
 
 	@Override
