@@ -44,9 +44,9 @@ public class TaskEventDispatcher extends EventDispatcher<Task, TaskEventListener
 
 	@Override
 	public void addListener(TaskEventListener listener) {
-		if (!this.listeners.contains(listener)) {
-			this.listeners.add(listener);
-			this.listenerToFilter.put(listener, TaskEventFilter.ACCEPT_ALL);
+		if (!this.getListeners().contains(listener)) {
+			this.getListeners().add(listener);
+			this.getListenerToFilter().put(listener, TaskEventFilter.ACCEPT_ALL);
 		} else {
 			assert false;
 		}
@@ -54,7 +54,7 @@ public class TaskEventDispatcher extends EventDispatcher<Task, TaskEventListener
 
 	@Override
 	public boolean removeListener(TaskEventListener listener) {
-		return this.listeners.remove(listener);
+		return this.getListeners().remove(listener);
 	}
 
 	/**
@@ -101,9 +101,9 @@ public class TaskEventDispatcher extends EventDispatcher<Task, TaskEventListener
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void dispatch(Enum type, Event<Task> taskEvent) {
-		for (TaskEventListener listener : listeners) {
+		for (TaskEventListener listener : this.getListeners()) {
 			// submitted, started, preempted, finished
-			if (listenerToFilter.get(listener).accept(taskEvent)) {
+			if (this.getListenerToFilter().get(listener).accept(taskEvent)) {
 				switch ((TYPE_OF_DISPATCHING) type) {
 				case submitted:
 					listener.taskSubmitted(taskEvent);

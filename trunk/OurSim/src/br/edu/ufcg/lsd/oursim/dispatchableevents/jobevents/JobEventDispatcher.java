@@ -44,9 +44,9 @@ public class JobEventDispatcher extends EventDispatcher<Job, JobEventListener, J
 
 	@Override
 	public void addListener(JobEventListener listener) {
-		if (!this.listeners.contains(listener)) {
-			this.listeners.add(listener);
-			this.listenerToFilter.put(listener, JobEventFilter.ACCEPT_ALL);
+		if (!this.getListeners().contains(listener)) {
+			this.getListeners().add(listener);
+			this.getListenerToFilter().put(listener, JobEventFilter.ACCEPT_ALL);
 		} else {
 			assert false;
 		}
@@ -54,7 +54,7 @@ public class JobEventDispatcher extends EventDispatcher<Job, JobEventListener, J
 
 	@Override
 	public boolean removeListener(JobEventListener listener) {
-		return this.listeners.remove(listener);
+		return this.getListeners().remove(listener);
 	}
 
 	/**
@@ -101,9 +101,9 @@ public class JobEventDispatcher extends EventDispatcher<Job, JobEventListener, J
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void dispatch(Enum type, Event<Job> jobEvent) {
-		for (JobEventListener listener : listeners) {
+		for (JobEventListener listener : this.getListeners()) {
 			// submitted, started, preempted, finished
-			if (listenerToFilter.get(listener).accept(jobEvent)) {
+			if (this.getListenerToFilter().get(listener).accept(jobEvent)) {
 				switch ((TYPE_OF_DISPATCHING) type) {
 				case submitted:
 					listener.jobSubmitted(jobEvent);
