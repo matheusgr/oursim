@@ -43,18 +43,18 @@ public class WorkerEventDispatcher extends EventDispatcher<String, WorkerEventLi
 
 	@Override
 	public void addListener(WorkerEventListener listener) {
-		if (!this.listeners.contains(listener)) {
-			this.listeners.add(listener);
-			this.listenerToFilter.put(listener, WorkerEventFilter.ACCEPT_ALL);
+		if (!this.getListeners().contains(listener)) {
+			this.getListeners().add(listener);
+			this.getListenerToFilter().put(listener, WorkerEventFilter.ACCEPT_ALL);
 		} else {
 			assert false;
 		}
-		assert listenerToFilter.get(listener) != null;
+		assert this.getListenerToFilter().get(listener) != null;
 	}
 
 	@Override
 	public boolean removeListener(WorkerEventListener listener) {
-		return this.listeners.remove(listener);
+		return this.getListeners().remove(listener);
 	}
 
 	/**
@@ -118,9 +118,9 @@ public class WorkerEventDispatcher extends EventDispatcher<String, WorkerEventLi
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void dispatch(Enum type, Event<String> workerEvent) {
-		for (WorkerEventListener listener : listeners) {
+		for (WorkerEventListener listener : this.getListeners()) {
 			// up, down, available, unavailable, idle, running
-			if (listenerToFilter.get(listener).accept(workerEvent)) {
+			if (this.getListenerToFilter().get(listener).accept(workerEvent)) {
 				switch ((TYPE_OF_DISPATCHING) type) {
 				case up:
 					listener.workerUp(workerEvent);

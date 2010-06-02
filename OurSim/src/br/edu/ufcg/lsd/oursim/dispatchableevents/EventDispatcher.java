@@ -25,12 +25,12 @@ public abstract class EventDispatcher<S, L extends EventListener, F extends Even
 	/**
 	 * The collection of the listeners of the events.
 	 */
-	protected final Set<L> listeners;
+	private final Set<L> listeners;
 
 	/**
 	 * The mapping between a listener and its filter.
 	 */
-	protected final Map<L, F> listenerToFilter;
+	private final Map<L, F> listenerToFilter;
 
 	/**
 	 * An ordinary constructor.
@@ -87,5 +87,13 @@ public abstract class EventDispatcher<S, L extends EventListener, F extends Even
 	 */
 	@SuppressWarnings("unchecked")
 	protected abstract void dispatch(Enum type, Event<S> event);
+
+	protected Set<L> getListeners() {
+		return listeners;
+	}
+
+	protected Map<L, F> getListenerToFilter() {
+		return listenerToFilter;
+	}
 
 }
