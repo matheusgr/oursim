@@ -1,3 +1,4 @@
+
 package br.edu.ufcg.lsd.oursim.policy;
 
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 		@Override
 		public int compare(Peer peer1, Peer peer2) {
 
-			// Test to match a search in a TreeMap
+			// If comparing oneself
 			if (peer1 == peer2) {
 				return 0;
 			}
@@ -168,12 +169,11 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 		// Provider's balance
 		HashMap<Peer, Long> balances = allBalances.get(provider);
 
-		// quanto cada peer merece neste provedor, ordenado pelos criterios de
-		// desempate.
+		// Comparing who much each peer deserves. Ordering made by NoFComparator.
 		TreeMap<Peer, Integer> resourcesBeingConsumedClone = new TreeMap<Peer, Integer>(new NoFComparator(provider, resourcesBeingConsumed, runningTasks));
 		resourcesBeingConsumedClone.putAll(resourcesBeingConsumed);
 
-		// If this peer is not consuming, put in this map.
+		// If this peer is not already consuming, put in this map
 		if (!resourcesBeingConsumedClone.containsKey(consumer)) {
 			resourcesBeingConsumedClone.put(consumer, 1);
 		} else {
@@ -184,7 +184,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 
 		while (resourcesLeft > 0) {
 
-			// Consumers to share resources left
+			// Consumers to share resources left by providing peer
 			int numConsumingPeers = resourcesBeingConsumedClone.size();
 
 			// Sum of balances
@@ -199,6 +199,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 
 			long resourcesToShare = resourcesLeft;
 
+			// If all peers deserves only less that one resource, start lenient strategy
 			boolean startLenientSharing = true;
 
 			// Set minimum resources allowed for each peer and remove satisfied
@@ -213,6 +214,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 				double share;
 
 				if (totalBalance == 0) {
+					// All peers doesn't have shared any resources
 					share = (1.0d / numConsumingPeers);
 				} else {
 					share = ((double) getBalance(remoteConsumer, balances)) / totalBalance;
@@ -221,16 +223,17 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 				resourcesForPeer = (int) (share * resourcesToShare);
 
 				if (remoteConsumer == provider) {
+					// If consumer is provider, he has all resources left
 					resourcesForPeer = resourcesLeft;
 				}
 
+				// If any peer cannot get at least one resource, start lenient sharing
 				startLenientSharing = startLenientSharing && resourcesForPeer == 0;
 
 				int resourcesInUse = resourcesBeingConsumedClone.get(remoteConsumer);
 
 				if (resourcesInUse <= resourcesForPeer) {
-					iterator.remove(); // Satisfied consumer, will not be
-					// preempted
+					iterator.remove(); // Satisfied consumer, don't preempt
 				} else {
 					receivedResources.put(remoteConsumer, resourcesForPeer);
 				}
@@ -238,6 +241,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 				resourcesLeft -= Math.min(resourcesInUse, resourcesForPeer);
 			}
 
+			// If lenient, distributed remain resources according NoF ordering
 			if (startLenientSharing) {
 				for (Peer p : resourcesBeingConsumedClone.keySet()) {
 					if (resourcesLeft == 0) {
@@ -248,6 +252,8 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 				}
 			}
 
+			// Recalculating resources consumed by this peer
+			// This is used to recalculating a new allowed shared in next turn
 			for (Entry<Peer, Long> entry : receivedResources.entrySet()) {
 				long currentUsedResources = resourcesBeingConsumedClone.get(entry.getKey());
 				long allowedResources = entry.getValue();
@@ -262,7 +268,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 
 		}
 
-		// consumer will not get any resource from this provider
+		// Consumer will not get any resource from this provider
 		if (resourcesBeingConsumedClone.containsKey(consumer)) {
 			return new ArrayList<Peer>();
 		}
