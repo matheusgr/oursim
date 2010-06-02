@@ -27,7 +27,6 @@ import br.edu.ufcg.lsd.oursim.policy.NoFSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.OurGridPersistentScheduler;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 
-
 public class SimulationBase {
 
 	private Workload workload;

@@ -15,11 +15,7 @@ import br.edu.ufcg.lsd.oursim.io.input.Input;
 import br.edu.ufcg.lsd.oursim.io.input.InputAbstract;
 import br.edu.ufcg.lsd.oursim.io.input.Workload;
 import br.edu.ufcg.lsd.oursim.io.input.WorkloadAbstract;
-import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
-import br.edu.ufcg.lsd.oursim.policy.OurGridReplicationScheduler;
-import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
-
 
 public class OurGridReplicationSchedulerTest extends AbstractOurSimAPITest {
 
@@ -31,11 +27,12 @@ public class OurGridReplicationSchedulerTest extends AbstractOurSimAPITest {
 	 * 
 	 * Asserção: Espera-se que a simulação se dê de forma satisfatório mesmo na
 	 * presença de recursos voláteis.
+	 * 
+	 * @throws Exception
 	 */
 	@Test
 	@SuppressWarnings("unchecked")
-	public void testRun_3() {
-
+	public void testRun_3() throws Exception {
 		final int numberOfPeers = 1;
 		final int numberOfResources = 6;
 

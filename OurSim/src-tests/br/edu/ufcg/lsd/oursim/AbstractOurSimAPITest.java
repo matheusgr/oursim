@@ -59,8 +59,8 @@ public abstract class AbstractOurSimAPITest {
 
 	protected long nextJobId = 0;
 
-	@SuppressWarnings("unchecked")
 	@Before
+	@SuppressWarnings("unchecked")
 	public void setUp() throws Exception {
 
 		jobEventCounter = new JobEventCounter();
@@ -137,7 +137,7 @@ public abstract class AbstractOurSimAPITest {
 		return allWorkloads;
 	}
 
-	public static void addJob(long jobId, long submissionTime, long duration, final Peer peer, Collection<Job>... collectionsOfJob) {
+	public static final void addJob(long jobId, long submissionTime, long duration, final Peer peer, Collection<Job>... collectionsOfJob) {
 		Job job = new Job(jobId, submissionTime, duration, peer);
 		for (Collection<Job> collection : collectionsOfJob) {
 			collection.add(job);

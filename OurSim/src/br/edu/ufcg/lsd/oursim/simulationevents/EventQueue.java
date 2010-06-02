@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
 
-import br.edu.ufcg.lsd.oursim.Parameters;
+import br.edu.ufcg.lsd.oursim.OurSim;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.FinishJobEvent;
@@ -60,7 +60,7 @@ public class EventQueue implements Closeable {
 		pq = new PriorityQueue<TimedEvent>();
 		job2FinishJobEvent = new HashMap<Job, FinishJobEvent>();
 		task2FinishTaskEvent = new HashMap<Task, FinishTaskEvent>();
-		if (Parameters.LOG) {
+		if (OurSim.LOG) {
 			try {
 				bw = new BufferedWriter(new FileWriter("events_oursim.txt"));
 			} catch (IOException e) {
@@ -115,7 +115,7 @@ public class EventQueue implements Closeable {
 
 		totalNumberOfEvents++;
 		// TODO: Verificar a necessidade desse método
-		if (Parameters.LOG) {
+		if (OurSim.LOG) {
 			try {
 				bw.append(event.toString()).append("\n");
 			} catch (IOException e) {

@@ -11,11 +11,10 @@ import br.edu.ufcg.lsd.oursim.entities.Job;
  * @since 20/05/2010
  * 
  */
-@Deprecated
 public class StartedJobEvent extends JobTimedEvent {
 
 	public static final int PRIORITY = 3;
-	
+
 	/**
 	 * Creates an event indicating that a job has been finished.
 	 * 
