@@ -19,13 +19,14 @@ import br.edu.ufcg.lsd.oursim.io.input.Input;
 import br.edu.ufcg.lsd.oursim.io.input.SyntheticWorkload;
 import br.edu.ufcg.lsd.oursim.io.input.Workload;
 import br.edu.ufcg.lsd.oursim.io.output.PrintOutput;
+import br.edu.ufcg.lsd.oursim.policy.FifoSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
 import br.edu.ufcg.lsd.oursim.policy.NoFSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.OurGridScheduler;
 import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 
-public class OurSim {
+public final class OurSim {
 
 	public static final boolean LOG = false;
 
@@ -46,28 +47,28 @@ public class OurSim {
 
 	private static final String[] ARGS = ARGS_STRING.trim().split("\\s+");
 
-	private static int ARGS_INDEX = 0;
+	private static int argsIndex = 0;
 
 	// tempo base de execução do job
-	static int EXEC_TIME = Integer.parseInt(ARGS[ARGS_INDEX++]);
+	static final int EXEC_TIME = Integer.parseInt(ARGS[argsIndex++]);
 
 	// variância máxima do tempo base de execução (sempre positiva)
-	static int EXEC_TIME_VAR = Integer.parseInt(ARGS[ARGS_INDEX++]);
+	static final int EXEC_TIME_VAR = Integer.parseInt(ARGS[argsIndex++]);
 
 	// intervalo de submissão entre jobs subsequentes
-	static int SUBMISSION_INTERVAL = Integer.parseInt(ARGS[ARGS_INDEX++]);
+	static final int SUBMISSION_INTERVAL = Integer.parseInt(ARGS[argsIndex++]);
 
 	// quantidade total de jobs do workload
-	static int NUM_JOBS = Integer.parseInt(ARGS[ARGS_INDEX++]);
+	static final int NUM_JOBS = Integer.parseInt(ARGS[argsIndex++]);
 
-	static int NUM_TASKS_BY_JOB = Integer.parseInt(ARGS[ARGS_INDEX++]);
+	static final int NUM_TASKS_BY_JOB = Integer.parseInt(ARGS[argsIndex++]);
 
-	static int NUM_PEERS = Integer.parseInt(ARGS[ARGS_INDEX++]);
+	static final int NUM_PEERS = Integer.parseInt(ARGS[argsIndex++]);
 
 	// número de nodos do peer
-	static int NUM_RESOURCES_BY_PEER = Integer.parseInt(ARGS[ARGS_INDEX++]);
+	static final int NUM_RESOURCES_BY_PEER = Integer.parseInt(ARGS[argsIndex++]);
 
-	static int NODE_MIPS_RATING = Integer.parseInt(ARGS[ARGS_INDEX++]);
+	static final int NODE_MIPS_RATING = Integer.parseInt(ARGS[argsIndex++]);
 
 	private OurSim() {
 	}
@@ -76,7 +77,7 @@ public class OurSim {
 
 		ArrayList<Peer> peers = new ArrayList<Peer>(numPeers);
 
-		ResourceSharingPolicy sharingPolicy = useNoF ? NoFSharingPolicy.getInstance() : ResourceSharingPolicy.DEFAULT_SHARING_POLICY;
+		ResourceSharingPolicy sharingPolicy = useNoF ? NoFSharingPolicy.getInstance() : FifoSharingPolicy.getInstance();
 
 		for (int i = 0; i < numPeers; i++) {
 			peers.add(new Peer("P" + i, numNodesByPeer, nodeMIPSRating, sharingPolicy));

@@ -38,7 +38,7 @@ public class OurGridReplicationSchedulerTest extends AbstractOurSimAPITest {
 
 		peers = new ArrayList<Peer>(numberOfPeers);
 
-		final Peer peer = new Peer("the_peer", numberOfResources, RESOURCE_MIPS_RATING, ResourceSharingPolicy.DEFAULT_SHARING_POLICY);
+		final Peer peer = new Peer("the_peer", numberOfResources, RESOURCE_MIPS_RATING, FifoSharingPolicy.getInstance());
 		peers.add(peer);
 
 		Input<AvailabilityRecord> availability = new InputAbstract<AvailabilityRecord>() {

@@ -329,17 +329,6 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 		return hasAllReplyFailed;
 	}
 
-	@Override
-	public String toString() {
-		// [id, duration, submissionTime, startTime, finishTime,
-		// numberOfpreemptions]
-		// return this.id+"";
-		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("id", id).append("sourceJob", sourceJob.getId()).append("sourcePeer",
-				getSourcePeer().getName()).append("duration", duration).append("submissionTime", submissionTime).append("startTime", startTime).append(
-				"finishTime", finishTime).append("targetPeer", targetPeer != null ? targetPeer.getName() : "").append("numberOfpreemptions",
-				numberOfpreemptions).append("replyId", replyId).toString();
-	}
-
 	public Set<Task> getReplies() {
 		assert replies.contains(this);
 		Set<Task> onlyTheReplies = new HashSet<Task>(replies);
@@ -361,6 +350,17 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	private boolean isActive() {
 		// TODO: hora de adicionar uma máquina de estados!
 		return this.isRunning() || (!this.isFinished() && !this.wasPreempted());
+	}
+
+	@Override
+	public String toString() {
+		// [id, duration, submissionTime, startTime, finishTime,
+		// numberOfpreemptions]
+		// return this.id+"";
+		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("id", id).append("sourceJob", sourceJob.getId()).append("sourcePeer",
+				getSourcePeer().getName()).append("duration", duration).append("submissionTime", submissionTime).append("startTime", startTime).append(
+				"finishTime", finishTime).append("targetPeer", targetPeer != null ? targetPeer.getName() : "").append("numberOfpreemptions",
+				numberOfpreemptions).append("executable", executable).append("replyId", replyId).toString();
 	}
 
 }

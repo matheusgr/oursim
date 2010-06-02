@@ -28,6 +28,6 @@ public interface WorkerEventFilter extends EventFilter<Event<String>> {
 	};
 
 	@Override
-	public boolean accept(Event<String> workerEvent);
+	boolean accept(Event<String> workerEvent);
 
 }

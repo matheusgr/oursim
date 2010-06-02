@@ -17,7 +17,7 @@ import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.io.input.Workload;
 import br.edu.ufcg.lsd.oursim.io.input.WorkloadAbstract;
-import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
+import br.edu.ufcg.lsd.oursim.policy.FifoSharingPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.FinishJobEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.SubmitJobEvent;
@@ -86,7 +86,7 @@ public abstract class AbstractOurSimAPITest {
 		peers = new ArrayList<Peer>(NUMBER_OF_PEERS);
 
 		for (int i = 0; i < NUMBER_OF_PEERS; i++) {
-			peers.add(new Peer("p_" + i, NUMBER_OF_RESOURCES_BY_PEER, RESOURCE_MIPS_RATING, ResourceSharingPolicy.DEFAULT_SHARING_POLICY));
+			peers.add(new Peer("p_" + i, NUMBER_OF_RESOURCES_BY_PEER, RESOURCE_MIPS_RATING, FifoSharingPolicy.getInstance()));
 		}
 
 	}
