@@ -6,7 +6,6 @@ import java.util.List;
 import br.edu.ufcg.lsd.oursim.OurSim;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 
-
 /**
  * 
  * A policy to prioritize the peers from which the resources will be consumed.
@@ -40,13 +39,13 @@ public class PeerRankingPolicy extends RankingPolicy<Peer, Peer> {
 		Collections.shuffle(peers, OurSim.RANDOM);
 		// Trying own resources first:
 		for (int i = 0; i < peers.size(); i++) {
-			if (peers.get(i) == requester) {
+			if (peers.get(i) == this.getRequester()) {
 				peers.set(i, peers.get(0));
-				peers.set(0, requester);
+				peers.set(0, this.getRequester());
 				break;
 			}
 		}
-		assert (peers.get(0) == requester);
+		assert (peers.get(0) == this.getRequester());
 	}
 
 }

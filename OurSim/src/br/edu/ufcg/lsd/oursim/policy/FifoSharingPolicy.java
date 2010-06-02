@@ -17,7 +17,7 @@ import br.edu.ufcg.lsd.oursim.entities.Task;
  * @since 18/05/2010
  * 
  */
-public class FifoSharingPolicy implements ResourceSharingPolicy {
+public final class FifoSharingPolicy implements ResourceSharingPolicy {
 
 	private static FifoSharingPolicy instance = null;
 
@@ -31,7 +31,7 @@ public class FifoSharingPolicy implements ResourceSharingPolicy {
 	@Override
 	public List<Peer> getPreemptablePeers(Peer provider, Peer consumer, Map<Peer, Integer> resourcesBeingConsumed, Set<Task> runningTasks) {
 		ArrayList<Peer> preemptablePeers = new ArrayList<Peer>();
-		if (consumer == provider) {
+		if (consumer.equals(provider)) {
 			for (Peer peer : resourcesBeingConsumed.keySet()) {
 				if (peer != provider) {
 					preemptablePeers.add(peer);
