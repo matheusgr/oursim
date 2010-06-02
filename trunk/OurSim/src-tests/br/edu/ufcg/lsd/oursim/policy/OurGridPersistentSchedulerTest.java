@@ -15,10 +15,7 @@ import br.edu.ufcg.lsd.oursim.io.input.DedicatedResourcesAvailabilityCharacteriz
 import br.edu.ufcg.lsd.oursim.io.input.Input;
 import br.edu.ufcg.lsd.oursim.io.input.Workload;
 import br.edu.ufcg.lsd.oursim.io.input.WorkloadAbstract;
-import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
-import br.edu.ufcg.lsd.oursim.policy.OurGridPersistentScheduler;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
-
 
 public class OurGridPersistentSchedulerTest extends AbstractOurSimAPITest {
 
@@ -31,10 +28,11 @@ public class OurGridPersistentSchedulerTest extends AbstractOurSimAPITest {
 	 * Asserção: Espera-se que todos os jobs sejam concluídos no tempo mínimo
 	 * necessário (i.e. a duração especificada para cada job) e que todos os
 	 * jobs sejam executados no próprio peer de origem.
+	 * 
+	 * @throws Exception
 	 */
 	@Test
-	public void testRun_1() {
-
+	public void testRun_1() throws Exception {
 		// Define as demandas para cada peer
 		Workload workload = generateDefaultWorkload();
 
@@ -70,7 +68,6 @@ public class OurGridPersistentSchedulerTest extends AbstractOurSimAPITest {
 			// Ninguém precisa recorrer aos recursos alheios.
 			assertEquals(job.getSourcePeer(), job.getTargetPeers().get(0));
 		}
-
 	}
 
 	/**
@@ -81,10 +78,10 @@ public class OurGridPersistentSchedulerTest extends AbstractOurSimAPITest {
 	 * Espera-se que todos os jobs de quem não depende de recursos alheios sejam
 	 * concluídos no tempo mínimo esperado (i.e. a duração especificado para
 	 * cada job) e que todos os jobs sejam executados no próprio peer de origem.
+	 * @throws Exception 
 	 */
 	@Test
-	public void testRun_2() {
-
+	public void testRun_2() throws Exception {
 		final int NUMBER_OF_OVERLOADED_PEERS = NUMBER_OF_PEERS / 2;
 
 		final ArrayList<Peer> overloadedPeers = new ArrayList<Peer>(NUMBER_OF_OVERLOADED_PEERS);
@@ -171,7 +168,6 @@ public class OurGridPersistentSchedulerTest extends AbstractOurSimAPITest {
 
 		assertEquals(NUMBER_OF_OVERLOADED_PEERS * NUMBER_OF_JOBS_BY_PEER, numberOfJobsFromOverloadedPeersTimelyFinished);
 		assertEquals(NUMBER_OF_OVERLOADED_PEERS * NUMBER_OF_JOBS_BY_PEER, numberOfEnqueuedJobsFromOverloadedPeers);
-
 	}
 
 }

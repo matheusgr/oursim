@@ -22,14 +22,14 @@ public interface ActiveEntity {
 	 * @param eventQueue
 	 *            the eventqueue to be shared.
 	 */
-	public void setEventQueue(EventQueue eventQueue);
+	void setEventQueue(EventQueue eventQueue);
 
 	/**
 	 * @return the active eventqueue.
 	 */
-	public EventQueue getEventQueue();
+	EventQueue getEventQueue();
 
-	public long getCurrentTime();
+	long getCurrentTime();
 
 	/**
 	 * Adds an event indicating that a job was submitted.
@@ -39,7 +39,7 @@ public interface ActiveEntity {
 	 * @param job
 	 *            the job that has been submitted.
 	 */
-	public void addSubmitJobEvent(long submitTime, Job job);
+	void addSubmitJobEvent(long submitTime, Job job);
 
 	/**
 	 * Adds an event indicating that a job has been started.
@@ -47,8 +47,7 @@ public interface ActiveEntity {
 	 * @param job
 	 *            the job that has been started.
 	 */
-	@Deprecated
-	public void addStartedJobEvent(Job job);
+	void addStartedJobEvent(Job job);
 
 	/**
 	 * Adds an event indicating that a job has been preempted.
@@ -58,7 +57,7 @@ public interface ActiveEntity {
 	 * @param job
 	 *            the job that has been preempted.
 	 */
-	public void addPreemptedJobEvent(long preemptionTime, Job job);
+	void addPreemptedJobEvent(long preemptionTime, Job job);
 
 	/**
 	 * Adds an event indicating that a job has been finished.
@@ -68,7 +67,7 @@ public interface ActiveEntity {
 	 * @param job
 	 *            the job that has been finished.
 	 */
-	public void addFinishJobEvent(long finishTime, Job job);
+	void addFinishJobEvent(long finishTime, Job job);
 
 	/**
 	 * Adds an event indicating that a task was submitted.
@@ -78,7 +77,7 @@ public interface ActiveEntity {
 	 * @param task
 	 *            the task that has been submitted.
 	 */
-	public void addSubmitTaskEvent(long submitTime, Task task);
+	void addSubmitTaskEvent(long submitTime, Task task);
 
 	/**
 	 * Adds an event indicating that a task has been started.
@@ -86,7 +85,7 @@ public interface ActiveEntity {
 	 * @param task
 	 *            the task that has been started.
 	 */
-	public void addStartedTaskEvent(Task task);
+	void addStartedTaskEvent(Task task);
 
 	/**
 	 * Adds an event indicating that a task has been preempted.
@@ -96,7 +95,7 @@ public interface ActiveEntity {
 	 * @param task
 	 *            the task that has been preempted.
 	 */
-	public void addPreemptedTaskEvent(long preemptionTime, Task task);
+	void addPreemptedTaskEvent(long preemptionTime, Task task);
 	
 	void addPreemptedTaskEvent(Task task);
 
@@ -108,7 +107,7 @@ public interface ActiveEntity {
 	 * @param task
 	 *            the task that has been finished.
 	 */
-	public void addFinishTaskEvent(long finishTime, Task task);
+	void addFinishTaskEvent(long finishTime, Task task);
 
 	/**
 	 * Adds an event indicating that a worker has become available. It's
@@ -122,6 +121,6 @@ public interface ActiveEntity {
 	 * @param duration
 	 *            the duration of the availability period.
 	 */
-	public void addWorkerAvailableEvent(long time, String machineName, long duration);
+	void addWorkerAvailableEvent(long time, String machineName, long duration);
 
 }

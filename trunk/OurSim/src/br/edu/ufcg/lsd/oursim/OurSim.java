@@ -3,6 +3,7 @@ package br.edu.ufcg.lsd.oursim;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.commons.lang.time.StopWatch;
 
@@ -26,6 +27,51 @@ import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 
 public class OurSim {
 
+	public static final boolean LOG = false;
+
+	public static final Random RANDOM = new Random(9354269l);
+
+	static final String AVAILABILITY_CHARACTERIZATION_FILE_PATH = "trace_mutka_100-machines_10-hours.txt";
+
+	static final boolean USE_NOF = false;
+
+	static final boolean DEDICATED_RESOURCES = true;
+
+	static final int NUMBER_OF_REPLIES = 3;
+
+	private static final String ARGS_STRING =
+	// execTime execTimeVar subInterval #Jobs #TasksByJob #Peers #nodesByPeer
+	// nodeMIPSRating
+	"       100         50            5    1000           50     10 		  100           3000";
+
+	private static final String[] ARGS = ARGS_STRING.trim().split("\\s+");
+
+	private static int ARGS_INDEX = 0;
+
+	// tempo base de execução do job
+	static int EXEC_TIME = Integer.parseInt(ARGS[ARGS_INDEX++]);
+
+	// variância máxima do tempo base de execução (sempre positiva)
+	static int EXEC_TIME_VAR = Integer.parseInt(ARGS[ARGS_INDEX++]);
+
+	// intervalo de submissão entre jobs subsequentes
+	static int SUBMISSION_INTERVAL = Integer.parseInt(ARGS[ARGS_INDEX++]);
+
+	// quantidade total de jobs do workload
+	static int NUM_JOBS = Integer.parseInt(ARGS[ARGS_INDEX++]);
+
+	static int NUM_TASKS_BY_JOB = Integer.parseInt(ARGS[ARGS_INDEX++]);
+
+	static int NUM_PEERS = Integer.parseInt(ARGS[ARGS_INDEX++]);
+
+	// número de nodos do peer
+	static int NUM_RESOURCES_BY_PEER = Integer.parseInt(ARGS[ARGS_INDEX++]);
+
+	static int NODE_MIPS_RATING = Integer.parseInt(ARGS[ARGS_INDEX++]);
+
+	private OurSim() {
+	}
+
 	private static List<Peer> prepareGrid(int numPeers, int numNodesByPeer, int nodeMIPSRating, boolean useNoF) {
 
 		ArrayList<Peer> peers = new ArrayList<Peer>(numPeers);
@@ -47,11 +93,11 @@ public class OurSim {
 	 */
 	private static Workload prepareWorkload(List<Peer> peers) {
 
-		int execTime = Parameters.EXEC_TIME;
-		int execTimeVariance = Parameters.EXEC_TIME_VAR;
-		int submissionInterval = Parameters.SUBMISSION_INTERVAL;
-		int numJobs = Parameters.NUM_JOBS;
-		int numTasksByJobs = Parameters.NUM_TASKS_BY_JOB;
+		int execTime = OurSim.EXEC_TIME;
+		int execTimeVariance = OurSim.EXEC_TIME_VAR;
+		int submissionInterval = OurSim.SUBMISSION_INTERVAL;
+		int numJobs = OurSim.NUM_JOBS;
+		int numTasksByJobs = OurSim.NUM_TASKS_BY_JOB;
 
 		SyntheticWorkload workload = new SyntheticWorkload(execTime, execTimeVariance, submissionInterval, numJobs, numTasksByJobs, peers);
 
@@ -74,11 +120,11 @@ public class OurSim {
 		TaskEventCounter taskEventCounter = new TaskEventCounter();
 		TaskEventDispatcher.getInstance().addListener(taskEventCounter);
 
-		List<Peer> peers = prepareGrid(Parameters.NUM_PEERS, Parameters.NUM_RESOURCES_BY_PEER, Parameters.NODE_MIPS_RATING, Parameters.USE_NOF);
+		List<Peer> peers = prepareGrid(OurSim.NUM_PEERS, OurSim.NUM_RESOURCES_BY_PEER, OurSim.NODE_MIPS_RATING, OurSim.USE_NOF);
 		Workload workload = prepareWorkload(peers);
 
-		Input<AvailabilityRecord> availability = Parameters.DEDICATED_RESOURCES ? new DedicatedResourcesAvailabilityCharacterization(peers)
-				: new AvailabilityCharacterization(Parameters.AVAILABILITY_CHARACTERIZATION_FILE_PATH);
+		Input<AvailabilityRecord> availability = OurSim.DEDICATED_RESOURCES ? new DedicatedResourcesAvailabilityCharacterization(peers)
+				: new AvailabilityCharacterization(OurSim.AVAILABILITY_CHARACTERIZATION_FILE_PATH);
 
 		System.out.println("Starting Simulation...");
 

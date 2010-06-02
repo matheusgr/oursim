@@ -14,10 +14,9 @@ import br.edu.ufcg.lsd.oursim.policy.NoFSharingPolicyTest;
 import br.edu.ufcg.lsd.oursim.policy.OurGridPersistentSchedulerTest;
 import br.edu.ufcg.lsd.oursim.policy.OurGridReplicationSchedulerTest;
 
-
 @RunWith(Suite.class)
 @SuiteClasses( { ProcessorTest.class, TaskTest.class, NoFSharingPolicyTest.class, OurGridPersistentSchedulerTest.class, OurSimAPIVolatilityTest.class,
-	OurGridReplicationSchedulerTest.class, })
+		OurGridReplicationSchedulerTest.class })
 public class TestSuite {
 
 	static class Compatibility {

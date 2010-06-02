@@ -16,7 +16,6 @@ import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.entities.TaskExecution;
 import br.edu.ufcg.lsd.oursim.policy.NoFSharingPolicy;
 
-
 public class NoFSharingPolicyTest {
 
 	private NoFSharingPolicy nof;
