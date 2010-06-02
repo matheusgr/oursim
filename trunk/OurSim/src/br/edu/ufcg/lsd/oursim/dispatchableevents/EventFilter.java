@@ -15,7 +15,7 @@ public interface EventFilter<T extends Event<?>> {
 	/**
 	 * A lenient EventFilter that accepts all events.
 	 */
-	public static EventFilter<Event<?>> ACCEPT_ALL = new EventFilter<Event<?>>() {
+	EventFilter<Event<?>> ACCEPT_ALL = new EventFilter<Event<?>>() {
 
 		@Override
 		public boolean accept(Event<?> event) {
@@ -33,6 +33,6 @@ public interface EventFilter<T extends Event<?>> {
 	 * @return <code>true</code> if and only if <code>event</code> should be
 	 *         accepted.
 	 */
-	public boolean accept(T event);
+	boolean accept(T event);
 
 }

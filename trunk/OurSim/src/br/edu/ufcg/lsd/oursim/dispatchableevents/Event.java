@@ -45,7 +45,7 @@ public class Event<T> extends EventObject {
 	 * @see java.util.EventObject#getSource()
 	 */
 	@SuppressWarnings("unchecked")
-	public T getSource() {
+	public final T getSource() {
 		return (T) source;
 	}
 
@@ -54,7 +54,7 @@ public class Event<T> extends EventObject {
 	 * 
 	 * @return The instant at which this event have occurred.
 	 */
-	public long getTime() {
+	public final long getTime() {
 		assert time != null;
 		return time;
 	}

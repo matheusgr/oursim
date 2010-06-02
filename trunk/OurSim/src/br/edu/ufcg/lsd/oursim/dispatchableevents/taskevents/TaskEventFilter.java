@@ -29,6 +29,6 @@ public interface TaskEventFilter extends EventFilter<Event<Task>> {
 	};
 
 	@Override
-	public boolean accept(Event<Task> taskEvent);
+	boolean accept(Event<Task> taskEvent);
 
 }

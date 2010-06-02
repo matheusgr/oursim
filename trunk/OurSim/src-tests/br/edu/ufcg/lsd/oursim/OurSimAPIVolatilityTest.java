@@ -14,9 +14,9 @@ import br.edu.ufcg.lsd.oursim.io.input.Input;
 import br.edu.ufcg.lsd.oursim.io.input.InputAbstract;
 import br.edu.ufcg.lsd.oursim.io.input.Workload;
 import br.edu.ufcg.lsd.oursim.io.input.WorkloadAbstract;
+import br.edu.ufcg.lsd.oursim.policy.FifoSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
 import br.edu.ufcg.lsd.oursim.policy.OurGridPersistentScheduler;
-import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 
 public class OurSimAPIVolatilityTest extends AbstractOurSimAPITest {
@@ -38,7 +38,7 @@ public class OurSimAPIVolatilityTest extends AbstractOurSimAPITest {
 
 		peers = new ArrayList<Peer>(numberOfPeers);
 
-		final Peer peer = new Peer("the_peer", numberOfResources, RESOURCE_MIPS_RATING, ResourceSharingPolicy.DEFAULT_SHARING_POLICY);
+		final Peer peer = new Peer("the_peer", numberOfResources, RESOURCE_MIPS_RATING, FifoSharingPolicy.getInstance());
 		peers.add(peer);
 
 		Input<AvailabilityRecord> availability = new InputAbstract<AvailabilityRecord>() {

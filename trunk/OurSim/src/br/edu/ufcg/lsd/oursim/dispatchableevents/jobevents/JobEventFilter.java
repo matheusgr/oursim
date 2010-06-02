@@ -28,6 +28,6 @@ public interface JobEventFilter extends EventFilter<Event<Job>> {
 	};
 
 	@Override
-	public boolean accept(Event<Job> jobEvent);
+	boolean accept(Event<Job> jobEvent);
 
 }

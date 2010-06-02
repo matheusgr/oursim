@@ -5,9 +5,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
-
-
 /**
  * 
  * A dispatcher for the {@link Event}s that ocurrs in some source.
