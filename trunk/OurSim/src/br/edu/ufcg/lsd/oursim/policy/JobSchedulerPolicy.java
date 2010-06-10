@@ -9,7 +9,7 @@ import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntity;
 
 /**
  * 
- * An mininal interface to define a grid Scheduler. A Scheduler defines
+ * A mininal interface to define a grid Scheduler. A Scheduler defines
  * inplicitly many policies to decide what to do when events occurs, like
  * finishs or preemptions of tasks and jobs, through the implementation of
  * methods from the interfaces {@link JobEventListener},

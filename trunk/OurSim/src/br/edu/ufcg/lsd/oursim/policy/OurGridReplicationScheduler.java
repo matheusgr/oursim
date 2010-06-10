@@ -43,7 +43,7 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 	}
 
 	@Override
-	public void schedule() {
+	public final void schedule() {
 		for (Iterator<Task> iterator = this.getSubmittedTasks().iterator(); iterator.hasNext();) {
 			Task task = iterator.next();
 			task.getSourcePeer().prioritizePeersToConsume(this.getPeers());
@@ -59,18 +59,19 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 	}
 
 	@Override
-	public void addJob(Job job) {
+	public final void addJob(Job job) {
 		job.setReplicationLevel(this.replicationLevel);
 		super.addJob(job);
 	}
 
 	@Override
-	public void taskSubmitted(Event<Task> taskEvent) {
+	public final void taskSubmitted(Event<Task> taskEvent) {
 		super.taskSubmitted(taskEvent);
 		addReplies(taskEvent.getSource());
 	}
 
-	public void taskFinished(Event<Task> taskEvent) {
+	@Override
+	public final void taskFinished(Event<Task> taskEvent) {
 		super.taskFinished(taskEvent);
 		stopRemainderReplies(taskEvent.getSource());
 	}
