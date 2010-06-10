@@ -15,7 +15,6 @@ import br.edu.ufcg.lsd.oursim.entities.util.ResourceManager;
 import br.edu.ufcg.lsd.oursim.entities.util.TaskManager;
 import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.ranking.PeerRankingPolicy;
-import br.edu.ufcg.lsd.oursim.policy.ranking.ResourceRankingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.ranking.TaskPreemptionRankingPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityAbstract;
 
@@ -83,7 +82,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	 *             if <code>numberOfMachines &lt; 1</code>.
 	 * 
 	 */
-	public Peer(String name, int numberOfMachines, ResourceSharingPolicy resourceSharingPolicy) throws IllegalArgumentException {
+	public Peer(String name, int numberOfMachines, ResourceSharingPolicy resourceSharingPolicy) {
 		this(name, numberOfMachines, Processor.EC2_COMPUTE_UNIT.getSpeed(), resourceSharingPolicy);
 	}
 
@@ -106,7 +105,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	 *             if <code>numberOfMachines &lt; 1</code>.
 	 * 
 	 */
-	public Peer(String name, int numberOfMachines, long nodeMIPSRating, ResourceSharingPolicy resourceSharingPolicy) throws IllegalArgumentException {
+	public Peer(String name, int numberOfMachines, long nodeMIPSRating, ResourceSharingPolicy resourceSharingPolicy) {
 		this(name, resourceSharingPolicy);
 		assert numberOfMachines > 0;
 		if (numberOfMachines < 1) {
@@ -156,7 +155,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	 * @param nodeMIPSRating
 	 *            the mips rating of the machine to be added.
 	 */
-	private void addMachine(long nodeMIPSRating) {
+	private final void addMachine(long nodeMIPSRating) {
 		addMachine(new Machine("m_" + nextMachineId, nodeMIPSRating));
 		nextMachineId++;
 	}
@@ -167,7 +166,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	 * @param machine
 	 *            The machine to be added.
 	 */
-	public void addMachine(Machine machine) {
+	public final void addMachine(Machine machine) {
 		this.machines.add(machine);
 		// as have been added machines after the instantiation of the
 		// ResourceManager, this must be updated.
@@ -177,7 +176,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	/**
 	 * @return the name of this peer.
 	 */
-	public String getName() {
+	public final String getName() {
 		return name;
 	}
 
@@ -201,7 +200,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	/**
 	 * @return the number of machines managed by this peer.
 	 */
-	public int getNumberOfMachines() {
+	public final int getNumberOfMachines() {
 		return this.machines.size();
 	}
 
@@ -211,7 +210,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	 * @return the number of machines that aren't busy by local jobs, and so
 	 *         it's possible to share.
 	 */
-	public long getNumberOfMachinesToShare() {
+	public final long getNumberOfMachinesToShare() {
 		// TODO: there are a bug here: it's needed to account the volatility of
 		// the machines.
 		// The right way: return
@@ -231,7 +230,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	 * @return <code>true</code> if the job in fact belongs to this peer,
 	 *         <code>false</code> otherwise.
 	 */
-	boolean addJob(Job job) {
+	final boolean addJob(Job job) {
 		assert job.getSourcePeer() == this;
 		if (job.getSourcePeer() == this) {
 			this.jobs.add(job);
@@ -249,7 +248,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	 * @return <code>true</code> if the task is succesfully added and is been
 	 *         executed, <code>false</code> otherwise.
 	 */
-	public boolean executeTask(Task task) {
+	public final boolean executeTask(Task task) {
 		Machine allocatedMachine = this.resourceAllocationManager.allocateTask(task);
 		if (allocatedMachine != null) {
 			long currentTime = getCurrentTime();
@@ -272,7 +271,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	 * @throws IllegalArgumentException
 	 *             if the task was not being executed in this peer.
 	 */
-	public void finishTask(Task task) throws IllegalArgumentException {
+	public final void finishTask(Task task) throws IllegalArgumentException {
 		assert this.taskManager.isInExecution(task) : task;
 		if (this.taskManager.isInExecution(task)) {
 			this.resourceManager.releaseResource(this.taskManager.finishTask(task));
@@ -289,7 +288,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	 * @param task
 	 *            The task to be preempted.
 	 */
-	public void preemptTask(Task task) throws IllegalArgumentException {
+	public final void preemptTask(Task task) {
 		assert this.taskManager.isInExecution(task) : task;
 
 		if (this.taskManager.isInExecution(task)) {
@@ -306,14 +305,14 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	 * 
 	 * @return the number of machines that are available to process tasks.
 	 */
-	public int getNumberOfAvailableResources() {
+	public final int getNumberOfAvailableResources() {
 		return this.resourceManager.getNumberOfAvailableResources();
 	}
 
 	/**
 	 * @return the percentage of machines that are executing tasks.
 	 */
-	public double getUtilization() {
+	public final double getUtilization() {
 		return ((double) (this.getNumberOfMachines() - this.getNumberOfAvailableResources())) / this.getNumberOfMachines();
 	}
 
@@ -322,7 +321,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	 * 
 	 * @return the machines of this peer.
 	 */
-	public List<Machine> getMachines() {
+	public final List<Machine> getMachines() {
 		return machines;
 	}
 
@@ -334,21 +333,21 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	 * @return <code>true</code> if this peer has the machine with the given
 	 *         name, <code>false</code> otherwise.
 	 */
-	public boolean hasMachine(String machineName) {
+	public final boolean hasMachine(String machineName) {
 		return this.resourceManager.hasResource(machineName);
 	}
 
 	// B-- beginning of implementation of WorkerEventListener
 
 	@Override
-	public void workerAvailable(Event<String> workerEvent) {
+	public final void workerAvailable(Event<String> workerEvent) {
 		String machineName = workerEvent.getSource();
 		this.resourceManager.makeResourceAvailable(machineName);
 		// TODO: deve-se reescalonar os jobs agora pois tem recurso disponível
 	}
 
 	@Override
-	public void workerUnavailable(Event<String> workerEvent) {
+	public final void workerUnavailable(Event<String> workerEvent) {
 		String machineName = workerEvent.getSource();
 
 		if (this.resourceManager.isAllocated(machineName)) {
@@ -384,7 +383,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	 * @param peers
 	 *            the peers available to be consumed.
 	 */
-	public void prioritizePeersToConsume(List<Peer> peers) {
+	public final void prioritizePeersToConsume(List<Peer> peers) {
 		this.peerRankingPolicy.rank(peers);
 	}
 
@@ -395,7 +394,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	 * @param tasks
 	 *            the tasks candidates to preemption.
 	 */
-	public void prioritizeTasksToPreemption(List<Task> tasks) {
+	public final void prioritizeTasksToPreemption(List<Task> tasks) {
 		this.taskPreemptionRankingPolicy.rank(tasks);
 	}
 
@@ -408,7 +407,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	 * @return the a collection of peers in a way that the preferable peers to
 	 *         preemption are firstly accessed.
 	 */
-	public List<Peer> prioritizePeersToPreemptionOnBehalfOf(Peer consumer) {
+	public final List<Peer> prioritizePeersToPreemptionOnBehalfOf(Peer consumer) {
 		Map<Peer, Integer> allocatedMachinesByPeer = this.resourceAllocationManager.getNumberOfAllocatedResourcesByPeer();
 		Set<Task> foreignTasks = this.taskManager.getForeignTasks();
 		return this.resourceSharingPolicy.getPreemptablePeers(this, consumer, allocatedMachinesByPeer, foreignTasks);

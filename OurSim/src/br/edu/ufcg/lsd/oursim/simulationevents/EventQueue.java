@@ -27,7 +27,7 @@ import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.PreemptedTaskEvent;
  * @since 14/05/2010
  * 
  */
-public class EventQueue implements Closeable {
+public final class EventQueue implements Closeable {
 
 	/**
 	 * the current simulation's time.
@@ -107,11 +107,10 @@ public class EventQueue implements Closeable {
 				this.task2FinishTaskEvent.remove(ev.source).cancel();
 			}
 			this.task2FinishTaskEvent.put(ev.source, ev);
-		} else {
-			// TODO: definir o que significa a preempção de um job.
-			// assert job2FinishJobEvent.containsKey(job);
-			// this.job2FinishJobEvent.remove(job).cancel();
 		}
+		// TODO: definir o que significa a preempção de um job.
+		// assert job2FinishJobEvent.containsKey(job);
+		// this.job2FinishJobEvent.remove(job).cancel();
 
 		totalNumberOfEvents++;
 		// TODO: Verificar a necessidade desse método
@@ -158,7 +157,7 @@ public class EventQueue implements Closeable {
 			if (this.currentTime > pq.peek().getTime()) {
 				System.err.println(this);
 				System.err.println("Offending Event! " + pq.peek() + " CT: " + currentTime);
-				throw new RuntimeException("Cannot go to the past :)");
+				System.exit(1);
 			}
 			this.currentTime = pq.peek().getTime();
 		}
