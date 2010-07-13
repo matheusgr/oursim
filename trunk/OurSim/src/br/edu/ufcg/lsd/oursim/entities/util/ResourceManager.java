@@ -9,7 +9,6 @@ import br.edu.ufcg.lsd.oursim.entities.Machine;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.entities.Task;
 
-
 /**
  * 
  * Responsible for manage the resources belonged to a {@link Peer}, holding the
@@ -80,11 +79,15 @@ public class ResourceManager {
 	}
 
 	public void makeResourceUnavailable(String machineName) {
+		
 		assert this.allocated.containsKey(machineName) || this.free.containsKey(machineName);
 
 		Machine resource = this.allocated.containsKey(machineName) ? this.allocated.remove(machineName) : this.free.remove(machineName);
 
+		assert resource.getName().equals(machineName) : resource.getName() + " == " + machineName;
+
 		this.unavailable.put(resource.getName(), resource);
+	
 	}
 
 	public void makeResourceAvailable(String machineName) {
@@ -129,6 +132,7 @@ public class ResourceManager {
 	}
 
 	public Machine getResource(String machineName) {
+		assert this.free.containsKey(machineName) || this.allocated.containsKey(machineName) || this.unavailable.containsKey(machineName);
 		if (this.free.containsKey(machineName)) {
 			return this.free.get(machineName);
 		} else if (this.allocated.containsKey(machineName)) {

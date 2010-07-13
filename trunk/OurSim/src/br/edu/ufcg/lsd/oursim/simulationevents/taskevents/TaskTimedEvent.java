@@ -37,14 +37,14 @@ public abstract class TaskTimedEvent extends TimedEventAbstract<Task> {
 		if (compareToFromSuper == 0 && ev instanceof TaskTimedEvent) {
 			TaskTimedEvent o = (TaskTimedEvent) ev;
 			// essa task já foi preemptada?
-			if (this.source.getNumberOfpreemptions() > 0) {
+			if (this.source.getNumberOfPreemptions() > 0) {
 				// TODO: definir qual é a política nesse caso
 				// a outra também já foi preemptada?
-				if (o.source.getNumberOfpreemptions() > 0) {
+				if (o.source.getNumberOfPreemptions() > 0) {
 					// os numeros de preempcoes são diferentes?
-					if (o.source.getNumberOfpreemptions() != this.source.getNumberOfpreemptions()) {
+					if (o.source.getNumberOfPreemptions() != this.source.getNumberOfPreemptions()) {
 						// prioriza a que já foi preemptadas mais vezes
-						return (int) (o.source.getNumberOfpreemptions() - this.source.getNumberOfpreemptions());
+						return (int) (o.source.getNumberOfPreemptions() - this.source.getNumberOfPreemptions());
 					} else {
 						// se eh tudo igual, então desempata pelo id.
 						return (int) (this.source.getId() - o.source.getId());
@@ -52,7 +52,7 @@ public abstract class TaskTimedEvent extends TimedEventAbstract<Task> {
 				} else {
 					return -1;
 				}
-			} else if (o.source.getNumberOfpreemptions() > 0) {
+			} else if (o.source.getNumberOfPreemptions() > 0) {
 				// se esta não foi, a outra já foi?
 				return 1;
 			} else {

@@ -1,0 +1,33 @@
+#!/bin/bash
+
+#cria os diretórios na estrutura do maven
+mkdir -p src/main/java
+
+# move todos os arquivos para a pasta src/test/java
+mv src/* src/main/java 2> /dev/null
+
+mkdir -p src/test/java
+
+# move todos os arquivos de teste para a pasta src/test/java
+cd src/main/java
+find . -name "*Test.java" -exec cp --parent "{}" ../../test/java/ \; -exec rm "{}" \;
+cd ../../../
+
+if [ -e tests ];
+then 
+	cp -r tests/* src/test/java/
+fi;
+
+if [ -e test ];
+then 
+	cp -r test/* src/test/java/
+fi;
+
+if [ -e src-tests ];
+then 
+	cp -r src-tests/* src/test/java/
+	rm -rf src-tests
+fi;
+
+# rm -rf OurSim/; cp -r ~/workspace/OurSim .; cd OurSim; sh organizedirectories; mvn clean install sonar:sonar
+# mvn clean install sonar:sonar

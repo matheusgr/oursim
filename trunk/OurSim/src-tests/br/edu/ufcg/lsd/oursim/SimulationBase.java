@@ -15,7 +15,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import br.edu.ufcg.lsd.oursim.OurSimAPI;
+import br.edu.ufcg.lsd.oursim.OurSim;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventListener;
@@ -157,7 +157,7 @@ public class SimulationBase {
 		TestOutput to = new TestOutput(100, 100, 100, 100);
 		JobEventDispatcher.getInstance().addListener(to);
 		JobSchedulerPolicy jobScheduler = new OurGridPersistentScheduler(peers);
-		new OurSimAPI(EventQueue.getInstance(), peers, jobScheduler, workload).start();
+		new OurSim(EventQueue.getInstance(), peers, jobScheduler, workload).start();
 		to.verify();
 	}
 

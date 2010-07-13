@@ -5,6 +5,7 @@ package br.edu.ufcg.lsd.oursim.simulationevents;
  * The root class to all events.
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
+ * @author Matheus G. do Rêgo, matheusgr@lsd.ufcg.edu.br
  * @since 20/05/2010
  * 
  */

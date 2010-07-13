@@ -1,5 +1,6 @@
 package br.edu.ufcg.lsd.oursim.entities;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +8,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 import br.edu.ufcg.lsd.oursim.policy.ranking.ResourceRankingPolicy;
-
 
 /**
  * 
@@ -64,6 +64,13 @@ public class Job extends ComputableElement implements Comparable<Job> {
 	 */
 	public Job(long id, long submissionTime, Peer sourcePeer) {
 		super(id, submissionTime);
+
+		assert sourcePeer != null;
+
+		if (sourcePeer == null) {
+			throw new InvalidParameterException("The sourcePeer can't be null.");
+		}
+
 		this.sourcePeer = sourcePeer;
 
 		sourcePeer.addJob(this);
@@ -262,13 +269,13 @@ public class Job extends ComputableElement implements Comparable<Job> {
 	/**
 	 * Gets the sum of the preemptions in all tasks that compound this job.
 	 * 
-	 * @see br.edu.ufcg.lsd.oursim.entities.ComputableElement#getNumberOfpreemptions()
+	 * @see br.edu.ufcg.lsd.oursim.entities.ComputableElement#getNumberOfPreemptions()
 	 */
 	@Override
-	public long getNumberOfpreemptions() {
+	public long getNumberOfPreemptions() {
 		long totalOfPreemptions = 0;
 		for (Task task : tasks) {
-			totalOfPreemptions += task.getNumberOfpreemptions();
+			totalOfPreemptions += task.getNumberOfPreemptions();
 		}
 		return totalOfPreemptions;
 	}
