@@ -4,13 +4,13 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 
-import br.edu.ufcg.lsd.oursim.OurSim;
+import br.edu.ufcg.lsd.oursim.OurSimMainSpikeSolution;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 
 /**
  * 
- * An workload synthetically generated.
+ * A synthetically generated's workload.
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @since 18/05/2010
@@ -39,14 +39,14 @@ public class SyntheticWorkload extends WorkloadAbstract {
 
 		for (int jobId = 0; jobId < numberOfJobs; jobId++) {
 
-			submissionTime += OurSim.RANDOM.nextInt(maxSubmissionInterval);
+			submissionTime += OurSimMainSpikeSolution.RANDOM.nextInt(maxSubmissionInterval);
 
-			double peerIndexD = Math.abs(OurSim.RANDOM.nextGaussian());
+			double peerIndexD = Math.abs(OurSimMainSpikeSolution.RANDOM.nextGaussian());
 			peerIndexD *= peers.size() / 3.0;
 			peerIndexD = peerIndexD > peers.size() ? peers.size() - 1 : peerIndexD;
 
 			int peerIndex = (int) (peerIndexD);
-			int runTimeDuration = runTimeAvg + OurSim.RANDOM.nextInt(runTimeVar);
+			int runTimeDuration = runTimeAvg + OurSimMainSpikeSolution.RANDOM.nextInt(runTimeVar);
 			Peer sourcePeer = peers.get(peerIndex);
 
 			Job job = new Job(jobId, submissionTime, sourcePeer);

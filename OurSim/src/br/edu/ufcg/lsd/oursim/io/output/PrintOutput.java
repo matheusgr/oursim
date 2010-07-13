@@ -8,7 +8,6 @@ import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Task;
 
-
 /**
  * 
  * A print-out based implementation of an {@link Output}.
@@ -82,13 +81,14 @@ public class PrintOutput implements Output {
 
 		Job job = jobEvent.getSource();
 
-		long id = job.getId();
-		long finishTime = job.getFinishTime();
+		long jobId = job.getId();
 		long submissionTime = job.getSubmissionTime();
-		long numberOfpreemptions = job.getNumberOfpreemptions();
+		long finishTime = job.getFinishTime();
+		long numberOfPreemptions = job.getNumberOfPreemptions();
 		long runTimeDuration = job.getRunningTime();
-
-		this.out.println("F:" + finishTime + ":" + id + ":" + submissionTime + ":" + runTimeDuration + ":" + numberOfpreemptions);
+		long makeSpan = job.getMakeSpan();
+		// jobId submissionTime finishTime runtimeDuration makeSpan numberOfPreemption
+		this.out.println("F:" + jobId + ":" + submissionTime + ":" + finishTime + ":" + runTimeDuration + ":" + makeSpan + ":" + numberOfPreemptions);
 
 	}
 

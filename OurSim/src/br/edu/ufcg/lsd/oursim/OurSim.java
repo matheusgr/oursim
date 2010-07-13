@@ -1,146 +1,259 @@
 package br.edu.ufcg.lsd.oursim;
 
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-
-import org.apache.commons.lang.time.StopWatch;
 
 import br.edu.ufcg.lsd.oursim.availability.AvailabilityRecord;
-import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventCounter;
+import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
-import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventCounter;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventDispatcher;
+import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
+import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventFilter;
+import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
-import br.edu.ufcg.lsd.oursim.io.input.AvailabilityCharacterization;
 import br.edu.ufcg.lsd.oursim.io.input.DedicatedResourcesAvailabilityCharacterization;
 import br.edu.ufcg.lsd.oursim.io.input.Input;
-import br.edu.ufcg.lsd.oursim.io.input.SyntheticWorkload;
 import br.edu.ufcg.lsd.oursim.io.input.Workload;
-import br.edu.ufcg.lsd.oursim.io.output.PrintOutput;
-import br.edu.ufcg.lsd.oursim.policy.FifoSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
-import br.edu.ufcg.lsd.oursim.policy.NoFSharingPolicy;
-import br.edu.ufcg.lsd.oursim.policy.OurGridScheduler;
-import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
+import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityAbstract;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
+import br.edu.ufcg.lsd.oursim.simulationevents.TimedEvent;
 
-public final class OurSim {
+/**
+ * 
+ * The base class to a simulation. This is intended to be a seamless class, so
+ * user interface's facilities should be implemented in client's classes.
+ * 
+ * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
+ * @since 27/05/2010
+ * 
+ */
+public class OurSim extends ActiveEntityAbstract {
 
-	public static final boolean LOG = false;
+	/**
+	 * the peers that comprise the grid.
+	 */
+	private List<Peer> peers;
 
-	public static final Random RANDOM = new Random(9354269l);
+	/**
+	 * the scheduler of the jobs.
+	 */
+	private JobSchedulerPolicy jobScheduler;
 
-	static final String AVAILABILITY_CHARACTERIZATION_FILE_PATH = "trace_mutka_100-machines_10-hours.txt";
+	/**
+	 * the workload to be processed by the resources of the peers.
+	 */
+	private Workload workload;
 
-	static final boolean USE_NOF = false;
+	/**
+	 * the characterization of the availability of all resources belonging to
+	 * the peers.
+	 */
+	private Input<AvailabilityRecord> availabilityCharacterization;
 
-	static final boolean DEDICATED_RESOURCES = true;
-
-	static final int NUMBER_OF_REPLIES = 3;
-
-	private static final String ARGS_STRING =
-	// execTime execTimeVar subInterval #Jobs #TasksByJob #Peers #nodesByPeer
-	// nodeMIPSRating
-	"       100         50            5    1000           50     10 		  100           3000";
-
-	private static final String[] ARGS = ARGS_STRING.trim().split("\\s+");
-
-	private static int argsIndex = 0;
-
-	// tempo base de execução do job
-	static final int EXEC_TIME = Integer.parseInt(ARGS[argsIndex++]);
-
-	// variância máxima do tempo base de execução (sempre positiva)
-	static final int EXEC_TIME_VAR = Integer.parseInt(ARGS[argsIndex++]);
-
-	// intervalo de submissão entre jobs subsequentes
-	static final int SUBMISSION_INTERVAL = Integer.parseInt(ARGS[argsIndex++]);
-
-	// quantidade total de jobs do workload
-	static final int NUM_JOBS = Integer.parseInt(ARGS[argsIndex++]);
-
-	static final int NUM_TASKS_BY_JOB = Integer.parseInt(ARGS[argsIndex++]);
-
-	static final int NUM_PEERS = Integer.parseInt(ARGS[argsIndex++]);
-
-	// número de nodos do peer
-	static final int NUM_RESOURCES_BY_PEER = Integer.parseInt(ARGS[argsIndex++]);
-
-	static final int NODE_MIPS_RATING = Integer.parseInt(ARGS[argsIndex++]);
-
-	private OurSim() {
+	/**
+	 * An convenient constructor to simulations that deals <b>only</b> with
+	 * dedicated resources.
+	 * 
+	 * @param queue
+	 *            The event queue to drive the simulation.
+	 * @param peers
+	 *            the peers that comprise the grid.
+	 * @param jobScheduler
+	 *            the scheduler of the jobs.
+	 * @param workload
+	 *            the workload to be processed by the resources of the peers.
+	 */
+	public OurSim(EventQueue queue, List<Peer> peers, JobSchedulerPolicy jobScheduler, Workload workload) {
+		this(queue, peers, jobScheduler, workload, new DedicatedResourcesAvailabilityCharacterization(peers));
 	}
 
-	private static List<Peer> prepareGrid(int numPeers, int numNodesByPeer, int nodeMIPSRating, boolean useNoF) {
+	/**
+	 * An ordinary constructor to simulations that deals with resources possibly
+	 * volatile.
+	 * 
+	 * @param queue
+	 *            The event queue to drive the simulation.
+	 * @param peers
+	 *            the peers that comprise the grid.
+	 * @param jobScheduler
+	 *            the scheduler of the jobs.
+	 * @param workload
+	 *            the workload to be processed by the resources of the peers.
+	 * @param availabilityCharacterization
+	 *            the characterization of the availability of all resources
+	 *            belonging to the peers.
+	 */
+	public OurSim(EventQueue queue, List<Peer> peers, JobSchedulerPolicy jobScheduler, Workload workload,
+			Input<AvailabilityRecord> availabilityCharacterization) {
+		this.setEventQueue(queue);
+		this.peers = peers;
+		this.jobScheduler = jobScheduler;
+		this.workload = workload;
+		this.availabilityCharacterization = availabilityCharacterization;
+	}
 
-		ArrayList<Peer> peers = new ArrayList<Peer>(numPeers);
+	/**
+	 * Starts the simulation.
+	 */
+	public void start() {
+		prepareListeners(peers, jobScheduler);
 
-		ResourceSharingPolicy sharingPolicy = useNoF ? NoFSharingPolicy.getInstance() : FifoSharingPolicy.getInstance();
+		// shares the eventQueue with the scheduler
+		this.jobScheduler.setEventQueue(this.getEventQueue());
 
-		for (int i = 0; i < numPeers; i++) {
-			peers.add(new Peer("P" + i, numNodesByPeer, nodeMIPSRating, sharingPolicy));
+		// setUP the peers to the simulation
+		for (Peer peer : peers) {
+			// shares the eventQueue with the peers.
+			peer.setEventQueue(this.getEventQueue());
 		}
 
-		return peers;
+		// adds the workload to the scheduler
+		// this.jobScheduler.addWorkload(workload);
+
+		run(getEventQueue(), jobScheduler, workload, availabilityCharacterization);
+
+		clearListeners(peers, jobScheduler);
+	}
+
+	/**
+	 * the method that effectively performs the simulation. This method contains
+	 * the main loop guiding the whole simulation.
+	 * 
+	 * @param queue
+	 *            The event queue to drive the simulation.
+	 * @param jobScheduler
+	 *            the scheduler of the jobs.
+	 * @param availability
+	 *            the characterization of the availability of all resources
+	 *            belonging to the peers.
+	 */
+	private void run(EventQueue queue, JobSchedulerPolicy jobScheduler, Workload workload, Input<AvailabilityRecord> availability) {
+		do {
+			this.addFutureEvents(workload, availability);
+
+			long currentTime = (queue.peek() != null) ? queue.peek().getTime() : -1;
+
+			// dispatch all the events in current time
+			while (queue.peek() != null && queue.peek().getTime() == currentTime) {
+				TimedEvent nextEventInCurrentTime = queue.poll();
+				nextEventInCurrentTime.action();
+			}
+
+			// after the invocation of the actions of all events in current
+			// time, the scheduler must be invoked
+			jobScheduler.schedule();
+
+		} while (queue.peek() != null);
+	}
+
+	/**
+	 * Adds all the workers'related and job's submission events to the
+	 * simulation event queue.
+	 * 
+	 * @param jobScheduler
+	 *            the scheduler of the jobs.
+	 * @param availability
+	 *            the characterization of the availability of all resources
+	 *            belonging to the peers.
+	 * @see {@link #addFutureWorkerEventsToEventQueue(EventQueue, Input)}
+	 * @see {@link #addFutureJobEventsToEventQueue(EventQueue, Workload)}
+	 */
+	private void addFutureEvents(Workload workload, Input<AvailabilityRecord> availability) {
+		this.addFutureWorkerEventsToEventQueue(availability);
+		this.addFutureJobEventsToEventQueue(workload);
+	}
+
+	/**
+	 * Adds all the next worker's related events to the queue, that is, all the
+	 * events schedulled to occurs in the next simulation time.
+	 * 
+	 * @param availability
+	 *            the characterization of the availability of all resources
+	 *            belonging to the peers.
+	 */
+	private void addFutureWorkerEventsToEventQueue(Input<AvailabilityRecord> availability) {
+		long nextAvRecordTime = (availability.peek() != null) ? availability.peek().getTime() : -1;
+		while (availability.peek() != null && availability.peek().getTime() == nextAvRecordTime) {
+			AvailabilityRecord av = availability.poll();
+			this.addWorkerAvailableEvent(av.getTime(), av.getMachineName(), av.getDuration());
+		}
+	}
+
+	/**
+	 * Adds all the next job's submission events to the queue, that is, all the
+	 * events schedulled to occurs in the next simulation time.
+	 * 
+	 * @param jobScheduler
+	 *            the scheduler of the jobs.
+	 */
+	private void addFutureJobEventsToEventQueue(Workload workload) {
+		long nextSubmissionTime = (workload.peek() != null) ? workload.peek().getSubmissionTime() : -1;
+		while (workload.peek() != null && workload.peek().getSubmissionTime() == nextSubmissionTime) {
+			Job job = workload.poll();
+			long time = job.getSubmissionTime();
+			this.addSubmitJobEvent(time, job);
+		}
+	}
+
+	/**
+	 * Registers all the listeners to the respective dispatchers. This performs
+	 * the registering of the listeners obeying the <i>right</i> order: the
+	 * peers are firstly added to the WorkerEventDispatcher, only after the
+	 * scheduler is added.To remove, call the method
+	 * {@link #clearListeners(List, JobSchedulerPolicy)}.
+	 * 
+	 * @param peers
+	 *            the peers to be registered in {@link WorkerEventDispatcher}.
+	 * @param sp
+	 *            the scheduler to be registered in
+	 *            {@linkplain JobEventDispatcher}, {@link TaskEventDispatcher}
+	 *            and {@link WorkerEventDispatcher}.
+	 * @see {@link #clearListeners(List, JobSchedulerPolicy)}.
+	 */
+	private static void prepareListeners(List<Peer> peers, JobSchedulerPolicy sp) {
+		JobEventDispatcher.getInstance().addListener(sp);
+		TaskEventDispatcher.getInstance().addListener(sp);
+
+		// the peers must be the first added to the WorkerEventDispatcher
+		for (final Peer peer : peers) {
+			WorkerEventDispatcher.getInstance().addListener(peer, new WorkerEventFilter() {
+
+				@Override
+				public boolean accept(Event<String> workerEvent) {
+					String machineName = (String) workerEvent.getSource();
+					return peer.hasMachine(machineName);
+				}
+
+			});
+		}
+
+		// the scheduler must be added to WorkerEventDispatcher always
+		// after of all peers because of the preference at the process
+		WorkerEventDispatcher.getInstance().addListener(sp);
 
 	}
 
 	/**
+	 * Removes all the listeners added to the respective dispatchers in
+	 * {@link #prepareListeners(List, JobSchedulerPolicy)}.
+	 * 
 	 * @param peers
-	 *            Vai ser usado para atribuir a origem dos jobs
-	 * @return
+	 *            the peers to be removed from {@link WorkerEventDispatcher}.
+	 * @param sp
+	 *            the scheduler to be removed from
+	 *            {@linkplain JobEventDispatcher}, {@link TaskEventDispatcher}
+	 *            and {@link WorkerEventDispatcher}.
+	 * @see {@link #prepareListeners(List, JobSchedulerPolicy)}.
 	 */
-	private static Workload prepareWorkload(List<Peer> peers) {
+	private static void clearListeners(List<Peer> peers, JobSchedulerPolicy sp) {
 
-		int execTime = OurSim.EXEC_TIME;
-		int execTimeVariance = OurSim.EXEC_TIME_VAR;
-		int submissionInterval = OurSim.SUBMISSION_INTERVAL;
-		int numJobs = OurSim.NUM_JOBS;
-		int numTasksByJobs = OurSim.NUM_TASKS_BY_JOB;
+		for (Peer peer : peers) {
+			WorkerEventDispatcher.getInstance().removeListener(peer);
+		}
 
-		SyntheticWorkload workload = new SyntheticWorkload(execTime, execTimeVariance, submissionInterval, numJobs, numTasksByJobs, peers);
-
-		return workload;
-
-	}
-
-	public static void main(String[] args) throws FileNotFoundException {
-
-		StopWatch stopWatch = new StopWatch();
-		stopWatch.start();
-
-		// OutputManager.getInstance().addListener(new
-		// PrintOutput("oursim_trace.txt"));
-		JobEventDispatcher.getInstance().addListener(new PrintOutput());
-
-		JobEventCounter jobEventCounter = new JobEventCounter();
-		JobEventDispatcher.getInstance().addListener(jobEventCounter);
-
-		TaskEventCounter taskEventCounter = new TaskEventCounter();
-		TaskEventDispatcher.getInstance().addListener(taskEventCounter);
-
-		List<Peer> peers = prepareGrid(OurSim.NUM_PEERS, OurSim.NUM_RESOURCES_BY_PEER, OurSim.NODE_MIPS_RATING, OurSim.USE_NOF);
-		Workload workload = prepareWorkload(peers);
-
-		Input<AvailabilityRecord> availability = OurSim.DEDICATED_RESOURCES ? new DedicatedResourcesAvailabilityCharacterization(peers)
-				: new AvailabilityCharacterization(OurSim.AVAILABILITY_CHARACTERIZATION_FILE_PATH);
-
-		System.out.println("Starting Simulation...");
-
-		JobSchedulerPolicy jobScheduler = new OurGridScheduler(peers);
-
-		new OurSimAPI(EventQueue.getInstance(), peers, jobScheduler, workload, availability).start();
-
-		System.out.println("# Total of  finished  jobs: " + jobEventCounter.getNumberOfFinishedJobs());
-		System.out.println("# Total of preempted  jobs: " + jobEventCounter.getNumberOfPreemptionsForAllJobs());
-		System.out.println("# Total of  finished tasks: " + taskEventCounter.getNumberOfFinishedTasks());
-		System.out.println("# Total of preempted tasks: " + taskEventCounter.getNumberOfPreemptionsForAllTasks());
-		System.out.println("# Total of          events: " + EventQueue.totalNumberOfEvents);
-
-		stopWatch.stop();
-		System.out.println(stopWatch);
+		JobEventDispatcher.getInstance().removeListener(sp);
+		TaskEventDispatcher.getInstance().removeListener(sp);
+		WorkerEventDispatcher.getInstance().removeListener(sp);
 
 	}
 

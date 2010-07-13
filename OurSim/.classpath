@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="lib/jahmm-0.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/ssj.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-cli-1.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

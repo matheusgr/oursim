@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import org.junit.Test;
 
 import br.edu.ufcg.lsd.oursim.AbstractOurSimAPITest;
-import br.edu.ufcg.lsd.oursim.OurSimAPI;
+import br.edu.ufcg.lsd.oursim.OurSim;
 import br.edu.ufcg.lsd.oursim.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
@@ -39,10 +39,10 @@ public class OurGridPersistentSchedulerTest extends AbstractOurSimAPITest {
 		// Define os eventos de disponibilidade para cada recurso de cada peer.
 		// Nesse cenário os recursos ficarão disponíveis o tempo suficiente para
 		// terminar as demandas de cada job.
-		Input<AvailabilityRecord> availability = new DedicatedResourcesAvailabilityCharacterization(peers, JOB_SUBMISSION_TIME, JOB_LENGTH);
+		Input<AvailabilityRecord> availability = new DedicatedResourcesAvailabilityCharacterization(peers, JOB_SUBMISSION_TIME, JOB_LENGTH + 1);
 
 		JobSchedulerPolicy jobScheduler = new OurGridPersistentScheduler(peers);
-		oursim = new OurSimAPI(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
+		oursim = new OurSim(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
 		oursim.start();
 
 		int totalDeTasks = TOTAL_OF_JOBS * NUMBER_OF_TASKS_BY_JOB;
@@ -78,7 +78,8 @@ public class OurGridPersistentSchedulerTest extends AbstractOurSimAPITest {
 	 * Espera-se que todos os jobs de quem não depende de recursos alheios sejam
 	 * concluídos no tempo mínimo esperado (i.e. a duração especificado para
 	 * cada job) e que todos os jobs sejam executados no próprio peer de origem.
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
 	@Test
 	public void testRun_2() throws Exception {
@@ -120,11 +121,11 @@ public class OurGridPersistentSchedulerTest extends AbstractOurSimAPITest {
 		// Nesse cenário os recursos ficarão disponíveis o tempo suficiente para
 		// terminar as demandas de cada job.
 
-		Input<AvailabilityRecord> availability = new DedicatedResourcesAvailabilityCharacterization(peers, JOB_SUBMISSION_TIME, JOB_LENGTH * 2);
+		Input<AvailabilityRecord> availability = new DedicatedResourcesAvailabilityCharacterization(peers, JOB_SUBMISSION_TIME, (JOB_LENGTH * 2)+1);
 
 		JobSchedulerPolicy jobScheduler = new OurGridPersistentScheduler(peers);
 
-		oursim = new OurSimAPI(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
+		oursim = new OurSim(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
 		oursim.start();
 
 		int totalDeJobs = (int) (TOTAL_OF_JOBS * 1.5);
@@ -169,5 +170,4 @@ public class OurGridPersistentSchedulerTest extends AbstractOurSimAPITest {
 		assertEquals(NUMBER_OF_OVERLOADED_PEERS * NUMBER_OF_JOBS_BY_PEER, numberOfJobsFromOverloadedPeersTimelyFinished);
 		assertEquals(NUMBER_OF_OVERLOADED_PEERS * NUMBER_OF_JOBS_BY_PEER, numberOfEnqueuedJobsFromOverloadedPeers);
 	}
-
 }

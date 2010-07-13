@@ -1,5 +1,6 @@
 package br.edu.ufcg.lsd.oursim.io.input;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -26,7 +27,7 @@ public class DedicatedResourcesAvailabilityCharacterization extends InputAbstrac
 	 * @param peers
 	 *            the peers from which the resources will be make available.
 	 */
-	public DedicatedResourcesAvailabilityCharacterization(List<Peer> peers) {
+	public DedicatedResourcesAvailabilityCharacterization(Collection<Peer> peers) {
 		this(peers, 0, Long.MAX_VALUE);
 	}
 
@@ -43,7 +44,7 @@ public class DedicatedResourcesAvailabilityCharacterization extends InputAbstrac
 	 * @param duration
 	 *            the duration of the availability period.
 	 */
-	public DedicatedResourcesAvailabilityCharacterization(List<Peer> peers, long timestamp, long duration) {
+	public DedicatedResourcesAvailabilityCharacterization(Collection<Peer> peers, long timestamp, long duration) {
 		this.inputs = new PriorityQueue<AvailabilityRecord>();
 
 		for (Peer peer : peers) {

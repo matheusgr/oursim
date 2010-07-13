@@ -242,7 +242,7 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	}
 
 	@Override
-	public long getNumberOfpreemptions() {
+	public long getNumberOfPreemptions() {
 		return numberOfpreemptions;
 	}
 

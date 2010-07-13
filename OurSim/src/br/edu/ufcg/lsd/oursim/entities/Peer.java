@@ -353,7 +353,9 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 		if (this.resourceManager.isAllocated(machineName)) {
 			Machine resource = this.resourceManager.getResource(machineName);
 			Task task = this.taskManager.getTask(resource);
-			preemptTask(task);
+			preemptTask(task);// TODO nesse momento o resource não estará mais em
+								// allocated e sim em free pois o preempt
+								// efetivamente libera o recurso.
 		}
 		this.resourceManager.makeResourceUnavailable(machineName);
 	}

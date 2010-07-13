@@ -162,7 +162,7 @@ public abstract class ComputableElement {
 	 * @return the number of preemptions that have been performed in this
 	 *         ComputableElement.
 	 */
-	public abstract long getNumberOfpreemptions();
+	public abstract long getNumberOfPreemptions();
 
 	/**
 	 * Performs a preemption in this ComputableElement. This means the subjacent

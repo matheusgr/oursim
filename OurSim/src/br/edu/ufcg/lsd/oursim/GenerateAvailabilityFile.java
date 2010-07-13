@@ -59,7 +59,7 @@ public class GenerateAvailabilityFile {
 		StopWatch c = new StopWatch();
 		c.start();
 
-		int quantMachines = OurSim.NUM_PEERS * OurSim.NUM_RESOURCES_BY_PEER;
+		int quantMachines = OurSimMainSpikeSolution.NUM_PEERS * OurSimMainSpikeSolution.NUM_RESOURCES_BY_PEER;
 		int periodoDeObservacaoEmHoras = 10;
 		String outputFileName = String.format("trace_mutka_%s-machines_%s-hours.txt", quantMachines, periodoDeObservacaoEmHoras);
 

@@ -84,7 +84,7 @@ public class JobPrintOutput extends OutputAdapter {
 		long id = job.getId();
 		long finishTime = job.getFinishTime();
 		long submissionTime = job.getSubmissionTime();
-		long numberOfpreemptions = job.getNumberOfpreemptions();
+		long numberOfpreemptions = job.getNumberOfPreemptions();
 		long runTimeDuration = job.getRunningTime();
 
 		this.out.println("F:" + finishTime + ":" + id + ":" + submissionTime + ":" + runTimeDuration + ":" + numberOfpreemptions);

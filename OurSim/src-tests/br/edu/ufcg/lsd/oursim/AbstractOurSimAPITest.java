@@ -29,7 +29,7 @@ import br.edu.ufcg.lsd.oursim.simulationevents.workerevents.WorkerUnavailableEve
 
 public abstract class AbstractOurSimAPITest {
 
-	protected OurSimAPI oursim;
+	protected OurSim oursim;
 
 	protected JobEventCounter jobEventCounter;
 
