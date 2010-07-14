@@ -6,6 +6,7 @@ import java.util.Scanner;
 
 import br.edu.ufcg.lsd.oursim.entities.Machine;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
+import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
 
 public final class AvailabilityTraceFormat {
 
@@ -26,6 +27,15 @@ public final class AvailabilityTraceFormat {
 			peer.addMachine(new Machine(machineFullName, mipsRating));
 		}
 
+	}
+
+	public static AvailabilityRecord createAvailabilityRecordFromAvailabilityFormat(String line, long startingTime) {
+		Scanner scLine = new Scanner(line);
+		String machineName = scLine.next();
+		long timestamp = scLine.nextLong() - startingTime;
+		long duration = scLine.nextLong();
+		assert duration > 0;
+		return new AvailabilityRecord(machineName, timestamp, duration);
 	}
 
 }

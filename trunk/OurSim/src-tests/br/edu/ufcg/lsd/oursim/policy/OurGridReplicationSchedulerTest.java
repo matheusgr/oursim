@@ -8,13 +8,13 @@ import org.junit.Test;
 
 import br.edu.ufcg.lsd.oursim.AbstractOurSimAPITest;
 import br.edu.ufcg.lsd.oursim.OurSim;
-import br.edu.ufcg.lsd.oursim.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.entities.Machine;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.io.input.Input;
 import br.edu.ufcg.lsd.oursim.io.input.InputAbstract;
-import br.edu.ufcg.lsd.oursim.io.input.Workload;
-import br.edu.ufcg.lsd.oursim.io.input.WorkloadAbstract;
+import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
+import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
+import br.edu.ufcg.lsd.oursim.io.input.workload.WorkloadAbstract;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 
 public class OurGridReplicationSchedulerTest extends AbstractOurSimAPITest {

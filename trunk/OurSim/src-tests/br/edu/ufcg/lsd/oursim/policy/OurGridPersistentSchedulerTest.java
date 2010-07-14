@@ -8,13 +8,13 @@ import org.junit.Test;
 
 import br.edu.ufcg.lsd.oursim.AbstractOurSimAPITest;
 import br.edu.ufcg.lsd.oursim.OurSim;
-import br.edu.ufcg.lsd.oursim.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
-import br.edu.ufcg.lsd.oursim.io.input.DedicatedResourcesAvailabilityCharacterization;
 import br.edu.ufcg.lsd.oursim.io.input.Input;
-import br.edu.ufcg.lsd.oursim.io.input.Workload;
-import br.edu.ufcg.lsd.oursim.io.input.WorkloadAbstract;
+import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
+import br.edu.ufcg.lsd.oursim.io.input.availability.DedicatedResourcesAvailabilityCharacterization;
+import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
+import br.edu.ufcg.lsd.oursim.io.input.workload.WorkloadAbstract;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 
 public class OurGridPersistentSchedulerTest extends AbstractOurSimAPITest {

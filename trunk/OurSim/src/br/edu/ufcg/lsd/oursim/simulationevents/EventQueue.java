@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
 
-import br.edu.ufcg.lsd.oursim.OurSimMainSpikeSolution;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.FinishJobEvent;
@@ -28,6 +27,8 @@ import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.PreemptedTaskEvent;
  * 
  */
 public final class EventQueue implements Closeable {
+
+	private static final boolean LOG = true;
 
 	/**
 	 * the current simulation's time.
@@ -60,7 +61,7 @@ public final class EventQueue implements Closeable {
 		pq = new PriorityQueue<TimedEvent>();
 		job2FinishJobEvent = new HashMap<Job, FinishJobEvent>();
 		task2FinishTaskEvent = new HashMap<Task, FinishTaskEvent>();
-		if (OurSimMainSpikeSolution.LOG) {
+		if (LOG) {
 			try {
 				bw = new BufferedWriter(new FileWriter("events_oursim.txt"));
 			} catch (IOException e) {
@@ -114,7 +115,7 @@ public final class EventQueue implements Closeable {
 
 		totalNumberOfEvents++;
 		// TODO: Verificar a necessidade desse método
-		if (OurSimMainSpikeSolution.LOG) {
+		if (LOG) {
 			try {
 				bw.append(event.toString()).append("\n");
 			} catch (IOException e) {
