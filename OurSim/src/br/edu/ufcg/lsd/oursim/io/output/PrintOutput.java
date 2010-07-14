@@ -2,6 +2,7 @@ package br.edu.ufcg.lsd.oursim.io.output;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
@@ -16,12 +17,42 @@ import br.edu.ufcg.lsd.oursim.entities.Task;
  * @since 18/05/2010
  * 
  */
-public class PrintOutput implements Output {
+public final class PrintOutput implements Output {
+
+	private static final String COMMENT_CHARACTER = "#";
+
+	private static final String SEP = ":";
+
+	private static final String SUBMIT_LABEL = "U";
+
+	private static final String START_LABEL = "S";
+
+	private static final String PREEMPT_LABEL = "P";
+
+	private static final String FINISH_LABEL = "F";
+
+	private static final String SUBMIT_HEADER = SUBMIT_LABEL.concat(SEP).concat("submissionTime").concat(SEP).concat("jobId");
+
+	private static final String START_HEADER = START_LABEL.concat(SEP).concat("startTime").concat(SEP).concat("jobId");
+
+	private static final String PREEMPT_HEADER = PREEMPT_LABEL.concat(SEP).concat("preemptionTime").concat(SEP).concat("jobId");
+
+	private static final String FINISH_HEADER =	FINISH_LABEL.concat(SEP)
+	.concat("finishTime").concat(SEP)
+	.concat("jobId").concat(SEP)
+	.concat("submissionTime").concat(SEP)
+	.concat("startTime").concat(SEP)
+	.concat("runtimeDuration").concat(SEP)
+	.concat("makeSpan").concat(SEP)
+	.concat("queuingTime").concat(SEP)
+	.concat("numberOfPreemption");
 
 	/**
 	 * the stream where the results will be printed out.
 	 */
 	private PrintStream out;
+
+	private boolean showProgress;
 
 	/**
 	 * An default constructor. Using this constructor the results will be
@@ -31,86 +62,112 @@ public class PrintOutput implements Output {
 		this.out = System.out;
 	}
 
+	public PrintOutput(String fileName) throws IOException {
+		this(fileName, false);
+	}
+
 	/**
 	 * Using this constructor the results will be printed out in the file called
 	 * <code>fileName</code>.
 	 * 
 	 * @param fileName
 	 *            The name of the file where the results will be printed out.
+	 * @throws FileNotFoundException
 	 */
-	public PrintOutput(String fileName) {
-		try {
-			this.out = new PrintStream(new File(fileName));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+	public PrintOutput(String fileName, boolean showProgress) throws IOException {
+		this.showProgress = showProgress;
+		this.out = new PrintStream(new File(fileName));
+		if (this.showProgress) {
+			this.out.println(COMMENT_CHARACTER + SUBMIT_HEADER);
+			this.out.println(COMMENT_CHARACTER + START_HEADER);
+			this.out.println(COMMENT_CHARACTER + PREEMPT_HEADER);
+			this.out.print(COMMENT_CHARACTER);
+		}
+		this.out.println(FINISH_HEADER);
+	}
+
+	@Override
+	public final void jobSubmitted(Event<Job> jobEvent) {
+		if (showProgress) {
+			Job job = jobEvent.getSource();
+			long id = job.getId();
+			long submissionTime = job.getSubmissionTime();
+			StringBuilder sb = new StringBuilder(SUBMIT_LABEL);
+			sb.append(SEP).append(submissionTime).append(SEP).append(id);
+			this.out.println(sb);
 		}
 	}
 
 	@Override
-	public void jobSubmitted(Event<Job> jobEvent) {
-		Job job = jobEvent.getSource();
-
-		long id = job.getId();
-		long submissionTime = job.getSubmissionTime();
-
-		this.out.println("U:" + submissionTime + ":" + id);
+	public final void jobStarted(Event<Job> jobEvent) {
+		if (showProgress) {
+			Job job = jobEvent.getSource();
+			long id = job.getId();
+			long startTime = job.getStartTime();
+			StringBuilder sb = new StringBuilder(START_LABEL);
+			sb.append(SEP).append(startTime).append(SEP).append(id);
+			this.out.println(sb);
+		}
 	}
 
 	@Override
-	public void jobStarted(Event<Job> jobEvent) {
-		Job job = jobEvent.getSource();
-
-		long id = job.getId();
-		long startTime = job.getStartTime();
-
-		this.out.println("S:" + startTime + ":" + id);
+	public final void jobPreempted(Event<Job> jobEvent) {
+		if (showProgress) {
+			Job job = jobEvent.getSource();
+			long id = job.getId();
+			long preemptionTime = jobEvent.getTime();
+			StringBuilder sb = new StringBuilder(PREEMPT_LABEL);
+			sb.append(SEP).append(preemptionTime).append(SEP).append(id);
+			this.out.println(sb);
+		}
 	}
 
 	@Override
-	public void jobPreempted(Event<Job> jobEvent) {
-		Job job = jobEvent.getSource();
-
-		long id = job.getId();
-		long preemptionTime = jobEvent.getTime();
-
-		this.out.println("P:" + preemptionTime + ":" + id);
-	}
-
-	@Override
-	public void jobFinished(Event<Job> jobEvent) {
+	public final void jobFinished(Event<Job> jobEvent) {
 
 		Job job = jobEvent.getSource();
 
 		long jobId = job.getId();
 		long submissionTime = job.getSubmissionTime();
 		long finishTime = job.getFinishTime();
-		long numberOfPreemptions = job.getNumberOfPreemptions();
+		long startTime = job.getStartTime();
 		long runTimeDuration = job.getRunningTime();
 		long makeSpan = job.getMakeSpan();
-		// jobId submissionTime finishTime runtimeDuration makeSpan numberOfPreemption
-		this.out.println("F:" + jobId + ":" + submissionTime + ":" + finishTime + ":" + runTimeDuration + ":" + makeSpan + ":" + numberOfPreemptions);
+		long queuingTime = job.getQueueingTime();
+		long numberOfPreemptions = job.getNumberOfPreemptions();
 
+		StringBuilder sb = new StringBuilder(FINISH_LABEL);
+		sb.append(SEP)
+		.append(finishTime).append(SEP)
+		.append(jobId).append(SEP)
+		.append(submissionTime).append(SEP)
+		.append(startTime).append(SEP)
+		.append(runTimeDuration).append(SEP)
+		.append(makeSpan).append(SEP)
+		.append(queuingTime).append(SEP)
+		.append(numberOfPreemptions);
+		this.out.println(sb);
 	}
 
 	@Override
-	public void close() {
+	public final void close() {
 		this.out.close();
 	}
 
 	@Override
-	public void taskFinished(Event<Task> taskEvent) {
+	public final void taskFinished(Event<Task> taskEvent) {
 	}
 
 	@Override
-	public void taskPreempted(Event<Task> taskEvent) {
+	public final void taskPreempted(Event<Task> taskEvent) {
 	}
 
 	@Override
-	public void taskStarted(Event<Task> taskEvent) {
+	public final void taskStarted(Event<Task> taskEvent) {
 	}
 
 	@Override
-	public void taskSubmitted(Event<Task> taskEvent) {
+	public final void taskSubmitted(Event<Task> taskEvent) {
 	}
 
 }
