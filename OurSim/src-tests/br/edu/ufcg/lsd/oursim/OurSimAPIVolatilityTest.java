@@ -6,14 +6,14 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 
-import br.edu.ufcg.lsd.oursim.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Machine;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.io.input.Input;
 import br.edu.ufcg.lsd.oursim.io.input.InputAbstract;
-import br.edu.ufcg.lsd.oursim.io.input.Workload;
-import br.edu.ufcg.lsd.oursim.io.input.WorkloadAbstract;
+import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
+import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
+import br.edu.ufcg.lsd.oursim.io.input.workload.WorkloadAbstract;
 import br.edu.ufcg.lsd.oursim.policy.FifoSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
 import br.edu.ufcg.lsd.oursim.policy.OurGridPersistentScheduler;
