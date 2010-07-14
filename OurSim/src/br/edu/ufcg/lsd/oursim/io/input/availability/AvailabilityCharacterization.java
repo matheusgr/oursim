@@ -26,19 +26,12 @@ public class AvailabilityCharacterization extends InputAbstract<AvailabilityReco
 		if (this.hasHeader) {
 			sc.nextLine();// TODO desconsidera a primeira linha (cabeçalho)
 		}
-		// long previousTime = -1;
+		long previousTime = -1;
 		while (sc.hasNextLine()) {
-			// Scanner scLine = new Scanner(sc.nextLine());
-			// String machineName = scLine.next();
-			// long timestamp = scLine.nextLong() - startingTime;
-			// long duration = scLine.nextLong();
-			// assert timestamp >= previousTime;
-			// if (duration > 0) {
-			// this.inputs.add(new AvailabilityRecord(machineName, timestamp,
-			// duration));
-			// }
-			// previousTime = timestamp;
-			this.inputs.add(AvailabilityTraceFormat.createAvailabilityRecordFromAvailabilityFormat(sc.nextLine(), this.startingTime));
+			AvailabilityRecord avRecord = AvailabilityTraceFormat.createAvailabilityRecordFromAvailabilityFormat(sc.nextLine(), this.startingTime);
+			assert avRecord.getTime() >= previousTime;
+			previousTime = avRecord.getTime();
+			this.inputs.add(avRecord);
 		}
 	}
 
