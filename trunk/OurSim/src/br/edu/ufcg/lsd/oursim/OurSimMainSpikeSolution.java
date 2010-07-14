@@ -2,6 +2,7 @@ package br.edu.ufcg.lsd.oursim;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,18 +12,17 @@ import java.util.Scanner;
 
 import org.apache.commons.lang.time.StopWatch;
 
-import br.edu.ufcg.lsd.oursim.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventCounter;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventCounter;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventDispatcher;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
-import br.edu.ufcg.lsd.oursim.io.input.AvailabilityCharacterization;
-import br.edu.ufcg.lsd.oursim.io.input.DedicatedResourcesAvailabilityCharacterization;
-import br.edu.ufcg.lsd.oursim.io.input.GWANorduGridWorkload;
 import br.edu.ufcg.lsd.oursim.io.input.Input;
-import br.edu.ufcg.lsd.oursim.io.input.SyntheticWorkload;
-import br.edu.ufcg.lsd.oursim.io.input.Workload;
+import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityCharacterization;
+import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
+import br.edu.ufcg.lsd.oursim.io.input.availability.DedicatedResourcesAvailabilityCharacterization;
+import br.edu.ufcg.lsd.oursim.io.input.workload.SyntheticWorkload;
+import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
 import br.edu.ufcg.lsd.oursim.io.output.PrintOutput;
 import br.edu.ufcg.lsd.oursim.policy.FifoSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
@@ -137,7 +137,7 @@ public final class OurSimMainSpikeSolution {
 
 	}
 
-	public static void main(String[] args) throws FileNotFoundException {
+	public static void main(String[] args) throws IOException {
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();

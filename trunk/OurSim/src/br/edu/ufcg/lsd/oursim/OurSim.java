@@ -2,7 +2,6 @@ package br.edu.ufcg.lsd.oursim;
 
 import java.util.List;
 
-import br.edu.ufcg.lsd.oursim.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventDispatcher;
@@ -10,9 +9,10 @@ import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventDispatc
 import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventFilter;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
-import br.edu.ufcg.lsd.oursim.io.input.DedicatedResourcesAvailabilityCharacterization;
 import br.edu.ufcg.lsd.oursim.io.input.Input;
-import br.edu.ufcg.lsd.oursim.io.input.Workload;
+import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
+import br.edu.ufcg.lsd.oursim.io.input.availability.DedicatedResourcesAvailabilityCharacterization;
+import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityAbstract;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
