@@ -4,7 +4,8 @@
 ###############################################################################
 
 # carregar o dataset
-	ev <- read.table("events_oursim.txt", header=FALSE,col.names=c("event","time","task","job","peer","makespan","runningTime","queueingTime"),sep =" ",na.strings="null" )
+	ev <- read.table("oursim_trace.txt", header=FALSE,col.names=c("event","time","task","job","peer","makespan","runningTime","queueingTime"),sep =" ",na.strings="null" )
+	ev <- read.table("oursim_trace.txt", header=TRUE,sep =":")
 # colocar variáveis no path
 	attach(ev)
 # jobs submetidos por peer
