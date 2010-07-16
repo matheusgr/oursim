@@ -114,6 +114,10 @@ public class SimulationBase {
 			return false;
 		}
 
+		@Override
+		public void stop() {
+		}
+
 	}
 
 	@BeforeClass

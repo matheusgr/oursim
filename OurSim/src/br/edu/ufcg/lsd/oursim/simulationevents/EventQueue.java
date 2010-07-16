@@ -28,7 +28,7 @@ import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.PreemptedTaskEvent;
  */
 public final class EventQueue implements Closeable {
 
-	private static final boolean LOG = true;
+	private static final boolean LOG = false;
 
 	/**
 	 * the current simulation's time.

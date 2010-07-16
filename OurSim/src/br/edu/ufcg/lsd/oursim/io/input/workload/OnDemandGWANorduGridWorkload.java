@@ -59,4 +59,11 @@ public class OnDemandGWANorduGridWorkload implements Workload {
 		return polledJob;
 	}
 
+	@Override
+	public void stop() {
+		this.nextJob = null;
+		this.scanner.close();
+		this.scanner = new Scanner("");
+	}
+
 }

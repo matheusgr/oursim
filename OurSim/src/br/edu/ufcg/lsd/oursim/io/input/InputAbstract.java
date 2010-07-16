@@ -53,6 +53,11 @@ public abstract class InputAbstract<T> implements Input<T> {
 	}
 
 	@Override
+	public void stop() {
+		this.inputs.clear();
+	}
+
+	@Override
 	public String toString() {
 		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("inputs", inputs).toString();
 	}

@@ -1,6 +1,7 @@
 package br.edu.ufcg.lsd.oursim.io.input.availability;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Scanner;
@@ -41,6 +42,13 @@ public class OnDemandAvailabilityCharacterization implements Input<AvailabilityR
 		AvailabilityRecord polledAV = this.peek();
 		this.nextAV = null;
 		return polledAV;
+	}
+
+	@Override
+	public void stop() {
+		this.nextAV = null;
+		this.scanner.close();
+		this.scanner = new Scanner("");
 	}
 
 }

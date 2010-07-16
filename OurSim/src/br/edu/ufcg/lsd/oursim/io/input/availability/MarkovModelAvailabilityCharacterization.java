@@ -56,12 +56,6 @@ public class MarkovModelAvailabilityCharacterization implements Input<Availabili
 		if (!shouldStop) {
 			if (this.nextAV == null && !this.nextAvailabilityRecords.isEmpty()) {
 				this.nextAV = nextAvailabilityRecords.poll();
-				if (this.nextAV.getTime() > this.quantDeSegundos) {
-					System.out.println("eita... deve parar.");
-					this.nextAvailabilityRecords.clear();
-					this.nextAV = null;
-					this.shouldStop = true;
-				}
 			} else if (this.nextAvailabilityRecords.isEmpty()) {
 				for (Entry<Machine, MarkovGenerator<ObservationDiscrete>> entry : machine2AvGenerator.entrySet()) {
 					Machine machine = entry.getKey();
@@ -71,6 +65,13 @@ public class MarkovModelAvailabilityCharacterization implements Input<Availabili
 				this.nextAV = nextAvailabilityRecords.poll();
 			}
 		}
+
+		if (shouldStop || (this.nextAV.getTime() > this.quantDeSegundos)) {
+			this.nextAvailabilityRecords.clear();
+			this.nextAV = null;
+			this.shouldStop = true;
+		}
+
 		return this.nextAV;
 	}
 
@@ -79,11 +80,13 @@ public class MarkovModelAvailabilityCharacterization implements Input<Availabili
 		AvailabilityRecord polledAV = this.peek();
 		this.nextAV = null;
 
-		for (Entry<Machine, MarkovGenerator<ObservationDiscrete>> entry : machine2AvGenerator.entrySet()) {
-			Machine machine = entry.getKey();
-			if (machine.getName().equals(polledAV.getMachineName())) {
-				MarkovGenerator<ObservationDiscrete> markovGenerator = entry.getValue();
-				generateAvailabilityForNextInvocations(machine, markovGenerator);
+		if (polledAV != null) {
+			for (Entry<Machine, MarkovGenerator<ObservationDiscrete>> entry : machine2AvGenerator.entrySet()) {
+				Machine machine = entry.getKey();
+				if (machine.getName().equals(polledAV.getMachineName())) {
+					MarkovGenerator<ObservationDiscrete> markovGenerator = entry.getValue();
+					generateAvailabilityForNextInvocations(machine, markovGenerator);
+				}
 			}
 		}
 
@@ -101,6 +104,10 @@ public class MarkovModelAvailabilityCharacterization implements Input<Availabili
 		AvailabilityRecord availabilityRecord = new AvailabilityRecord(machine.getName(), time, duration);
 		this.nextAvailabilityRecords.add(availabilityRecord);
 		this.machine2Time.put(machine, time + duration);
+	}
+
+	public void stop() {
+		this.shouldStop = true;
 	}
 
 	protected Hmm buildHmm() {

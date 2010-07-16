@@ -83,8 +83,7 @@ public class OurSim extends ActiveEntityAbstract {
 	 *            the characterization of the availability of all resources
 	 *            belonging to the peers.
 	 */
-	public OurSim(EventQueue queue, List<Peer> peers, JobSchedulerPolicy jobScheduler, Workload workload,
-			Input<AvailabilityRecord> availabilityCharacterization) {
+	public OurSim(EventQueue queue, List<Peer> peers, JobSchedulerPolicy jobScheduler, Workload workload, Input<AvailabilityRecord> availabilityCharacterization) {
 		this.setEventQueue(queue);
 		this.peers = peers;
 		this.jobScheduler = jobScheduler;
@@ -130,6 +129,11 @@ public class OurSim extends ActiveEntityAbstract {
 	private void run(EventQueue queue, JobSchedulerPolicy jobScheduler, Workload workload, Input<AvailabilityRecord> availability) {
 		do {
 			this.addFutureEvents(workload, availability);
+
+			if ((workload.peek() == null && jobScheduler.isFinished()) || availability.peek() == null) {
+				availability.stop();
+				workload.stop();
+			}
 
 			long currentTime = (queue.peek() != null) ? queue.peek().getTime() : -1;
 
