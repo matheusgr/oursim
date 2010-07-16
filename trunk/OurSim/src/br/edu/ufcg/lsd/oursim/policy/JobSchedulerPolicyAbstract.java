@@ -26,6 +26,7 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract im
 
 	/**
 	 * The jobs that have been submitted to this scheduler.
+	 * TODO talvez esse atributo seja um disperdício de memória.
 	 */
 	private Set<Job> submittedJobs;
 
@@ -35,6 +36,8 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract im
 	 */
 	private Set<Task> submittedTasks;
 
+	private Set<Task> runningTasks;
+	
 	/**
 	 * All the peers that participate of the grid.
 	 */
@@ -55,6 +58,7 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract im
 		this.peers = peers;
 		this.submittedJobs = new HashSet<Job>();
 		this.submittedTasks = new TreeSet<Task>();
+		this.runningTasks = new TreeSet<Task>();
 	}
 
 	/**
@@ -69,6 +73,11 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract im
 		this.addSubmitTaskEvent(getCurrentTime(), task);
 	}
 
+	@Override
+	public boolean isFinished(){
+		return this.submittedTasks.isEmpty() && this.runningTasks.isEmpty();
+	}
+	
 	@Override
 	public void addJob(Job job) {
 		assert !job.getTasks().isEmpty();
@@ -133,12 +142,15 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract im
 
 	@Override
 	public void taskStarted(Event<Task> taskEvent) {
+		Task task = taskEvent.getSource();
+		this.runningTasks.add(task);
 	}
 
 	@Override
 	public void taskFinished(Event<Task> taskEvent) {
 		Task task = taskEvent.getSource();
 		task.getTargetPeer().finishTask(task);
+		this.runningTasks.remove(task);
 	}
 
 	@Override

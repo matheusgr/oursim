@@ -35,5 +35,7 @@ public interface Input<T> extends Closeable {
 	 */
 	@Override
 	void close();
+	
+	void stop();
 
 }

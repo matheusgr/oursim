@@ -55,5 +55,7 @@ public interface JobSchedulerPolicy extends JobEventListener, TaskEventListener,
 	 * scheduler.
 	 */
 	void schedule();
+	
+	boolean isFinished();
 
 }

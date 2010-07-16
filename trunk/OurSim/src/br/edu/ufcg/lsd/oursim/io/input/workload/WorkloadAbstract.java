@@ -21,5 +21,10 @@ public abstract class WorkloadAbstract extends InputAbstract<Job> implements Wor
 		}
 		return true;
 	}
+	
+	@Override
+	public void stop(){
+		this.inputs.clear();
+	}
 
 }

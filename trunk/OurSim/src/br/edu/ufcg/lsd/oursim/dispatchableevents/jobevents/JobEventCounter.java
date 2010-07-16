@@ -14,15 +14,26 @@ public class JobEventCounter extends JobEventListenerAdapter {
 
 	private Set<Long> idsOfFinishedJobs = new HashSet<Long>();
 
+	private Set<Long> idsOfSubmittedJobs = new HashSet<Long>();
+
 	@Override
 	public final void jobFinished(Event<Job> jobEvent) {
 		this.numberOfFinishedJobs++;
-		idsOfFinishedJobs.add(jobEvent.getSource().getId());
+		this.idsOfFinishedJobs.add(jobEvent.getSource().getId());
 	}
 
 	@Override
 	public final void jobPreempted(Event<Job> jobEvent) {
 		this.numberOfPreemptionsForAllJobs++;
+	}
+
+	@Override
+	public final void jobSubmitted(Event<Job> jobEvent) {
+		this.idsOfSubmittedJobs.add(jobEvent.getSource().getId());
+	}
+
+	public final int getNumberOfSubmittedJobs() {
+		return idsOfSubmittedJobs.size();
 	}
 
 	public final int getNumberOfFinishedJobs() {

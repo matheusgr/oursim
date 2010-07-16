@@ -16,7 +16,7 @@ public class Processor {
 	 * equivalent CPU capacity of a 1.0-1.2 GHz 2007 Opteron or 2007 Xeon
 	 * processor.
 	 */
-	static Processor EC2_COMPUTE_UNIT = new Processor(0, 3000);
+	public static Processor EC2_COMPUTE_UNIT = new Processor(0, 3000);
 
 	/**
 	 * the identifier of this processor.
