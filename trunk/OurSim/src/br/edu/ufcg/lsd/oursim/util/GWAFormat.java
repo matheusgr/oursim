@@ -12,43 +12,50 @@ import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 
 public final class GWAFormat {
 
+	public final static GWAJobDescription createGWAJobDescription(String line) {
+		GWAJobDescription gwaJob = new GWAJobDescription();
+		Scanner scLine = new Scanner(line);
+		gwaJob.JobID = scLine.nextLong();
+		gwaJob.SubmitTime = scLine.nextLong();
+		gwaJob.WaitTime = scLine.nextLong();
+		gwaJob.RunTime = scLine.nextLong();
+		gwaJob.NProc = scLine.nextLong();
+		gwaJob.AverageCPUTimeUsed = scLine.nextLong();
+		gwaJob.UsedMemory = scLine.next();
+		gwaJob.ReqNProcs = scLine.nextLong();
+		gwaJob.ReqTime = scLine.nextLong();
+		gwaJob.ReqMemory = scLine.nextLong();
+		gwaJob.Status = scLine.nextLong();
+		gwaJob.UserID = scLine.next();
+		gwaJob.GroupID = scLine.next();
+		gwaJob.ExecutableID = scLine.nextLong();
+		gwaJob.QueueID = scLine.next();
+		gwaJob.PartitionID = scLine.nextLong();
+		gwaJob.OrigSiteID = scLine.next();
+		gwaJob.LastRunSiteID = scLine.next();
+		gwaJob.UNKNOW = scLine.nextLong();
+		gwaJob.JobStructure = scLine.nextLong();
+		gwaJob.JobStructureParams = scLine.nextLong();
+		gwaJob.UsedNetwork = scLine.nextLong();
+		gwaJob.UsedLocalDiskSpace = scLine.nextLong();
+		gwaJob.UsedResources = scLine.nextLong();
+		gwaJob.ReqPlatform = scLine.nextLong();
+		gwaJob.ReqNetwork = scLine.nextLong();
+		gwaJob.RequestedLocalDiskSpace = scLine.nextLong();
+		gwaJob.RequestedResources = scLine.nextLong();
+		gwaJob.VirtualOrganizationID = scLine.nextLong();
+		gwaJob.ProjectID = scLine.nextLong();
+		return gwaJob;
+
+	}
+
 	public final static Job createJobFromGWAFormat(String line, Map<String, Peer> peers) {
 		return createJobFromGWAFormat(line, peers, 0);
 	}
 
 	public final static Job createJobFromGWAFormat(String line, Map<String, Peer> peers, long startingTime) {
-		Scanner scLine = new Scanner(line);
-		long JobID = scLine.nextLong();
-		long SubmitTime = scLine.nextLong() - startingTime;
-		long WaitTime = scLine.nextLong();
-		long RunTime = scLine.nextLong();
-		long NProc = scLine.nextLong();
-		long AverageCPUTimeUsed = scLine.nextLong();
-		String UsedMemory = scLine.next();
-		long ReqNProcs = scLine.nextLong();
-		long ReqTime = scLine.nextLong();
-		long ReqMemory = scLine.nextLong();
-		long Status = scLine.nextLong();
-		String UserID = scLine.next();
-		String GroupID = scLine.next();
-		long ExecutableID = scLine.nextLong();
-		String QueueID = scLine.next();
-		long PartitionID = scLine.nextLong();
-		String OrigSiteID = scLine.next();
-		String LastRunSiteID = scLine.next();
-		long UNKNOW = scLine.nextLong();
-		long JobStructure = scLine.nextLong();
-		long JobStructureParams = scLine.nextLong();
-		long UsedNetwork = scLine.nextLong();
-		long UsedLocalDiskSpace = scLine.nextLong();
-		long UsedResources = scLine.nextLong();
-		long ReqPlatform = scLine.nextLong();
-		long ReqNetwork = scLine.nextLong();
-		long RequestedLocalDiskSpace = scLine.nextLong();
-		long RequestedResources = scLine.nextLong();
-		long VirtualOrganizationID = scLine.nextLong();
-		long ProjectID = scLine.nextLong();
-		return new Job(JobID, SubmitTime, RunTime, peers.get(OrigSiteID));
+		GWAJobDescription gwaJob = createGWAJobDescription(line);
+		return new Job(gwaJob.JobID, gwaJob.SubmitTime - startingTime, gwaJob.RunTime, peers.get(gwaJob.OrigSiteID));
 	}
 
 	public final static Map<String, Peer> extractPeersFromGWAFile(String workloadFilePath, int numberOfResourcesByPeer, ResourceSharingPolicy sharingPolicy)
@@ -73,6 +80,14 @@ public final class GWAFormat {
 
 		return peers;
 
+	}
+
+	public static final long extractSubmissionTimeFromFirstJob(String workloadFilePath) throws FileNotFoundException {
+		Scanner sc = new Scanner(new File(workloadFilePath));
+		String firstLine = sc.nextLine();
+		GWAJobDescription gwajob = GWAFormat.createGWAJobDescription(firstLine);
+		sc.close();
+		return gwajob.SubmitTime;
 	}
 
 }

@@ -62,6 +62,7 @@ import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 import br.edu.ufcg.lsd.oursim.util.AvailabilityTraceFormat;
 import br.edu.ufcg.lsd.oursim.util.GWAFormat;
+import br.edu.ufcg.lsd.oursim.util.GWAJobDescription;
 
 public class CLI {
 
@@ -87,6 +88,8 @@ public class CLI {
 
 	private static final String NUM_RESOURCES_BY_PEER = "nr";
 
+	private static final String PEERS_DESCRIPTION = "pd";
+
 	private static final String NODE_MIPS_RATING = "r";
 
 	private static final String SCHEDULER = "s";
@@ -103,7 +106,8 @@ public class CLI {
 	 * Exemplo:
 	 * 
 	 * <pre>
-	 *   java -jar oursim.jar -w resources/trace_filtrado_primeiros_10000_jobs.txt -m resources/hostinfo_sdsc.dat -synthetic_av -o oursim_trace.txt
+	 *   java -jar oursim.jar -w resources/trace_filtrado_primeiros_1000_jobs.txt -m resources/hostinfo_sdsc.dat -synthetic_av -o oursim_trace.txt
+	 *   -w resources/trace_filtrado_primeiros_1000_jobs.txt -s persistent -nr 20 -md resources/hostinfo_sdsc.dat -av resources/disponibilidade.txt -o oursim_trace.txt
 	 * </pre>
 	 * 
 	 * @param args
@@ -111,7 +115,8 @@ public class CLI {
 	 */
 	public static void main(String[] args) throws IOException {
 
-		args = "-w resources/trace_filtrado_primeiros_10000_jobs.txt -s persistent -nr 20 -md resources/hostinfo_sdsc.dat -av resources/disponibilidade.txt -o oursim_trace.txt".split("\\s+");
+		args = "-w resources/trace_filtrado_primeiros_1000_jobs.txt -pd resources/nordugrid_site_description.txt -synthetic_av -o oursim_trace.txt"
+				.split("\\s+");
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
@@ -123,6 +128,7 @@ public class CLI {
 		if (hasOptions(cmd, OUTPUT, WORKLOAD)) {
 
 			String workloadFilePath = cmd.getOptionValue(WORKLOAD);
+			long timeOfFirstSubmission = GWAFormat.extractSubmissionTimeFromFirstJob(workloadFilePath);
 			JobEventDispatcher.getInstance().addListener(new PrintOutput(cmd.getOptionValue(OUTPUT)));
 
 			if (cmd.hasOption(VERBOSE)) {
@@ -145,52 +151,22 @@ public class CLI {
 
 			ResourceSharingPolicy sharingPolicy = cmd.hasOption(NOF) ? NoFSharingPolicy.getInstance() : FifoSharingPolicy.getInstance();
 
-			if (cmd.hasOption(NUM_RESOURCES_BY_PEER)) {
+			int numberOfResourcesByPeer = cmd.hasOption(NUM_RESOURCES_BY_PEER) ? Integer.parseInt(cmd.getOptionValue(NUM_RESOURCES_BY_PEER)) : 0;
 
-				int numberOfResourcesByPeer = Integer.parseInt(cmd.getOptionValue(NUM_RESOURCES_BY_PEER));
+			peersMap = GWAFormat.extractPeersFromGWAFile(workloadFilePath, numberOfResourcesByPeer, sharingPolicy);
 
-				peersMap = GWAFormat.extractPeersFromGWAFile(workloadFilePath, numberOfResourcesByPeer, sharingPolicy);
-				System.out.println("extraiu os peers do arquivo de workload.");
+			if (numberOfResourcesByPeer == 0 && cmd.hasOption(PEERS_DESCRIPTION)) {
+				String peersDescriptionFilePath = cmd.getOptionValue(PEERS_DESCRIPTION);
+				addResourcesToPeers(peersMap, peersDescriptionFilePath);
+			}
 
-				AvailabilityTraceFormat.addResourcesToPeer(peersMap.values().iterator().next(), cmd.getOptionValue(MACHINES_DESCRIPTION));
+			availability = defineAvailability(cmd, peersMap);
 
-				// workload = new GWANorduGridWorkload(workloadFilePath,
-				// peersMap);
-				workload = new OnDemandGWANorduGridWorkload(workloadFilePath, peersMap, 1094090910);
-
-				availability = cmd.hasOption(DEDICATED_RESOURCES) ? new DedicatedResourcesAvailabilityCharacterization(peersMap.values())
-						: new AvailabilityCharacterization(cmd.getOptionValue(AVAILABILITY), 1062597562, true);
-
-			} else if ((cmd.hasOption(AVAILABILITY) || cmd.hasOption(SYNTHETIC_AVAILABILITY))) {
-
-				String machineAvailabilityFilePath = cmd.getOptionValue(AVAILABILITY);
-
-				peersMap = GWAFormat.extractPeersFromGWAFile(workloadFilePath, 0, sharingPolicy);
-
-				Scanner sc = new Scanner(new File("resources/nordugrid_site_description.txt"));
-				int cont = 0;
-				sc.nextLine();// desconsidera o cabeçalho
-				while (sc.hasNextLine()) {
-					Scanner scLine = new Scanner(sc.nextLine());
-					String peerName = scLine.next();
-					if (peersMap.containsKey(peerName)) {
-						int peerSize = scLine.nextInt();
-						Peer peer = peersMap.get(peerName);
-						String machineFullName = peer.getName() + "_m_" + 1;
-						peer.addMachine(new Machine(machineFullName, Processor.EC2_COMPUTE_UNIT.getSpeed()));
-						cont++;
-					}
-				}
-
-				workload = new OnDemandGWANorduGridWorkload(workloadFilePath, peersMap, 1094090910);
-
-				availability = cmd.hasOption(AVAILABILITY) ? new AvailabilityCharacterization(machineAvailabilityFilePath, 1062597562, true)
-						: new MarkovModelAvailabilityCharacterization(peersMap, 26000, 0);
-
-			} else {
-				System.err.println("Combinação de parâmetros inválida.");
+			if (availability == null) {
+				System.err.println("Combinação de parâmetros de availability inválida.");
 				System.exit(10);
 			}
+			workload = new OnDemandGWANorduGridWorkload(workloadFilePath, peersMap, timeOfFirstSubmission);
 
 			ArrayList<Peer> peers = new ArrayList<Peer>(peersMap.values());
 
@@ -233,6 +209,38 @@ public class CLI {
 		}
 	}
 
+	private static Input<AvailabilityRecord> defineAvailability(CommandLine cmd, Map<String, Peer> peersMap) throws FileNotFoundException {
+		Input<AvailabilityRecord> availability = null;
+		if (cmd.hasOption(DEDICATED_RESOURCES)) {
+			availability = new DedicatedResourcesAvailabilityCharacterization(peersMap.values());
+		} else if (cmd.hasOption(AVAILABILITY)) {
+			long startingTime = AvailabilityTraceFormat.extractTimeFromFirstAvailabilityRecord(cmd.getOptionValue(AVAILABILITY), true);
+			availability = new AvailabilityCharacterization(cmd.getOptionValue(AVAILABILITY), startingTime, true);
+		} else if (cmd.hasOption(SYNTHETIC_AVAILABILITY)) {
+			availability = new MarkovModelAvailabilityCharacterization(peersMap, 20, 0);
+		}
+		return availability;
+	}
+
+	private static void addResourcesToPeers(Map<String, Peer> peersMap, String peersDescriptionFilePath) throws FileNotFoundException {
+		// AvailabilityTraceFormat.addResourcesToPeer(peersMap.values().iterator().next(),
+		// cmd.getOptionValue(MACHINES_DESCRIPTION));
+		Scanner sc = new Scanner(new File(peersDescriptionFilePath));
+		sc.nextLine();// desconsidera o cabeçalho
+		while (sc.hasNextLine()) {
+			Scanner scLine = new Scanner(sc.nextLine());
+			String peerName = scLine.next();
+			if (peersMap.containsKey(peerName)) {
+				int peerSize = scLine.nextInt();
+				Peer peer = peersMap.get(peerName);
+				for (int i = 0; i < peerSize; i++) {
+					String machineFullName = peer.getName() + "_m_" + i;
+					peer.addMachine(new Machine(machineFullName, Processor.EC2_COMPUTE_UNIT.getSpeed()));
+				}
+			}
+		}
+	}
+
 	private static JobSchedulerPolicy defineScheduler(CommandLine cmd, ArrayList<Peer> peers) {
 		JobSchedulerPolicy jobScheduler = null;
 		if (cmd.hasOption(SCHEDULER)) {
@@ -260,6 +268,7 @@ public class CLI {
 		options.addOption(OUTPUT, "output", true, "O nome do arquivo em que o output da simulação será gravado.");
 		options.addOption(NUM_RESOURCES_BY_PEER, "nresources", true, "O número de réplicas para cada task.");
 		options.addOption(NUM_PEERS, "npeers", true, "O número de peers do grid.");
+		options.addOption(PEERS_DESCRIPTION, "peers_description", true, "Arquivo descrevendo os peers.");
 		options.addOption(NODE_MIPS_RATING, "speed", true, "A velocidade de cada máquina.");
 		options.addOption(NOF, "nof", false, "Utiliza a Rede de Favores (NoF).");
 		options.addOption(DEDICATED_RESOURCES, "dedicated", false, "Indica que os recursos são todos dedicados.");

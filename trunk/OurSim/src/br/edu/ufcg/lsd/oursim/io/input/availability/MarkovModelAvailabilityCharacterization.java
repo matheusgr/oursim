@@ -33,6 +33,8 @@ public class MarkovModelAvailabilityCharacterization implements Input<Availabili
 	private boolean shouldStop = false;
 
 	public MarkovModelAvailabilityCharacterization(Map<String, Peer> peers, long quantHoras, long startingTime) throws FileNotFoundException {
+		assert quantHoras > 0;
+		assert startingTime >= 0;
 		this.startingTime = startingTime;
 		this.quantDeSegundos = quantHoras * 60 * 60;
 		this.nextAvailabilityRecords = new PriorityQueue<AvailabilityRecord>();

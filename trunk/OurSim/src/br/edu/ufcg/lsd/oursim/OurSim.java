@@ -132,7 +132,9 @@ public class OurSim extends ActiveEntityAbstract {
 
 			if ((workload.peek() == null && jobScheduler.isFinished()) || availability.peek() == null) {
 				availability.stop();
-				workload.stop();
+//				workload.stop();
+//				queue.clear();
+				System.out.println("--------------------------------------------------------------");
 			}
 
 			long currentTime = (queue.peek() != null) ? queue.peek().getTime() : -1;

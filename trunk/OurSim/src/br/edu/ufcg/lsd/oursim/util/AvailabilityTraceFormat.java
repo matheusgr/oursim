@@ -38,4 +38,15 @@ public final class AvailabilityTraceFormat {
 		return new AvailabilityRecord(machineName, timestamp, duration);
 	}
 
+	public static long extractTimeFromFirstAvailabilityRecord(String availabilityFilePath, boolean hasHeader) throws FileNotFoundException {
+		Scanner sc = new Scanner(new File(availabilityFilePath));
+		if (hasHeader) {
+			sc.nextLine();// TODO desconsidera a primeira linha (cabeçalho)
+		}
+		String firstLine = sc.nextLine();
+		AvailabilityRecord avRecord = createAvailabilityRecordFromAvailabilityFormat(firstLine, 0);
+		sc.close();
+		return avRecord.getTime();
+	}
+
 }

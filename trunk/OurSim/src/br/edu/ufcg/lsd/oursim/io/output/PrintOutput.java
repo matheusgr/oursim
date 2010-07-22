@@ -47,6 +47,16 @@ public final class PrintOutput implements Output {
 	.concat("queuingTime").concat(SEP)
 	.concat("numberOfPreemption");
 
+	private static final String SUBMIT_HEADER_2 = SUBMIT_LABEL.concat(SEP)
+	.concat("finishTime").concat(SEP)
+	.concat("jobId").concat(SEP)
+	.concat("submissionTime").concat(SEP)
+	.concat("startTime").concat(SEP)
+	.concat("runtimeDuration").concat(SEP)
+	.concat("makeSpan").concat(SEP)
+	.concat("queuingTime").concat(SEP)
+	.concat("numberOfPreemption");
+
 	/**
 	 * the stream where the results will be printed out.
 	 */
@@ -88,14 +98,30 @@ public final class PrintOutput implements Output {
 
 	@Override
 	public final void jobSubmitted(Event<Job> jobEvent) {
-		if (showProgress) {
+//			Job job = jobEvent.getSource();
+//			long id = job.getId();
+//			long submissionTime = job.getSubmissionTime();
+//			StringBuilder sb = new StringBuilder(SUBMIT_LABEL);
+//			sb.append(SEP).append(submissionTime).append(SEP).append(id);
+//			this.out.println(sb);
+			
 			Job job = jobEvent.getSource();
-			long id = job.getId();
+
+			long jobId = job.getId();
 			long submissionTime = job.getSubmissionTime();
+			long duration = job.getDuration();
+
 			StringBuilder sb = new StringBuilder(SUBMIT_LABEL);
-			sb.append(SEP).append(submissionTime).append(SEP).append(id);
+			sb.append(SEP)
+			.append(submissionTime).append(SEP)
+			.append(jobId).append(SEP)
+			.append(submissionTime).append(SEP)
+			.append("NA").append(SEP)
+			.append(duration).append(SEP)
+			.append("NA").append(SEP)
+			.append("NA").append(SEP)
+			.append("NA");
 			this.out.println(sb);
-		}
 	}
 
 	@Override

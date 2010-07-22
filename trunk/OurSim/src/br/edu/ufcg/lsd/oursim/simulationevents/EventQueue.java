@@ -162,6 +162,7 @@ public final class EventQueue implements Closeable {
 			}
 			this.currentTime = pq.peek().getTime();
 		}
+		System.out.println(pq.size());
 		return pq.poll();
 	}
 
