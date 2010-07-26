@@ -29,7 +29,7 @@ public class TaskEventDispatcher extends EventDispatcher<Task, TaskEventListener
 	 * 
 	 */
 	protected enum TYPE_OF_DISPATCHING {
-		submitted, started, preempted, finished
+		submitted, started, preempted, finished, cancelled
 	};
 
 	private static TaskEventDispatcher instance = null;
@@ -90,6 +90,11 @@ public class TaskEventDispatcher extends EventDispatcher<Task, TaskEventListener
 		dispatch(TYPE_OF_DISPATCHING.preempted, task, preemptionTime);
 	}
 
+	public void dispatchTaskCancelled(Task task, long cancellingTime) {
+		dispatch(TYPE_OF_DISPATCHING.cancelled, task, cancellingTime);
+	}
+
+	
 	private void dispatch(TYPE_OF_DISPATCHING type, Task task, long preemptionTime) {
 		dispatch(type, new Event<Task>(preemptionTime, task));
 	}
@@ -116,6 +121,9 @@ public class TaskEventDispatcher extends EventDispatcher<Task, TaskEventListener
 					break;
 				case finished:
 					listener.taskFinished(taskEvent);
+					break;
+				case cancelled:
+					listener.taskCancelled(taskEvent);
 					break;
 				default:
 					assert false;

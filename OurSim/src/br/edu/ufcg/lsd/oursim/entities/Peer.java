@@ -300,6 +300,18 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 		}
 	}
 
+	public final void cancelTask(Task task) {
+//		assert this.taskManager.isInExecution(task) : task;
+		
+		if (this.taskManager.isInExecution(task)) {
+			this.resourceAllocationManager.deallocateTask(task);
+			this.resourceSharingPolicy.updateMutualBalance(this, task.getSourcePeer(), task);
+			this.addCancelledTaskEvent(task);
+		} else {
+//			throw new IllegalArgumentException("The task was not being executed in this peer.");
+		}
+	}
+
 	/**
 	 * Gets the number of free machines.
 	 * 

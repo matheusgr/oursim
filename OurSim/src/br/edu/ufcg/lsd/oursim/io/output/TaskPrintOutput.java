@@ -78,4 +78,11 @@ public class TaskPrintOutput extends OutputAdapter {
 		this.out.close();
 	}
 
+	@Override
+	public void taskCancelled(Event<Task> taskEvent) {
+		Task task = taskEvent.getSource();
+		String machineName = task.getTaskExecution().getMachine().getName();
+		this.out.println("(C:" + taskEvent.getTime() + ":" + task.getId() + ":" + machineName + ")");
+	}
+
 }

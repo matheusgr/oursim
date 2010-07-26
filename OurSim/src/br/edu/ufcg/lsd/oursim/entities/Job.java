@@ -154,6 +154,7 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		// termina quando todas as suas tasks tiverem terminado.
 		for (Task task : tasks) {
 			if (!task.isFinished()) {
+				assert false : task;
 				task.finish(time);
 			}
 		}
@@ -257,7 +258,7 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		long lastFinishTime = Long.MIN_VALUE;
 		// TODO verificar se isFinished() antes
 		for (Task task : tasks) {
-			if (task.hasAnyReplyFinished()) {
+			if (task.isFinished() || task.isAnyReplyFinished()) {
 				lastFinishTime = Math.max(lastFinishTime, task.getAnyReplyFinishTime());
 			} else {
 				return null;

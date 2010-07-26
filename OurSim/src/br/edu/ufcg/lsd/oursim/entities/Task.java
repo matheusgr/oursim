@@ -20,6 +20,8 @@ import org.apache.commons.lang.builder.ToStringStyle;
  */
 public class Task extends ComputableElement implements Comparable<Task>, Cloneable {
 
+	private static final long SOURCE_TASK_REPLY_ID = 0l;
+
 	/**
 	 * The duration in unit of simulation (seconds) of this Task, considered
 	 * when executed in an reference machine.
@@ -91,6 +93,8 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	private Set<Task> replies = new HashSet<Task>();
 
 	private long replyId;
+	
+	private boolean cancelled = false;
 
 	public Task(long id, String executable, long duration, long submissionTime, Job sourceJob) {
 		super(id, submissionTime);
@@ -100,7 +104,7 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 
 		// toda task também é uma réplica de si mesma.
 		this.replies.add(this);
-		this.replyId = 0l;
+		this.replyId = SOURCE_TASK_REPLY_ID;
 	}
 
 	/**
@@ -196,7 +200,7 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 
 	@Override
 	public void finish(long time) {
-		assert this.finishTime == null;
+		assert this.finishTime == null || isAnyReplyFinished() ;
 		this.finishTime = time;
 	}
 
@@ -208,6 +212,7 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	@Override
 	public void preempt(long time) {
 		assert this.startTime != null;
+
 		this.numberOfpreemptions++;
 		this.startTime = null;
 		this.targetPeer = null;
@@ -253,7 +258,7 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 
 	@Override
 	public boolean isRunning() {
-		return this.startTime != null;
+		return this.startTime != null && finishTime == null;
 	}
 
 	@Override
@@ -299,14 +304,23 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 		return theClone;
 	}
 
-	public boolean hasAnyReplyFinished() {
-		for (Task reply : replies) {
+	public boolean isAnyReplyFinished() {
+		for (Task reply : getReplies()) {
 			if (reply.isFinished()) {
 				return true;
 			}
 		}
 		return false;
 	}
+	
+//	public boolean hasAnyReplyFinished() {
+//		for (Task reply : replies) {
+//			if (reply.isFinished()) {
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
 
 	public Long getAnyReplyFinishTime() {
 		for (Task reply : replies) {
@@ -339,9 +353,9 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 
 	public Set<Task> getActiveReplies() {
 		Set<Task> onlyTheActiveReplies = new HashSet<Task>();
-		for (Task replies : getReplies()) {
-			if (replies.isActive()) {
-				onlyTheActiveReplies.add(replies);
+		for (Task reply : getReplies()) {
+			if (reply.isActive()) {
+				onlyTheActiveReplies.add(reply);
 			}
 		}
 		return onlyTheActiveReplies;
@@ -349,9 +363,33 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 
 	private boolean isActive() {
 		// TODO: hora de adicionar uma máquina de estados!
-		return this.isRunning() || (!this.isFinished() && !this.wasPreempted());
+		return this.isRunning() || (!this.isFinished() && !this.wasPreempted() && !this.isCancelled());
 	}
 
+	public long getReplyId() {
+		return replyId;
+	}
+
+	public void finishSourceTask() {
+		for (Task reply : replies) {
+			if (reply.getReplyId() == SOURCE_TASK_REPLY_ID) {
+				reply.finishTime = this.finishTime;
+				reply.startTime = this.startTime;
+				reply.cancelled = false;
+				reply.targetPeer = this.targetPeer;
+			}
+		}
+	}
+
+	public void cancel() {
+		assert !this.cancelled;
+		this.cancelled = true;
+	}
+
+	public boolean isCancelled() {
+		return cancelled;
+	}
+	
 	@Override
 	public String toString() {
 		// [id, duration, submissionTime, startTime, finishTime,
@@ -360,7 +398,7 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("id", id).append("sourceJob", sourceJob.getId()).append("sourcePeer",
 				getSourcePeer().getName()).append("duration", duration).append("submissionTime", submissionTime).append("startTime", startTime).append(
 				"finishTime", finishTime).append("targetPeer", targetPeer != null ? targetPeer.getName() : "").append("numberOfpreemptions",
-				numberOfpreemptions).append("executable", executable).append("replyId", replyId).toString();
+				numberOfpreemptions).append("executable", executable).append("replyId", replyId).append("cancelled", cancelled).toString();
 	}
 
 }

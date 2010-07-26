@@ -32,13 +32,16 @@ public class FinishTaskEvent extends TaskTimedEvent {
 	@Override
 	protected final void doAction() {
 		Task task = (Task) source;
-		task.finish(time);
-		if (task.getSourceJob().isFinished()) {
-			// EventQueue.getInstance().addFinishJobEvent(EventQueue.getInstance().getCurrentTime(),
-			// task.getSourceJob());
-			EventQueue.getInstance().addEvent(new FinishJobEvent(EventQueue.getInstance().getCurrentTime(), task.getSourceJob()));
-		}
-		TaskEventDispatcher.getInstance().dispatchTaskFinished(task);
+		if (!task.isCancelled()) {
+			task.finish(time);
+			if (task.getSourceJob().isFinished()) {
+				// EventQueue.getInstance().addFinishJobEvent(EventQueue.getInstance().getCurrentTime(),
+				// task.getSourceJob());
+				// TODO analisar esse acesso direto à fila de eventos
+				EventQueue.getInstance().addEvent(new FinishJobEvent(EventQueue.getInstance().getCurrentTime(), task.getSourceJob()));
+			}
+			TaskEventDispatcher.getInstance().dispatchTaskFinished(task);
+		} 
 	}
 
 }

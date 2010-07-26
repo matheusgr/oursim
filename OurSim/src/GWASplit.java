@@ -32,7 +32,6 @@ public class GWASplit {
 		long endDateTimeMillis = endDate.getTime() / 1000;
 
 		assert beginDateTimeMillis < endDateTimeMillis;
-		
 		performSplit(workloadFilePath, outputFilePath, beginDateTimeMillis, endDateTimeMillis);
 
 	}

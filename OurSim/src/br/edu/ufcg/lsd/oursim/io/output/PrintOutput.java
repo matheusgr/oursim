@@ -152,7 +152,7 @@ public final class PrintOutput implements Output {
 	public final void jobFinished(Event<Job> jobEvent) {
 
 		Job job = jobEvent.getSource();
-
+		
 		long jobId = job.getId();
 		long submissionTime = job.getSubmissionTime();
 		long finishTime = job.getFinishTime();
@@ -194,6 +194,10 @@ public final class PrintOutput implements Output {
 
 	@Override
 	public final void taskSubmitted(Event<Task> taskEvent) {
+	}
+
+	@Override
+	public void taskCancelled(Event<Task> taskEvent) {
 	}
 
 }

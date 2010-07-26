@@ -31,4 +31,6 @@ public interface TaskEventListener extends EventListener {
 
 	void taskPreempted(Event<Task> taskEvent);
 
+	void taskCancelled(Event<Task> taskEvent);
+
 }

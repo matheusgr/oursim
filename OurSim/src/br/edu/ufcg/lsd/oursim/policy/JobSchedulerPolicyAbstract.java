@@ -112,6 +112,10 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract im
 	protected Set<Task> getSubmittedTasks() {
 		return submittedTasks;
 	}
+	
+	public Set<Task> getRunningTasks() {
+		return runningTasks;
+	}
 
 	protected List<Peer> getPeers() {
 		return peers;
@@ -161,6 +165,12 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract im
 
 	@Override
 	public void taskPreempted(Event<Task> taskEvent) {
+		Task task = taskEvent.getSource();
+		this.runningTasks.remove(task);		
+	}
+
+	@Override
+	public void taskCancelled(Event<Task> taskEvent) {
 	}
 
 	// E-- end of implementation of TaskEventListener
