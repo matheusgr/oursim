@@ -2,7 +2,7 @@ package br.edu.ufcg.lsd.oursim.entities;
 
 /**
  * 
- * An file to be used as input, output or executable in a task.
+ * A file to be used as input, output or executable in a task.
  * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @since 18/05/2010
@@ -46,6 +46,11 @@ public class File {
 	 */
 	public long getSize() {
 		return size;
+	}
+	
+	@Override
+	public String toString(){
+		return name;
 	}
 
 }

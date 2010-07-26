@@ -27,7 +27,10 @@ public class StartedTaskEvent extends TaskTimedEvent {
 
 	@Override
 	protected void doAction() {
-		TaskEventDispatcher.getInstance().dispatchTaskStarted(this.source);
+		Task task = (Task) source;
+		if (!task.isCancelled()) {
+			TaskEventDispatcher.getInstance().dispatchTaskStarted(task);
+		}
 	}
 
 }

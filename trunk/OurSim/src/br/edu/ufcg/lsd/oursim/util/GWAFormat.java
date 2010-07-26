@@ -1,7 +1,10 @@
 package br.edu.ufcg.lsd.oursim.util;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -82,12 +85,43 @@ public final class GWAFormat {
 
 	}
 
-	public static final long extractSubmissionTimeFromFirstJob(String workloadFilePath) throws FileNotFoundException {
+	public static final long extractSubmissionTimeFromFirstJob(String workloadFilePath) throws IOException {
 		Scanner sc = new Scanner(new File(workloadFilePath));
 		String firstLine = sc.nextLine();
 		GWAJobDescription gwajob = GWAFormat.createGWAJobDescription(firstLine);
 		sc.close();
 		return gwajob.SubmitTime;
+	}
+
+	public static long extractSubmissionTimeFromLastJob(String workloadFilePath) throws IOException {
+		File file = new File(workloadFilePath);
+		RandomAccessFile rfile = new RandomAccessFile(file, "r");
+
+		rfile.seek(file.length() - 10000);
+
+		String strLine = null, tmp;
+
+		while ((tmp = rfile.readLine()) != null) {
+			strLine = tmp;
+		}
+
+		String lastLine = strLine;
+
+		rfile.close();
+		GWAJobDescription gwajob = GWAFormat.createGWAJobDescription(lastLine);
+		return gwajob.SubmitTime;
+
+		// Third One -
+		// FileInputStream fis=new FileInputStream("D:\\ test\\sample.txt");
+		//		                  
+		// String fileContent = new Scanner(fis).useDelimiter("\\Z").next()
+	}
+
+	public static long extractDurationInSecondsOfWorkload(String workloadFilePath) throws IOException {
+		long timeOfFirstSubmission = GWAFormat.extractSubmissionTimeFromFirstJob(workloadFilePath);
+		long timeOfLastSubmission = GWAFormat.extractSubmissionTimeFromLastJob(workloadFilePath);
+		long duration = timeOfLastSubmission - timeOfFirstSubmission;
+		return duration;
 	}
 
 }

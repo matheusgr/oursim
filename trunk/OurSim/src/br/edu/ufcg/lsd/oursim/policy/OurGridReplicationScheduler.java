@@ -66,6 +66,8 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 
 	@Override
 	public final void taskSubmitted(Event<Task> taskEvent) {
+//		Task task = taskEvent.getSource();
+//		this.getSubmittedTasks().add(task);
 		super.taskSubmitted(taskEvent);
 		addReplies(taskEvent.getSource());
 	}
@@ -73,7 +75,8 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 	@Override
 	public final void taskFinished(Event<Task> taskEvent) {
 		super.taskFinished(taskEvent);
-		stopRemainderReplies(taskEvent.getSource());
+		stopRemainingReplies(taskEvent.getSource());
+		taskEvent.getSource().finishSourceTask();
 	}
 
 	private void addReplies(Task task) {
@@ -82,16 +85,30 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 		}
 	}
 
-	private void stopRemainderReplies(Task task) {
-		for (Task reply : task.getActiveReplies()) {
+	private void stopRemainingReplies(Task task) {
+
+		for (Task reply : task.getReplies()) {
 			// para as replicas que ainda estiverem rodando
 			if (reply.isRunning()) {
-				reply.getTargetPeer().preemptTask(reply);
+				if (reply.getEstimatedFinishTime() > task.getFinishTime()) {
+					assert this.getRunningTasks().contains(reply);
+					assert !reply.isFinished();
+					reply.getTargetPeer().cancelTask(reply);
+					this.getRunningTasks().remove(reply);
+				} else {
+					reply.getTargetPeer().cancelTask(reply);
+					this.getRunningTasks().remove(reply);
+				}
 			} else if (this.getSubmittedTasks().contains(reply)) {// está
 				// aguardando
+				reply.cancel();
 				this.getSubmittedTasks().remove(reply);
+			} else if (reply.wasPreempted()) {
 			} else {
-				assert false;
+				assert !this.getSubmittedTasks().contains(reply);
+				assert !this.getRunningTasks().contains(reply);
+				assert !reply.isCancelled();
+				assert false : "situação não esperada: " + reply;
 			}
 		}
 	}

@@ -46,4 +46,8 @@ public abstract class OutputAdapter implements Output {
 	public void taskSubmitted(Event<Task> taskEvent) {
 	}
 
+	@Override
+	public void taskCancelled(Event<Task> taskEvent) {
+	}
+
 }

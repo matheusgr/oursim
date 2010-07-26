@@ -32,12 +32,14 @@ public class PreemptedTaskEvent extends TaskTimedEvent {
 	@Override
 	protected void doAction() {
 		Task task = this.source;
-		task.preempt(this.time);
-		TaskEventDispatcher.getInstance().dispatchTaskPreempted(task, this.time);
-		// TODO: se for um job de uma task só, avisa que o job foi preemptado
-		if (task.getSourceJob().getTasks().size() == 1 && task.isAllRepliesFailed()) {
-//			EventQueue.getInstance().addPreemptedJobEvent(EventQueue.getInstance().getCurrentTime(), task.getSourceJob());
-			EventQueue.getInstance().addEvent(new PreemptedJobEvent(EventQueue.getInstance().getCurrentTime(), task.getSourceJob()));
+		if (!task.isCancelled()) {
+			task.preempt(this.time);
+			TaskEventDispatcher.getInstance().dispatchTaskPreempted(task, this.time);
+			// TODO: se for um job de uma task só, avisa que o job foi preemptado
+			if (task.getSourceJob().getTasks().size() == 1 && task.isAllRepliesFailed()) {
+				//			EventQueue.getInstance().addPreemptedJobEvent(EventQueue.getInstance().getCurrentTime(), task.getSourceJob());
+				EventQueue.getInstance().addEvent(new PreemptedJobEvent(EventQueue.getInstance().getCurrentTime(), task.getSourceJob()));
+			}
 		}
 	}
 

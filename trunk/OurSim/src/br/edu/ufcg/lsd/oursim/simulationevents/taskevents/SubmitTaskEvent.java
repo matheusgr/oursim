@@ -30,7 +30,10 @@ public class SubmitTaskEvent extends TaskTimedEvent {
 
 	@Override
 	protected final void doAction() {
-		TaskEventDispatcher.getInstance().dispatchTaskSubmitted(this.source);
+		Task task = (Task) source;
+		if (!task.isCancelled()) {
+			TaskEventDispatcher.getInstance().dispatchTaskSubmitted(task);
+		}
 	}
 
 }

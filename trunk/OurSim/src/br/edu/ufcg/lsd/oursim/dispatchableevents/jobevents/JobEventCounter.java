@@ -37,7 +37,7 @@ public class JobEventCounter extends JobEventListenerAdapter {
 	}
 
 	public final int getNumberOfFinishedJobs() {
-		assert numberOfFinishedJobs == idsOfFinishedJobs.size();
+		assert numberOfFinishedJobs == idsOfFinishedJobs.size() : numberOfFinishedJobs + " == " + idsOfFinishedJobs.size();
 		return numberOfFinishedJobs;
 	}
 

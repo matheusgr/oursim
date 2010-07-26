@@ -123,4 +123,8 @@ public interface ActiveEntity {
 	 */
 	void addWorkerAvailableEvent(long time, String machineName, long duration);
 
+	void addCancelledTaskEvent(Task task);
+
+	void addCancelledTaskEvent(long preemptionTime, Task task);
+
 }

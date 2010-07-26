@@ -6,6 +6,7 @@ import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.FinishJobEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.PreemptedJobEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.StartedJobEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.SubmitJobEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.CancelledTaskEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.FinishTaskEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.PreemptedTaskEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.StartedTaskEvent;
@@ -87,6 +88,16 @@ public class ActiveEntityAbstract implements ActiveEntity {
 	@Override
 	public void addPreemptedTaskEvent(Task task) {
 		addPreemptedTaskEvent(getCurrentTime(), task);
+	}
+
+	@Override
+	public void addCancelledTaskEvent(long cancellingTime, Task task) {
+		this.getEventQueue().addEvent(new CancelledTaskEvent(cancellingTime, task));
+	}
+	
+	@Override
+	public void addCancelledTaskEvent(Task task) {
+		addCancelledTaskEvent(getCurrentTime(), task);
 	}
 
 	@Override

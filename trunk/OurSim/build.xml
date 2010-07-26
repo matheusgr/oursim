@@ -16,7 +16,11 @@
 		<antcall target="create-jar" />
 		<!--antcall target="javadoc" /--> 
 		<copy file="./resources/exemplo-de-execucao.txt" todir="${dist.dir}/${application.name}" />
-		<copy file="./resources/trace_filtrado1.txt" todir="${dist.dir}/${application.name}" />
+		<copy todir="${dist.dir}/${application.name}/resources">
+			<fileset dir="./resources">
+				<include name="**/*.*" />
+			</fileset>
+		</copy>
 		<zip destfile="${dist.dir}/${jar.name}.zip" basedir="${dist.dir}/${application.name}" />
 		<delete dir="${build.classes.dir}" />
 	</target>

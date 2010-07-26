@@ -34,4 +34,8 @@ public class TaskEventCounter extends TaskEventListenerAdapter {
 		return numberOfPreemptionsForAllTasks;
 	}
 
+	@Override
+	public void taskCancelled(Event<Task> taskEvent) {
+	}
+
 }

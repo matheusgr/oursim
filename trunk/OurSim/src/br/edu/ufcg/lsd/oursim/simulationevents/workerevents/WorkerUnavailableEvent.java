@@ -12,7 +12,7 @@ import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventDispatc
  */
 public class WorkerUnavailableEvent extends WorkerTimedEvent {
 
-	public static final int PRIORITY = 1;
+	public static final int PRIORITY = -2;
 	
 	/**
 	 * Creates an event indicating that a worker has become unavailable.

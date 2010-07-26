@@ -62,7 +62,6 @@ import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 import br.edu.ufcg.lsd.oursim.util.AvailabilityTraceFormat;
 import br.edu.ufcg.lsd.oursim.util.GWAFormat;
-import br.edu.ufcg.lsd.oursim.util.GWAJobDescription;
 
 public class CLI {
 
@@ -115,8 +114,8 @@ public class CLI {
 	 */
 	public static void main(String[] args) throws IOException {
 
-		args = "-w resources/trace_filtrado_primeiros_1000_jobs.txt -pd resources/nordugrid_site_description.txt -synthetic_av -o oursim_trace.txt"
-				.split("\\s+");
+		 args = "-v -w resources/nordugrid_janeiro_2006.txt -s replication -r 3 -pd resources/nordugrid_site_description.txt -d -o oursim_trace.txt".split("\\s+");
+		 args = "-w resources/nordugrid_janeiro_2006.txt -s replication -r 3 -pd resources/nordugrid_site_description.txt -synthetic_av -o oursim_trace.txt".split("\\s+");
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
@@ -128,7 +127,6 @@ public class CLI {
 		if (hasOptions(cmd, OUTPUT, WORKLOAD)) {
 
 			String workloadFilePath = cmd.getOptionValue(WORKLOAD);
-			long timeOfFirstSubmission = GWAFormat.extractSubmissionTimeFromFirstJob(workloadFilePath);
 			JobEventDispatcher.getInstance().addListener(new PrintOutput(cmd.getOptionValue(OUTPUT)));
 
 			if (cmd.hasOption(VERBOSE)) {
@@ -160,12 +158,22 @@ public class CLI {
 				addResourcesToPeers(peersMap, peersDescriptionFilePath);
 			}
 
-			availability = defineAvailability(cmd, peersMap);
+			long durationOfWorkloadInSeconds = GWAFormat.extractDurationInSecondsOfWorkload(workloadFilePath);
+			int amountOfSecondsInADay = 60 * 60 * 24;
+			durationOfWorkloadInSeconds += amountOfSecondsInADay; // adiciona
+																	// um dia
+																	// além da
+																	// duração
+																	// do
+																	// workload
+			availability = defineAvailability(cmd, peersMap, durationOfWorkloadInSeconds);
 
 			if (availability == null) {
 				System.err.println("Combinação de parâmetros de availability inválida.");
 				System.exit(10);
 			}
+
+			long timeOfFirstSubmission = GWAFormat.extractSubmissionTimeFromFirstJob(workloadFilePath);
 			workload = new OnDemandGWANorduGridWorkload(workloadFilePath, peersMap, timeOfFirstSubmission);
 
 			ArrayList<Peer> peers = new ArrayList<Peer>(peersMap.values());
@@ -209,7 +217,8 @@ public class CLI {
 		}
 	}
 
-	private static Input<AvailabilityRecord> defineAvailability(CommandLine cmd, Map<String, Peer> peersMap) throws FileNotFoundException {
+	private static Input<AvailabilityRecord> defineAvailability(CommandLine cmd, Map<String, Peer> peersMap, long durationOfWorkload)
+			throws FileNotFoundException {
 		Input<AvailabilityRecord> availability = null;
 		if (cmd.hasOption(DEDICATED_RESOURCES)) {
 			availability = new DedicatedResourcesAvailabilityCharacterization(peersMap.values());
@@ -217,7 +226,7 @@ public class CLI {
 			long startingTime = AvailabilityTraceFormat.extractTimeFromFirstAvailabilityRecord(cmd.getOptionValue(AVAILABILITY), true);
 			availability = new AvailabilityCharacterization(cmd.getOptionValue(AVAILABILITY), startingTime, true);
 		} else if (cmd.hasOption(SYNTHETIC_AVAILABILITY)) {
-			availability = new MarkovModelAvailabilityCharacterization(peersMap, 20, 0);
+			availability = new MarkovModelAvailabilityCharacterization(peersMap, durationOfWorkload, 0);
 		}
 		return availability;
 	}
@@ -225,6 +234,13 @@ public class CLI {
 	private static void addResourcesToPeers(Map<String, Peer> peersMap, String peersDescriptionFilePath) throws FileNotFoundException {
 		// AvailabilityTraceFormat.addResourcesToPeer(peersMap.values().iterator().next(),
 		// cmd.getOptionValue(MACHINES_DESCRIPTION));
+		// if ((workload.peek() == null && jobScheduler.isFinished()) ||
+		// availability.peek() == null) {
+		// availability.stop();
+		// workload.stop();
+		// queue.clear();
+		// System.out.println("--------------------------------------------------------------");
+		// }
 		Scanner sc = new Scanner(new File(peersDescriptionFilePath));
 		sc.nextLine();// desconsidera o cabeçalho
 		while (sc.hasNextLine()) {
