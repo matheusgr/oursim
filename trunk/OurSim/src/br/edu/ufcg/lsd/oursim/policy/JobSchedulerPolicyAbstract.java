@@ -175,7 +175,7 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract im
 
 	// E-- end of implementation of TaskEventListener
 
-	// B-- beginning of implementation of WorkerEventListener
+	// B-- beginning of implementation of SpotPriceEventListener
 
 	@Override
 	public void workerAvailable(Event<String> workerEvent) {
@@ -202,5 +202,5 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract im
 	public void workerRunning(Event<String> workerEvent) {
 	}
 
-	// E-- end of implementation of WorkerEventListener
+	// E-- end of implementation of SpotPriceEventListener
 }

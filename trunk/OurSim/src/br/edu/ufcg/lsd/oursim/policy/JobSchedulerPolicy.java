@@ -13,7 +13,7 @@ import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntity;
  * inplicitly many policies to decide what to do when events occurs, like
  * finishs or preemptions of tasks and jobs, through the implementation of
  * methods from the interfaces {@link JobEventListener},
- * {@link TaskEventListener} and {@link WorkerEventListener}. For example, the
+ * {@link TaskEventListener} and {@link SpotPriceEventListener}. For example, the
  * definition of what to do face a task's preemption must to be done by the
  * implementation of
  * {@link TaskEventListener#taskPreempted(br.edu.ufcg.lsd.oursim.dispatchableevents.Event)}.

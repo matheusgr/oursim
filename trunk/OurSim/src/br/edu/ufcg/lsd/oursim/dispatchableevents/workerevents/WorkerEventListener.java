@@ -7,10 +7,10 @@ import br.edu.ufcg.lsd.oursim.dispatchableevents.EventListener;
  * The listener interface for receiving worker events. The class that is
  * interested in processing a worker event either implements this interface (and
  * all the methods it contains) or extends the abstract
- * {@link WorkerEventListenerAdapter} class (overriding only the methods of
+ * {@link SpotPriceEventListenerAdapter} class (overriding only the methods of
  * interest). The listener object created from that class is then registered
  * with a {@link JobEventDispatcher} using the dispatcher's
- * {@link WorkerEventDispatcher#addListener(WorkerEventListener)} method. When
+ * {@link WorkerEventDispatcher#addListener(SpotPriceEventListener)} method. When
  * the worker's status changes by virtue of being up, down, available,
  * unavailable, idle or running, the relevant method in the listener object is
  * invoked, and the workerEvent is passed to it.

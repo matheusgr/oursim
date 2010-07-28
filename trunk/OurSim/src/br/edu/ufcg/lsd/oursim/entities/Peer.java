@@ -349,7 +349,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 		return this.resourceManager.hasResource(machineName);
 	}
 
-	// B-- beginning of implementation of WorkerEventListener
+	// B-- beginning of implementation of SpotPriceEventListener
 
 	@Override
 	public final void workerAvailable(Event<String> workerEvent) {
@@ -388,7 +388,7 @@ public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
 	public void workerRunning(Event<String> workerEvent) {
 	}
 
-	// E-- end of implementation of WorkerEventListener
+	// E-- end of implementation of SpotPriceEventListener
 
 	/**
 	 * Sorts the collection of peer in a way that the preferable peers to

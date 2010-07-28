@@ -1,3 +1,4 @@
+package br.edu.ufcg.lsd.oursim.util;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -8,8 +9,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
 
-import br.edu.ufcg.lsd.oursim.util.GWAFormat;
-import br.edu.ufcg.lsd.oursim.util.GWAJobDescription;
 
 public class GWASplit {
 
