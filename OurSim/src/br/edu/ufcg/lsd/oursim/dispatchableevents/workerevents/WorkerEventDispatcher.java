@@ -10,8 +10,8 @@ import br.edu.ufcg.lsd.oursim.dispatchableevents.EventDispatcher;
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @since 19/05/2010
  * 
- * @see {@link WorkerEventListener}
- * @see {@link WorkerEventFilter}
+ * @see {@link SpotPriceEventListener}
+ * @see {@link SpotPriceEventFilter}
  * 
  */
 public class WorkerEventDispatcher extends EventDispatcher<String, WorkerEventListener, WorkerEventFilter> {
@@ -58,7 +58,7 @@ public class WorkerEventDispatcher extends EventDispatcher<String, WorkerEventLi
 	}
 
 	/**
-	 * @see {@link WorkerEventListener#workerUp(Event)
+	 * @see {@link SpotPriceEventListener#workerUp(Event)
 	 * @param machineName
 	 * @param time
 	 */
@@ -67,7 +67,7 @@ public class WorkerEventDispatcher extends EventDispatcher<String, WorkerEventLi
 	}
 
 	/**
-	 * @see {@link WorkerEventListener#workerDown(Event)
+	 * @see {@link SpotPriceEventListener#workerDown(Event)
 	 * @param machineName
 	 * @param time
 	 */
@@ -76,7 +76,7 @@ public class WorkerEventDispatcher extends EventDispatcher<String, WorkerEventLi
 	}
 
 	/**
-	 * @see {@link WorkerEventListener#workerAvailable(Event)
+	 * @see {@link SpotPriceEventListener#workerAvailable(Event)
 	 * @param machineName
 	 * @param time
 	 */
@@ -85,7 +85,7 @@ public class WorkerEventDispatcher extends EventDispatcher<String, WorkerEventLi
 	}
 
 	/**
-	 * @see {@link WorkerEventListener#workerUnavailable(Event)
+	 * @see {@link SpotPriceEventListener#workerUnavailable(Event)
 	 * @param machineName
 	 * @param time
 	 */
@@ -94,7 +94,7 @@ public class WorkerEventDispatcher extends EventDispatcher<String, WorkerEventLi
 	}
 
 	/**
-	 * @see {@link WorkerEventListener#workerIdle(Event)
+	 * @see {@link SpotPriceEventListener#workerIdle(Event)
 	 * @param machineName
 	 * @param time
 	 */
@@ -103,7 +103,7 @@ public class WorkerEventDispatcher extends EventDispatcher<String, WorkerEventLi
 	}
 
 	/**
-	 * @see {@link WorkerEventListener#workerRunning(Event)
+	 * @see {@link SpotPriceEventListener#workerRunning(Event)
 	 * @param machineName
 	 * @param time
 	 */

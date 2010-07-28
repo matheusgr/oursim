@@ -95,6 +95,8 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	private long replyId;
 	
 	private boolean cancelled = false;
+	
+	private double bidValue;
 
 	public Task(long id, String executable, long duration, long submissionTime, Job sourceJob) {
 		super(id, submissionTime);
@@ -399,6 +401,14 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 				getSourcePeer().getName()).append("duration", duration).append("submissionTime", submissionTime).append("startTime", startTime).append(
 				"finishTime", finishTime).append("targetPeer", targetPeer != null ? targetPeer.getName() : "").append("numberOfpreemptions",
 				numberOfpreemptions).append("executable", executable).append("replyId", replyId).append("cancelled", cancelled).toString();
+	}
+
+	public double getBidValue() {
+		return bidValue;
+	}
+
+	public void setBidValue(double bidValue) {
+		this.bidValue = bidValue;
 	}
 
 }

@@ -1,7 +1,8 @@
-package br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents;
+package br.edu.ufcg.lsd.oursim.dispatchableevents.spotinstances;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.EventFilter;
+import br.edu.ufcg.lsd.oursim.spotinstances.SpotPrice;
 
 /**
  * 
@@ -13,21 +14,21 @@ import br.edu.ufcg.lsd.oursim.dispatchableevents.EventFilter;
  * @since 19/05/2010
  * 
  */
-public interface WorkerEventFilter extends EventFilter<Event<String>> {
+public interface SpotPriceEventFilter extends EventFilter<Event<SpotPrice>> {
 
 	/**
 	 * A lenient SpotPriceEventFilter that accepts all events.
 	 */
-	WorkerEventFilter ACCEPT_ALL = new WorkerEventFilter() {
+	SpotPriceEventFilter ACCEPT_ALL = new SpotPriceEventFilter() {
 
 		@Override
-		public boolean accept(Event<String> workerEvent) {
+		public boolean accept(Event<SpotPrice> spotPriceEvent) {
 			return true;
 		}
 
 	};
 
 	@Override
-	boolean accept(Event<String> workerEvent);
+	boolean accept(Event<SpotPrice> spotPriceEvent);
 
 }
