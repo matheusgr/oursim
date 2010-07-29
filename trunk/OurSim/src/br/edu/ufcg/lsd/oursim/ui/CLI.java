@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
@@ -35,6 +37,7 @@ import org.apache.commons.lang.time.StopWatch;
 import br.edu.ufcg.lsd.oursim.OurSim;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventCounter;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
+import br.edu.ufcg.lsd.oursim.dispatchableevents.spotinstances.SpotPriceEventDispatcher;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventCounter;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventDispatcher;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
@@ -46,7 +49,9 @@ import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityCharacterization
 import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.io.input.availability.DedicatedResourcesAvailabilityCharacterization;
 import br.edu.ufcg.lsd.oursim.io.input.availability.MarkovModelAvailabilityCharacterization;
+import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPriceFluctuation;
 import br.edu.ufcg.lsd.oursim.io.input.workload.OnDemandGWANorduGridWorkload;
+import br.edu.ufcg.lsd.oursim.io.input.workload.OnDemandGWANorduGridWorkloadWithBidValue;
 import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
 import br.edu.ufcg.lsd.oursim.io.output.JobPrintOutput;
 import br.edu.ufcg.lsd.oursim.io.output.PrintOutput;
@@ -60,8 +65,11 @@ import br.edu.ufcg.lsd.oursim.policy.OurGridReplicationScheduler;
 import br.edu.ufcg.lsd.oursim.policy.OurGridScheduler;
 import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
+import br.edu.ufcg.lsd.oursim.spotinstances.SpotInstancesSimulator;
+import br.edu.ufcg.lsd.oursim.spotinstances.SpotPrice;
 import br.edu.ufcg.lsd.oursim.util.AvailabilityTraceFormat;
 import br.edu.ufcg.lsd.oursim.util.GWAFormat;
+import br.edu.ufcg.lsd.oursim.util.SpotInstaceTraceFormat;
 
 public class CLI {
 
@@ -95,6 +103,10 @@ public class CLI {
 
 	private static final String OUTPUT = "o";
 
+	private static final String SPOT_INSTANCES = "spot";
+
+	private static final String BID_VALUE = "bid";
+
 	private static final String HELP = "help";
 
 	private static final String USAGE = "usage";
@@ -112,10 +124,14 @@ public class CLI {
 	 * @param args
 	 * @throws FileNotFoundException
 	 */
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 
-		 args = "-v -w resources/nordugrid_janeiro_2006.txt -s replication -r 3 -pd resources/nordugrid_site_description.txt -d -o oursim_trace.txt".split("\\s+");
-		 args = "-w resources/nordugrid_janeiro_2006.txt -s replication -r 3 -pd resources/nordugrid_site_description.txt -synthetic_av -o oursim_trace.txt".split("\\s+");
+		args = "-v -w resources/nordugrid_janeiro_2006.txt -s replication -r 3 -pd resources/nordugrid_site_description.txt -d -o oursim_trace.txt"
+				.split("\\s+");
+		args = "-w resources/nordugrid_janeiro_2006.txt -s replication -r 3 -pd resources/nordugrid_site_description.txt -synthetic_av -o oursim_trace.txt"
+				.split("\\s+");
+		args = "-spot -bid 0.039 -w resources/nordugrid_setembro_2005.txt -av /home/edigley/local/traces/spot_instances/spot-instance-prices/eu-west-1.linux.m1.small.csv -o oursim_trace.txt"
+				.split("\\s+");
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
@@ -133,6 +149,8 @@ public class CLI {
 				JobEventDispatcher.getInstance().addListener(new JobPrintOutput());
 				TaskEventDispatcher.getInstance().addListener(new TaskPrintOutput());
 				WorkerEventDispatcher.getInstance().addListener(new WorkerEventsPrintOutput());
+				EventQueue.LOG = true;
+				EventQueue.LOG_FILEPATH = "events_oursim.txt";
 			}
 
 			JobEventCounter jobEventCounter = new JobEventCounter();
@@ -142,39 +160,42 @@ public class CLI {
 			TaskEventDispatcher.getInstance().addListener(taskEventCounter);
 
 			OurSim oursim = null;
-			Input<AvailabilityRecord> availability = null;
+			Input<? extends AvailabilityRecord> availability = null;
 			Workload workload = null;
 			JobSchedulerPolicy jobScheduler = null;
 			Map<String, Peer> peersMap = null;
 
-			ResourceSharingPolicy sharingPolicy = cmd.hasOption(NOF) ? NoFSharingPolicy.getInstance() : FifoSharingPolicy.getInstance();
+			if (!cmd.hasOption(SPOT_INSTANCES)) {
+				ResourceSharingPolicy sharingPolicy = cmd.hasOption(NOF) ? NoFSharingPolicy.getInstance() : FifoSharingPolicy.getInstance();
+				int numberOfResourcesByPeer = cmd.hasOption(NUM_RESOURCES_BY_PEER) ? Integer.parseInt(cmd.getOptionValue(NUM_RESOURCES_BY_PEER)) : 0;
+				peersMap = GWAFormat.extractPeersFromGWAFile(workloadFilePath, numberOfResourcesByPeer, sharingPolicy);
+				if (numberOfResourcesByPeer == 0 && cmd.hasOption(PEERS_DESCRIPTION)) {
+					String peersDescriptionFilePath = cmd.getOptionValue(PEERS_DESCRIPTION);
+					addResourcesToPeers(peersMap, peersDescriptionFilePath);
+				}
+				long durationOfWorkloadInSeconds = GWAFormat.extractDurationInSecondsOfWorkload(workloadFilePath);
+				int amountOfSecondsInADay = 60 * 60 * 24;
+				// adiciona um dia além da duração do workload
+				durationOfWorkloadInSeconds += amountOfSecondsInADay;
+				availability = defineAvailability(cmd, peersMap, durationOfWorkloadInSeconds);
+				long timeOfFirstSubmission = GWAFormat.extractSubmissionTimeFromFirstJob(workloadFilePath);
+				workload = new OnDemandGWANorduGridWorkload(workloadFilePath, peersMap, timeOfFirstSubmission);
+			} else {
+				peersMap = GWAFormat.extractPeersFromGWAFile(workloadFilePath, 0, FifoSharingPolicy.getInstance());
+				String spotTraceFilePath = cmd.getOptionValue(AVAILABILITY);
+				long timeOfFirstSpotPrice = SpotInstaceTraceFormat.extractTimeFromFirstAvailabilityRecord(spotTraceFilePath);
+				availability = new SpotPriceFluctuation(spotTraceFilePath, timeOfFirstSpotPrice);
+				long timeOfFirstSubmission = GWAFormat.extractSubmissionTimeFromFirstJob(workloadFilePath);
+				String optionValue = cmd.getOptionValue(BID_VALUE);
+				double bidValue = Double.parseDouble(optionValue);
+				workload = new OnDemandGWANorduGridWorkloadWithBidValue(workloadFilePath, peersMap, timeOfFirstSubmission, bidValue);
 
-			int numberOfResourcesByPeer = cmd.hasOption(NUM_RESOURCES_BY_PEER) ? Integer.parseInt(cmd.getOptionValue(NUM_RESOURCES_BY_PEER)) : 0;
-
-			peersMap = GWAFormat.extractPeersFromGWAFile(workloadFilePath, numberOfResourcesByPeer, sharingPolicy);
-
-			if (numberOfResourcesByPeer == 0 && cmd.hasOption(PEERS_DESCRIPTION)) {
-				String peersDescriptionFilePath = cmd.getOptionValue(PEERS_DESCRIPTION);
-				addResourcesToPeers(peersMap, peersDescriptionFilePath);
 			}
-
-			long durationOfWorkloadInSeconds = GWAFormat.extractDurationInSecondsOfWorkload(workloadFilePath);
-			int amountOfSecondsInADay = 60 * 60 * 24;
-			durationOfWorkloadInSeconds += amountOfSecondsInADay; // adiciona
-																	// um dia
-																	// além da
-																	// duração
-																	// do
-																	// workload
-			availability = defineAvailability(cmd, peersMap, durationOfWorkloadInSeconds);
 
 			if (availability == null) {
 				System.err.println("Combinação de parâmetros de availability inválida.");
 				System.exit(10);
 			}
-
-			long timeOfFirstSubmission = GWAFormat.extractSubmissionTimeFromFirstJob(workloadFilePath);
-			workload = new OnDemandGWANorduGridWorkload(workloadFilePath, peersMap, timeOfFirstSubmission);
 
 			ArrayList<Peer> peers = new ArrayList<Peer>(peersMap.values());
 
@@ -259,16 +280,22 @@ public class CLI {
 
 	private static JobSchedulerPolicy defineScheduler(CommandLine cmd, ArrayList<Peer> peers) {
 		JobSchedulerPolicy jobScheduler = null;
-		if (cmd.hasOption(SCHEDULER)) {
-			String scheduler = cmd.getOptionValue(SCHEDULER);
-			if (scheduler.equals("persistent")) {
-				jobScheduler = new OurGridPersistentScheduler(peers);
-			} else if (scheduler.equals("replication") && cmd.hasOption(REPLIES)) {
-				int numberOfReplies = Integer.parseInt(cmd.getOptionValue(REPLIES));
-				jobScheduler = new OurGridReplicationScheduler(peers, numberOfReplies);
-			}
+		if (cmd.hasOption(SPOT_INSTANCES)) {
+			SpotPrice initialSpotPrice = new SpotPrice("", new Date(), 0.1);
+			jobScheduler = new SpotInstancesSimulator(peers.get(0), initialSpotPrice);
+			SpotPriceEventDispatcher.getInstance().addListener((SpotInstancesSimulator) jobScheduler);
 		} else {
-			jobScheduler = new OurGridScheduler(peers);
+			if (cmd.hasOption(SCHEDULER)) {
+				String scheduler = cmd.getOptionValue(SCHEDULER);
+				if (scheduler.equals("persistent")) {
+					jobScheduler = new OurGridPersistentScheduler(peers);
+				} else if (scheduler.equals("replication") && cmd.hasOption(REPLIES)) {
+					int numberOfReplies = Integer.parseInt(cmd.getOptionValue(REPLIES));
+					jobScheduler = new OurGridReplicationScheduler(peers, numberOfReplies);
+				}
+			} else {
+				jobScheduler = new OurGridScheduler(peers);
+			}
 		}
 		return jobScheduler;
 	}
@@ -287,6 +314,8 @@ public class CLI {
 		options.addOption(PEERS_DESCRIPTION, "peers_description", true, "Arquivo descrevendo os peers.");
 		options.addOption(NODE_MIPS_RATING, "speed", true, "A velocidade de cada máquina.");
 		options.addOption(NOF, "nof", false, "Utiliza a Rede de Favores (NoF).");
+		options.addOption(SPOT_INSTANCES, "spot_instances", false, "Simular modelo amazon spot instances.");
+		options.addOption(BID_VALUE, "bid_value", true, "Valor do bid para alocação de instâncias no modelo amazon spot instances..");
 		options.addOption(DEDICATED_RESOURCES, "dedicated", false, "Indica que os recursos são todos dedicados.");
 		options.addOption(VERBOSE, "verbose", false, "Informa todos os eventos importantes.");
 		options.addOption(SYNTHETIC_AVAILABILITY, "synthetic_availability", false, "Indica que a disponibilidade dos recursos deve ser gerada sinteticamente.");

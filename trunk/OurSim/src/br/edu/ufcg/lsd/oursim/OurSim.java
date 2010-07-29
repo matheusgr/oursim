@@ -48,7 +48,7 @@ public class OurSim extends ActiveEntityAbstract {
 	 * the characterization of the availability of all resources belonging to
 	 * the peers.
 	 */
-	private Input<AvailabilityRecord> availabilityCharacterization;
+	private Input<? extends AvailabilityRecord> availabilityCharacterization;
 
 	/**
 	 * An convenient constructor to simulations that deals <b>only</b> with
@@ -83,7 +83,8 @@ public class OurSim extends ActiveEntityAbstract {
 	 *            the characterization of the availability of all resources
 	 *            belonging to the peers.
 	 */
-	public OurSim(EventQueue queue, List<Peer> peers, JobSchedulerPolicy jobScheduler, Workload workload, Input<AvailabilityRecord> availabilityCharacterization) {
+	public OurSim(EventQueue queue, List<Peer> peers, JobSchedulerPolicy jobScheduler, Workload workload,
+			Input<? extends AvailabilityRecord> availabilityCharacterization) {
 		this.setEventQueue(queue);
 		this.peers = peers;
 		this.jobScheduler = jobScheduler;
@@ -126,7 +127,7 @@ public class OurSim extends ActiveEntityAbstract {
 	 *            the characterization of the availability of all resources
 	 *            belonging to the peers.
 	 */
-	private void run(EventQueue queue, JobSchedulerPolicy jobScheduler, Workload workload, Input<AvailabilityRecord> availability) {
+	private void run(EventQueue queue, JobSchedulerPolicy jobScheduler, Workload workload, Input<? extends AvailabilityRecord> availability) {
 		do {
 			this.addFutureEvents(workload, availability);
 
@@ -157,7 +158,7 @@ public class OurSim extends ActiveEntityAbstract {
 	 * @see {@link #addFutureWorkerEventsToEventQueue(EventQueue, Input)}
 	 * @see {@link #addFutureJobEventsToEventQueue(EventQueue, Workload)}
 	 */
-	private void addFutureEvents(Workload workload, Input<AvailabilityRecord> availability) {
+	private void addFutureEvents(Workload workload, Input<? extends AvailabilityRecord> availability) {
 		this.addFutureWorkerEventsToEventQueue(availability);
 		this.addFutureJobEventsToEventQueue(workload);
 	}
@@ -170,11 +171,13 @@ public class OurSim extends ActiveEntityAbstract {
 	 *            the characterization of the availability of all resources
 	 *            belonging to the peers.
 	 */
-	private void addFutureWorkerEventsToEventQueue(Input<AvailabilityRecord> availability) {
+	private void addFutureWorkerEventsToEventQueue(Input<? extends AvailabilityRecord> availability) {
 		long nextAvRecordTime = (availability.peek() != null) ? availability.peek().getTime() : -1;
 		while (availability.peek() != null && availability.peek().getTime() == nextAvRecordTime) {
 			AvailabilityRecord av = availability.poll();
-			this.addWorkerAvailableEvent(av.getTime(), av.getMachineName(), av.getDuration());
+			this.addAvailabilityRecordEvent(av.getTime(), av);
+			// this.addWorkerAvailableEvent(av.getTime(), av.getMachineName(),
+			// av.getDuration());
 		}
 	}
 

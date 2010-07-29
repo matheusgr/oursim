@@ -8,7 +8,7 @@ public class NewSpotPriceEvent extends SpotPriceTimedEvent {
 	public static final int PRIORITY = 1;
 
 	public NewSpotPriceEvent(SpotPrice spotPrice) {
-		super(spotPrice.getSimulationTime(), PRIORITY, spotPrice);
+		super(spotPrice.getTime(), PRIORITY, spotPrice);
 	}
 
 	@Override

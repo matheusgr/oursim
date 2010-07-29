@@ -5,53 +5,37 @@ import java.util.Date;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
-public class SpotPrice implements Comparable<SpotPrice> {
+import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
 
-	private String instance;
+public class SpotPrice extends AvailabilityRecord {
 
-	private Date time;
-
-	private long simulationTime;
+	private Date dateTime;
 
 	private double price;
 
-	public SpotPrice(String instance, Date time, double price) {
-		this(instance, time, price, 0);
+	public SpotPrice(String instanceType, Date dateTime, double price) {
+		this(instanceType, dateTime, price, 0);
 	}
 
-	public SpotPrice(String instance, Date time, double price, long simulationStartingTime) {
+	public SpotPrice(String instanceType, Date dateTime, double price, long simulationStartingTime) {
+		this(instanceType, (dateTime.getTime() / 1000), price, simulationStartingTime);
+		this.dateTime = dateTime;
+	}
+
+	public SpotPrice(String instanceType, long time, double price, long simulationStartingTime) {
+		super(instanceType, time - simulationStartingTime, Long.MAX_VALUE);
 		assert simulationStartingTime >= 0;
-		this.instance = instance;
-		this.time = time;
 		this.price = price;
-		this.simulationTime = (this.time.getTime() / 1000) - simulationStartingTime;
-	}
-
-	public Date getTime() {
-		return time;
 	}
 
 	public double getPrice() {
 		return price;
 	}
 
-	public String getInstance() {
-		return instance;
-	}
-
-	public long getSimulationTime() {
-		return this.simulationTime;
-	}
-
-	@Override
-	public int compareTo(SpotPrice o) {
-		return (int) (this.simulationTime - o.simulationTime);
-	}
-
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("instance", instance).append("time", time).append("simulationTime",
-				simulationTime).append("price", price).toString();
+		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("instanceType", getMachineName()).append("time", getTime()).append("price",
+				price).append("dateTime", dateTime).toString();
 	}
 
 }
