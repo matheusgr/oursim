@@ -1,4 +1,4 @@
-package br.edu.ufcg.lsd.oursim.spotinstances;
+package br.edu.ufcg.lsd.oursim.io.input.spotinstances;
 
 import java.util.Date;
 

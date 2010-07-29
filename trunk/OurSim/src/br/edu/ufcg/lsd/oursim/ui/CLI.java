@@ -49,6 +49,7 @@ import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityCharacterization
 import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.io.input.availability.DedicatedResourcesAvailabilityCharacterization;
 import br.edu.ufcg.lsd.oursim.io.input.availability.MarkovModelAvailabilityCharacterization;
+import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
 import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPriceFluctuation;
 import br.edu.ufcg.lsd.oursim.io.input.workload.OnDemandGWANorduGridWorkload;
 import br.edu.ufcg.lsd.oursim.io.input.workload.OnDemandGWANorduGridWorkloadWithBidValue;
@@ -64,9 +65,8 @@ import br.edu.ufcg.lsd.oursim.policy.OurGridPersistentScheduler;
 import br.edu.ufcg.lsd.oursim.policy.OurGridReplicationScheduler;
 import br.edu.ufcg.lsd.oursim.policy.OurGridScheduler;
 import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
+import br.edu.ufcg.lsd.oursim.policy.SpotInstancesScheduler;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
-import br.edu.ufcg.lsd.oursim.spotinstances.SpotInstancesSimulator;
-import br.edu.ufcg.lsd.oursim.spotinstances.SpotPrice;
 import br.edu.ufcg.lsd.oursim.util.AvailabilityTraceFormat;
 import br.edu.ufcg.lsd.oursim.util.GWAFormat;
 import br.edu.ufcg.lsd.oursim.util.SpotInstaceTraceFormat;
@@ -282,8 +282,8 @@ public class CLI {
 		JobSchedulerPolicy jobScheduler = null;
 		if (cmd.hasOption(SPOT_INSTANCES)) {
 			SpotPrice initialSpotPrice = new SpotPrice("", new Date(), 0.1);
-			jobScheduler = new SpotInstancesSimulator(peers.get(0), initialSpotPrice);
-			SpotPriceEventDispatcher.getInstance().addListener((SpotInstancesSimulator) jobScheduler);
+			jobScheduler = new SpotInstancesScheduler(peers.get(0), initialSpotPrice);
+			SpotPriceEventDispatcher.getInstance().addListener((SpotInstancesScheduler) jobScheduler);
 		} else {
 			if (cmd.hasOption(SCHEDULER)) {
 				String scheduler = cmd.getOptionValue(SCHEDULER);

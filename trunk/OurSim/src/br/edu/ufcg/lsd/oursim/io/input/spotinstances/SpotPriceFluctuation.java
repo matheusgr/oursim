@@ -7,7 +7,6 @@ import java.util.PriorityQueue;
 import java.util.Scanner;
 
 import br.edu.ufcg.lsd.oursim.io.input.InputAbstract;
-import br.edu.ufcg.lsd.oursim.spotinstances.SpotPrice;
 import br.edu.ufcg.lsd.oursim.util.SpotInstaceTraceFormat;
 
 public class SpotPriceFluctuation extends InputAbstract<SpotPrice> {

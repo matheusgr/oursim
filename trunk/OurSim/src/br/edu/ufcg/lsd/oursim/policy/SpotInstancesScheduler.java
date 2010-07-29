@@ -1,24 +1,23 @@
-package br.edu.ufcg.lsd.oursim.spotinstances;
+package br.edu.ufcg.lsd.oursim.policy;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
-import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventListener;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.spotinstances.SpotPriceEventListener;
-import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventListener;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Machine;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.entities.Processor;
 import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.entities.TaskExecution;
+import br.edu.ufcg.lsd.oursim.io.input.spotinstances.BidValue;
+import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
 import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
-import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityAbstract;
 import br.edu.ufcg.lsd.oursim.util.BidirectionalMap;
 
-public class SpotInstancesSimulator extends ActiveEntityAbstract implements JobSchedulerPolicy, JobEventListener, TaskEventListener, SpotPriceEventListener {
+public class SpotInstancesScheduler extends ActiveEntityAbstract implements JobSchedulerPolicy, SpotPriceEventListener {
 
 	private BidirectionalMap<BidValue, Machine> allocatedMachines;
 
@@ -26,9 +25,11 @@ public class SpotInstancesSimulator extends ActiveEntityAbstract implements JobS
 
 	private SpotPrice currentSpotPrice;
 
+	private long nextMachineId = 0;
+
 	private final Peer thePeer;
 
-	public SpotInstancesSimulator(Peer thePeer, SpotPrice initialSpotPrice) {
+	public SpotInstancesScheduler(Peer thePeer, SpotPrice initialSpotPrice) {
 		this.machine2Task = new BidirectionalMap<Machine, Task>();
 		this.allocatedMachines = new BidirectionalMap<BidValue, Machine>();
 		this.currentSpotPrice = initialSpotPrice;
@@ -51,20 +52,54 @@ public class SpotInstancesSimulator extends ActiveEntityAbstract implements JobS
 	}
 
 	@Override
+	public void addJob(Job job) {
+		for (Task task : job.getTasks()) {
+			this.addSubmitTaskEvent(this.getCurrentTime(), task);
+		}
+	}
+
+	@Override
+	public void addWorkload(Workload workload) {
+		throw new RuntimeException();
+	}
+
+	@Override
+	public boolean isFinished() {
+		throw new RuntimeException();
+	}
+
+	// B-- beginning of implementation of SpotPriceEventListener
+
+	@Override
 	public void newSpotPrice(Event<SpotPrice> spotPriceEvent) {
 		SpotPrice newSpotPrice = spotPriceEvent.getSource();
 		this.currentSpotPrice = newSpotPrice;
 	}
 
+	// E-- End of implementation of SpotPriceEventListener
+
+	// B-- beginning of implementation of JobEventListener
+
 	@Override
-	public void taskFinished(Event<Task> taskEvent) {
-		Machine machine = this.machine2Task.getKey(taskEvent.getSource());
-		this.machine2Task.remove(machine);
-		BidValue bidValue = this.allocatedMachines.getKey(machine);
-		this.allocatedMachines.remove(bidValue);
+	public void jobSubmitted(Event<Job> jobEvent) {
+		this.addJob(jobEvent.getSource());
 	}
 
-	private long nextMachineId = 0;
+	@Override
+	public void jobPreempted(Event<Job> jobEvent) {
+	}
+
+	@Override
+	public void jobFinished(Event<Job> jobEvent) {
+	}
+
+	@Override
+	public void jobStarted(Event<Job> jobEvent) {
+	}
+
+	// E-- end of implementation of JobEventListener
+
+	// B-- beginning of implementation of TaskEventListener
 
 	@Override
 	public void taskSubmitted(Event<Task> taskEvent) {
@@ -87,11 +122,11 @@ public class SpotInstancesSimulator extends ActiveEntityAbstract implements JobS
 	}
 
 	@Override
-	public void taskCancelled(Event<Task> taskEvent) {
-	}
-
-	@Override
-	public void taskPreempted(Event<Task> taskEvent) {
+	public void taskFinished(Event<Task> taskEvent) {
+		Machine machine = this.machine2Task.getKey(taskEvent.getSource());
+		this.machine2Task.remove(machine);
+		BidValue bidValue = this.allocatedMachines.getKey(machine);
+		this.allocatedMachines.remove(bidValue);
 	}
 
 	@Override
@@ -99,41 +134,28 @@ public class SpotInstancesSimulator extends ActiveEntityAbstract implements JobS
 	}
 
 	@Override
-	public void jobFinished(Event<Job> jobEvent) {
+	public void taskPreempted(Event<Task> taskEvent) {
 	}
 
 	@Override
-	public void jobPreempted(Event<Job> jobEvent) {
+	public void taskCancelled(Event<Task> taskEvent) {
 	}
 
-	@Override
-	public void jobStarted(Event<Job> jobEvent) {
-	}
+	// E-- end of implementation of TaskEventListener
 
-	@Override
-	public void jobSubmitted(Event<Job> jobEvent) {
-		for (Task task : jobEvent.getSource().getTasks()) {
-			this.addSubmitTaskEvent(this.getCurrentTime(), task);
-		}
-	}
-
-	@Override
-	public void addJob(Job job) {
-		throw new RuntimeException();
-	}
-
-	@Override
-	public void addWorkload(Workload workload) {
-		throw new RuntimeException();
-	}
-
-	@Override
-	public boolean isFinished() {
-		throw new RuntimeException();
-	}
+	// B-- beginning of implementation of SpotPriceEventListener
 
 	@Override
 	public void workerAvailable(Event<String> workerEvent) {
+		this.schedule();
+	}
+
+	@Override
+	public void workerUnavailable(Event<String> workerEvent) {
+	}
+
+	@Override
+	public void workerUp(Event<String> workerEvent) {
 	}
 
 	@Override
@@ -148,12 +170,5 @@ public class SpotInstancesSimulator extends ActiveEntityAbstract implements JobS
 	public void workerRunning(Event<String> workerEvent) {
 	}
 
-	@Override
-	public void workerUnavailable(Event<String> workerEvent) {
-	}
-
-	@Override
-	public void workerUp(Event<String> workerEvent) {
-	}
-
+	// E-- end of implementation of SpotPriceEventListener
 }

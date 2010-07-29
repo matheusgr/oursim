@@ -1,4 +1,4 @@
-package br.edu.ufcg.lsd.oursim.spotinstances;
+package br.edu.ufcg.lsd.oursim.io.input.spotinstances;
 
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.lang.builder.ToStringBuilder;

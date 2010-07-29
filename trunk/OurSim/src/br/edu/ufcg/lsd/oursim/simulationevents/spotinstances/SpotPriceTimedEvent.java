@@ -1,7 +1,7 @@
 package br.edu.ufcg.lsd.oursim.simulationevents.spotinstances;
 
+import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
 import br.edu.ufcg.lsd.oursim.simulationevents.TimedEventAbstract;
-import br.edu.ufcg.lsd.oursim.spotinstances.SpotPrice;
 
 /**
  * 

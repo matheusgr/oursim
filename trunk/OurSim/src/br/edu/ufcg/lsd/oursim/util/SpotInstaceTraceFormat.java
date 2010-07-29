@@ -7,7 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Scanner;
 
-import br.edu.ufcg.lsd.oursim.spotinstances.SpotPrice;
+import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
 
 public class SpotInstaceTraceFormat {
 
