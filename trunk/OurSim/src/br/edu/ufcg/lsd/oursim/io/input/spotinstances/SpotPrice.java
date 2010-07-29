@@ -7,7 +7,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 
 import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
 
-public class SpotPrice extends AvailabilityRecord {
+public class SpotPrice extends AvailabilityRecord implements SpotValue {
 
 	private Date dateTime;
 
@@ -28,6 +28,7 @@ public class SpotPrice extends AvailabilityRecord {
 		this.price = price;
 	}
 
+	@Override
 	public double getPrice() {
 		return price;
 	}

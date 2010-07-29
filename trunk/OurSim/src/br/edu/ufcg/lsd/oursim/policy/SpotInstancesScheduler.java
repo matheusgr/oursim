@@ -1,6 +1,8 @@
 package br.edu.ufcg.lsd.oursim.policy;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
@@ -13,6 +15,7 @@ import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.entities.TaskExecution;
 import br.edu.ufcg.lsd.oursim.io.input.spotinstances.BidValue;
 import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
+import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotValue;
 import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
 import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityAbstract;
 import br.edu.ufcg.lsd.oursim.util.BidirectionalMap;
@@ -23,16 +26,22 @@ public class SpotInstancesScheduler extends ActiveEntityAbstract implements JobS
 
 	private BidirectionalMap<Machine, Task> machine2Task;
 
+	private Map<Task, Double> accountedCost;
+
 	private SpotPrice currentSpotPrice;
 
 	private long nextMachineId = 0;
 
 	private final Peer thePeer;
 
-	public SpotInstancesScheduler(Peer thePeer, SpotPrice initialSpotPrice) {
+	private long machineSpeed;
+
+	public SpotInstancesScheduler(Peer thePeer, SpotPrice initialSpotPrice, long machineSpeed) {
 		this.machine2Task = new BidirectionalMap<Machine, Task>();
 		this.allocatedMachines = new BidirectionalMap<BidValue, Machine>();
+		this.accountedCost = new HashMap<Task, Double>();
 		this.currentSpotPrice = initialSpotPrice;
+		this.machineSpeed = machineSpeed;
 		this.thePeer = thePeer;
 	}
 
@@ -71,9 +80,23 @@ public class SpotInstancesScheduler extends ActiveEntityAbstract implements JobS
 	// B-- beginning of implementation of SpotPriceEventListener
 
 	@Override
-	public void newSpotPrice(Event<SpotPrice> spotPriceEvent) {
-		SpotPrice newSpotPrice = spotPriceEvent.getSource();
+	public void newSpotPrice(Event<SpotValue> spotValueEvent) {
+		SpotPrice newSpotPrice = (SpotPrice) spotValueEvent.getSource();
 		this.currentSpotPrice = newSpotPrice;
+	}
+
+	@Override
+	public void fullHourCompleted(Event<SpotValue> spotValueEvent) {
+		BidValue bidValue = (BidValue) spotValueEvent.getSource();
+		Task task = bidValue.getTask();
+		if (!task.isFinished()) {
+			assert this.accountedCost.containsKey(task);
+			double totalCost = this.accountedCost.get(task) + currentSpotPrice.getPrice();
+			this.accountedCost.put(task, totalCost);
+			task.setCost(totalCost);
+		} else {
+			// já terminou antes de completar uma hora.
+		}
 	}
 
 	// E-- End of implementation of SpotPriceEventListener
@@ -107,8 +130,9 @@ public class SpotInstancesScheduler extends ActiveEntityAbstract implements JobS
 		assert this.machine2Task.size() == this.allocatedMachines.size();
 		if (task.getBidValue() >= currentSpotPrice.getPrice()) {
 			String machineName = "m_" + nextMachineId++;
-			Machine newMachine = new Machine(machineName, Processor.EC2_COMPUTE_UNIT.getSpeed());
-			BidValue bidValue = new BidValue(machineName, getCurrentTime(), task.getBidValue());
+			Machine newMachine = new Machine(machineName, machineSpeed);
+			BidValue bidValue = new BidValue(machineName, getCurrentTime(), task.getBidValue(), task);
+			this.addFullHourCompletedEvent(bidValue);
 			this.machine2Task.put(newMachine, task);
 			this.allocatedMachines.put(bidValue, newMachine);
 			long currentTime = getCurrentTime();
@@ -116,7 +140,8 @@ public class SpotInstancesScheduler extends ActiveEntityAbstract implements JobS
 			task.setTaskExecution(new TaskExecution(task, defaultProcessor, currentTime));
 			task.setStartTime(currentTime);
 			task.setTargetPeer(thePeer);
-			addStartedTaskEvent(task);
+			this.accountedCost.put(task, 0.0);
+			this.addStartedTaskEvent(task);
 		}
 		assert this.machine2Task.size() == this.allocatedMachines.size();
 	}
@@ -127,6 +152,11 @@ public class SpotInstancesScheduler extends ActiveEntityAbstract implements JobS
 		this.machine2Task.remove(machine);
 		BidValue bidValue = this.allocatedMachines.getKey(machine);
 		this.allocatedMachines.remove(bidValue);
+		Task task = bidValue.getTask();
+		assert this.accountedCost.containsKey(task);
+		double totalCost = this.accountedCost.get(task) + currentSpotPrice.getPrice();
+		this.accountedCost.put(task, totalCost);
+		task.setCost(totalCost);
 	}
 
 	@Override
@@ -147,7 +177,6 @@ public class SpotInstancesScheduler extends ActiveEntityAbstract implements JobS
 
 	@Override
 	public void workerAvailable(Event<String> workerEvent) {
-		this.schedule();
 	}
 
 	@Override

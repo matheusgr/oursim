@@ -2,7 +2,7 @@ package br.edu.ufcg.lsd.oursim.dispatchableevents.spotinstances;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.EventListener;
-import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
+import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotValue;
 
 /**
  *
@@ -13,6 +13,8 @@ import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
  */
 public interface SpotPriceEventListener extends EventListener {
 
-	void newSpotPrice(Event<SpotPrice> spotPriceEvent);
+	void newSpotPrice(Event<SpotValue> spotPriceEvent);
+
+	void fullHourCompleted(Event<SpotValue> spotPriceEvent);
 
 }

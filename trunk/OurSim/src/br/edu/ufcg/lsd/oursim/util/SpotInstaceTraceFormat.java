@@ -20,14 +20,23 @@ public class SpotInstaceTraceFormat {
 		String time = scLine.next();
 		Double price = Double.parseDouble(scLine.next());
 		Date instant = formatter.parse(time);
-		return new SpotPrice(null, instant, price, startingTime);
+		return new SpotPrice("nome da máquina", instant, price, startingTime);
 	}
 
-	public static long extractTimeFromFirstAvailabilityRecord(String spotTraceFilePath) throws ParseException, FileNotFoundException {
+	public static long extractTimeFromFirstSpotPrice(String spotTraceFilePath) throws ParseException, FileNotFoundException {
+		// Scanner sc = new Scanner(new File(spotTraceFilePath));
+		// SpotPrice firestSpotPriceRecord =
+		// SpotInstaceTraceFormat.createSpotPriceFromSpotTraceRecord(sc.nextLine(),
+		// 0);
+		// long startingTime = firestSpotPriceRecord.getTime();
+		// return startingTime;
+		return extractFirstSpotPrice(spotTraceFilePath).getTime();
+	}
+
+	public static SpotPrice extractFirstSpotPrice(String spotTraceFilePath) throws ParseException, FileNotFoundException {
 		Scanner sc = new Scanner(new File(spotTraceFilePath));
 		SpotPrice firestSpotPriceRecord = SpotInstaceTraceFormat.createSpotPriceFromSpotTraceRecord(sc.nextLine(), 0);
-		long startingTime = firestSpotPriceRecord.getTime();
-		return startingTime;
+		return firestSpotPriceRecord;
 	}
 
 }

@@ -142,8 +142,7 @@ public class OurSim extends ActiveEntityAbstract {
 			// after the invocation of the actions of all events in current
 			// time, the scheduler must be invoked
 			jobScheduler.schedule();
-
-		} while (queue.peek() != null);
+		} while (queue.peek() != null || workload.peek() != null || availability.peek() != null);
 	}
 
 	/**

@@ -1,22 +1,27 @@
 package br.edu.ufcg.lsd.oursim.io.input.spotinstances;
 
-import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
-public class BidValue implements Comparable<BidValue> {
+import br.edu.ufcg.lsd.oursim.entities.Task;
+
+public class BidValue implements SpotValue, Comparable<BidValue> {
 
 	private String instance;
+
+	private Task task;
 
 	private long time;
 
 	private double value;
 
-	public BidValue(String instance, long time, double value) {
+	public BidValue(String instance, long time, double value, Task task) {
 		this.instance = instance;
 		this.time = time;
 		this.value = value;
+		this.task = task;
 	}
 
 	public long getTime() {
@@ -25,6 +30,11 @@ public class BidValue implements Comparable<BidValue> {
 
 	public double getValue() {
 		return value;
+	}
+
+	@Override
+	public double getPrice() {
+		return getValue();
 	}
 
 	public String getInstance() {
@@ -57,6 +67,10 @@ public class BidValue implements Comparable<BidValue> {
 	@Override
 	public int hashCode() {
 		return new HashCodeBuilder().append(instance).append(time).append(value).toHashCode();
+	}
+
+	public Task getTask() {
+		return task;
 	}
 
 }

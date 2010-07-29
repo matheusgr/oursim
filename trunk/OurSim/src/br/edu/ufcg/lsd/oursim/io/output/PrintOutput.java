@@ -44,6 +44,7 @@ public final class PrintOutput implements Output {
 	.concat("startTime").concat(SEP)
 	.concat("runtimeDuration").concat(SEP)
 	.concat("makeSpan").concat(SEP)
+	.concat("cost").concat(SEP)
 	.concat("queuingTime").concat(SEP)
 	.concat("numberOfPreemption");
 
@@ -54,6 +55,7 @@ public final class PrintOutput implements Output {
 	.concat("startTime").concat(SEP)
 	.concat("runtimeDuration").concat(SEP)
 	.concat("makeSpan").concat(SEP)
+	.concat("cost").concat(SEP)
 	.concat("queuingTime").concat(SEP)
 	.concat("numberOfPreemption");
 
@@ -120,6 +122,7 @@ public final class PrintOutput implements Output {
 			.append(duration).append(SEP)
 			.append("NA").append(SEP)
 			.append("NA").append(SEP)
+			.append("NA").append(SEP)
 			.append("NA");
 			this.out.println(sb);
 	}
@@ -139,11 +142,35 @@ public final class PrintOutput implements Output {
 	@Override
 	public final void jobPreempted(Event<Job> jobEvent) {
 		if (showProgress) {
+//			Job job = jobEvent.getSource();
+//			long id = job.getId();
+//			long preemptionTime = jobEvent.getTime();
+//			StringBuilder sb = new StringBuilder(PREEMPT_LABEL);
+//			sb.append(SEP).append(preemptionTime).append(SEP).append(id);
+//			this.out.println(sb);
 			Job job = jobEvent.getSource();
-			long id = job.getId();
-			long preemptionTime = jobEvent.getTime();
+			
+			long jobId = job.getId();
+			long submissionTime = job.getSubmissionTime();
+			long finishTime = job.getFinishTime();
+			long startTime = job.getStartTime();
+			long runTimeDuration = job.getRunningTime();
+			long makeSpan = job.getMakeSpan();
+			double cost = job.getCost();
+			long queuingTime = job.getQueueingTime();
+			long numberOfPreemptions = job.getNumberOfPreemptions();
+
 			StringBuilder sb = new StringBuilder(PREEMPT_LABEL);
-			sb.append(SEP).append(preemptionTime).append(SEP).append(id);
+			sb.append(SEP)
+			.append(finishTime).append(SEP)
+			.append(jobId).append(SEP)
+			.append(submissionTime).append(SEP)
+			.append(startTime).append(SEP)
+			.append(runTimeDuration).append(SEP)
+			.append(makeSpan).append(SEP)
+			.append(cost).append(SEP)
+			.append(queuingTime).append(SEP)
+			.append(numberOfPreemptions);
 			this.out.println(sb);
 		}
 	}
@@ -159,6 +186,7 @@ public final class PrintOutput implements Output {
 		long startTime = job.getStartTime();
 		long runTimeDuration = job.getRunningTime();
 		long makeSpan = job.getMakeSpan();
+		double cost = job.getCost();
 		long queuingTime = job.getQueueingTime();
 		long numberOfPreemptions = job.getNumberOfPreemptions();
 
@@ -170,6 +198,7 @@ public final class PrintOutput implements Output {
 		.append(startTime).append(SEP)
 		.append(runTimeDuration).append(SEP)
 		.append(makeSpan).append(SEP)
+		.append(cost).append(SEP)
 		.append(queuingTime).append(SEP)
 		.append(numberOfPreemptions);
 		this.out.println(sb);

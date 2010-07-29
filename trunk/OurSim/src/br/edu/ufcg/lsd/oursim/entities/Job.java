@@ -343,4 +343,12 @@ public class Job extends ComputableElement implements Comparable<Job> {
 				sourcePeer.getName()).append("#tasks", tasks.size()).toString();
 	}
 
+	public double getCost() {
+		double totalCost = 0;
+		for (Task task : tasks) {
+			totalCost += task.getCost();
+		}
+		return totalCost;
+	}
+
 }

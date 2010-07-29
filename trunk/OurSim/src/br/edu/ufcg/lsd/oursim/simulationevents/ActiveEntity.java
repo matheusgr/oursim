@@ -3,6 +3,7 @@ package br.edu.ufcg.lsd.oursim.simulationevents;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
+import br.edu.ufcg.lsd.oursim.io.input.spotinstances.BidValue;
 import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
 
 /**
@@ -18,6 +19,8 @@ import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
 public interface ActiveEntity {
 
 	void addNewSpotPriceEvent(SpotPrice spotPrice);
+	
+	void addFullHourCompletedEvent(BidValue bidValue);
 	
 	/**
 	 * Set in this entity the event queue. All the entitys must share the same
