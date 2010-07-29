@@ -2,6 +2,8 @@ package br.edu.ufcg.lsd.oursim.simulationevents;
 
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Task;
+import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
+import br.edu.ufcg.lsd.oursim.spotinstances.SpotPrice;
 
 /**
  * 
@@ -15,6 +17,8 @@ import br.edu.ufcg.lsd.oursim.entities.Task;
  */
 public interface ActiveEntity {
 
+	void addNewSpotPriceEvent(SpotPrice spotPrice);
+	
 	/**
 	 * Set in this entity the event queue. All the entitys must share the same
 	 * instance of the eventqueue to maintain consistency.
@@ -126,5 +130,7 @@ public interface ActiveEntity {
 	void addCancelledTaskEvent(Task task);
 
 	void addCancelledTaskEvent(long preemptionTime, Task task);
+
+	void addAvailabilityRecordEvent(long time, AvailabilityRecord avRecord);
 
 }

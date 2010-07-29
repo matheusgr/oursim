@@ -35,8 +35,8 @@ public class SpotPriceFluctuation extends InputAbstract<SpotPrice> {
 		long previousTime = -1;
 		while (sc.hasNextLine()) {
 			SpotPrice spotPriceRecord = SpotInstaceTraceFormat.createSpotPriceFromSpotTraceRecord(sc.nextLine(), this.startingTime);
-			assert spotPriceRecord.getSimulationTime() >= previousTime;
-			previousTime = spotPriceRecord.getSimulationTime();
+			assert spotPriceRecord.getTime() >= previousTime;
+			previousTime = spotPriceRecord.getTime();
 			this.inputs.add(spotPriceRecord);
 		}
 	}

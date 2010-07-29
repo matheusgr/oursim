@@ -11,6 +11,7 @@ import java.util.Scanner;
 
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
+import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 
 public final class GWAFormat {

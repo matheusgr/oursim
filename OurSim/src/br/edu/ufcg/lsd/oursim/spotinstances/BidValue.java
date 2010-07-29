@@ -1,5 +1,10 @@
 package br.edu.ufcg.lsd.oursim.spotinstances;
 
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.EqualsBuilder;
+
 public class BidValue implements Comparable<BidValue> {
 
 	private String instance;
@@ -28,7 +33,30 @@ public class BidValue implements Comparable<BidValue> {
 
 	@Override
 	public int compareTo(BidValue o) {
-		return (int) (this.time - o.time);
+		int timeDiff = (int) (this.time - o.time);
+		if (timeDiff == 0) {
+			return this.hashCode() - o.hashCode();
+		} else {
+			return timeDiff;
+		}
+	}
+
+	@Override
+	public String toString() {
+		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("instance", instance).append("time", time).append("value", value).toString();
+	}
+
+	@Override
+	public boolean equals(final Object other) {
+		if (!(other instanceof BidValue))
+			return false;
+		BidValue castOther = (BidValue) other;
+		return new EqualsBuilder().append(instance, castOther.instance).append(time, castOther.time).append(value, castOther.value).isEquals();
+	}
+
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder().append(instance).append(time).append(value).toHashCode();
 	}
 
 }

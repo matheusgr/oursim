@@ -28,7 +28,8 @@ import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.PreemptedTaskEvent;
  */
 public final class EventQueue implements Closeable {
 
-	private static final boolean LOG = false;
+	public static boolean LOG = false;
+	public static String LOG_FILEPATH = "events_oursim.txt";
 
 	/**
 	 * the current simulation's time.
@@ -63,7 +64,7 @@ public final class EventQueue implements Closeable {
 		task2FinishTaskEvent = new HashMap<Task, FinishTaskEvent>();
 		if (LOG) {
 			try {
-				bw = new BufferedWriter(new FileWriter("events_oursim.txt"));
+				bw = new BufferedWriter(new FileWriter(LOG_FILEPATH));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -162,7 +163,7 @@ public final class EventQueue implements Closeable {
 			}
 			this.currentTime = pq.peek().getTime();
 		}
-//		System.out.println(pq.size());
+		// System.out.println(pq.size());
 		return pq.poll();
 	}
 
