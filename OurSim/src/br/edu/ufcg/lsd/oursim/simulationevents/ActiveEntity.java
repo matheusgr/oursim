@@ -3,7 +3,7 @@ package br.edu.ufcg.lsd.oursim.simulationevents;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
-import br.edu.ufcg.lsd.oursim.spotinstances.SpotPrice;
+import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
 
 /**
  * 

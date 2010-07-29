@@ -1,7 +1,7 @@
 package br.edu.ufcg.lsd.oursim.simulationevents.spotinstances;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.spotinstances.SpotPriceEventDispatcher;
-import br.edu.ufcg.lsd.oursim.spotinstances.SpotPrice;
+import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
 
 public class NewSpotPriceEvent extends SpotPriceTimedEvent {
 

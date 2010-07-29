@@ -3,6 +3,7 @@ package br.edu.ufcg.lsd.oursim.simulationevents;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
+import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.FinishJobEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.PreemptedJobEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.StartedJobEvent;
@@ -15,7 +16,6 @@ import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.StartedTaskEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.SubmitTaskEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.workerevents.WorkerAvailableEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.workerevents.WorkerUnavailableEvent;
-import br.edu.ufcg.lsd.oursim.spotinstances.SpotPrice;
 
 /**
  * 
