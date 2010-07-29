@@ -18,10 +18,8 @@ package br.edu.ufcg.lsd.oursim.ui;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
@@ -130,7 +128,7 @@ public class CLI {
 				.split("\\s+");
 		args = "-w resources/nordugrid_janeiro_2006.txt -s replication -r 3 -pd resources/nordugrid_site_description.txt -synthetic_av -o oursim_trace.txt"
 				.split("\\s+");
-		args = "-spot -bid 0.039 -w resources/nordugrid_setembro_2005.txt -av /home/edigley/local/traces/spot_instances/spot-instance-prices/eu-west-1.linux.m1.small.csv -o oursim_trace.txt"
+		args = "-spot -bid 0.042 -md 3000 -w resources/nordugrid_setembro_2005.txt -av /home/edigley/local/traces/spot_instances/spot-instance-prices/eu-west-1.linux.m1.small.csv -o oursim_trace.txt"
 				.split("\\s+");
 
 		StopWatch stopWatch = new StopWatch();
@@ -143,7 +141,9 @@ public class CLI {
 		if (hasOptions(cmd, OUTPUT, WORKLOAD)) {
 
 			String workloadFilePath = cmd.getOptionValue(WORKLOAD);
-			JobEventDispatcher.getInstance().addListener(new PrintOutput(cmd.getOptionValue(OUTPUT)));
+			// JobEventDispatcher.getInstance().addListener(new
+			// PrintOutput(cmd.getOptionValue(OUTPUT)));
+			JobEventDispatcher.getInstance().addListener(new PrintOutput());
 
 			if (cmd.hasOption(VERBOSE)) {
 				JobEventDispatcher.getInstance().addListener(new JobPrintOutput());
@@ -183,11 +183,10 @@ public class CLI {
 			} else {
 				peersMap = GWAFormat.extractPeersFromGWAFile(workloadFilePath, 0, FifoSharingPolicy.getInstance());
 				String spotTraceFilePath = cmd.getOptionValue(AVAILABILITY);
-				long timeOfFirstSpotPrice = SpotInstaceTraceFormat.extractTimeFromFirstAvailabilityRecord(spotTraceFilePath);
+				long timeOfFirstSpotPrice = SpotInstaceTraceFormat.extractTimeFromFirstSpotPrice(spotTraceFilePath);
 				availability = new SpotPriceFluctuation(spotTraceFilePath, timeOfFirstSpotPrice);
 				long timeOfFirstSubmission = GWAFormat.extractSubmissionTimeFromFirstJob(workloadFilePath);
-				String optionValue = cmd.getOptionValue(BID_VALUE);
-				double bidValue = Double.parseDouble(optionValue);
+				double bidValue = Double.parseDouble(cmd.getOptionValue(BID_VALUE));
 				workload = new OnDemandGWANorduGridWorkloadWithBidValue(workloadFilePath, peersMap, timeOfFirstSubmission, bidValue);
 
 			}
@@ -278,11 +277,13 @@ public class CLI {
 		}
 	}
 
-	private static JobSchedulerPolicy defineScheduler(CommandLine cmd, ArrayList<Peer> peers) {
+	private static JobSchedulerPolicy defineScheduler(CommandLine cmd, ArrayList<Peer> peers) throws FileNotFoundException, java.text.ParseException {
 		JobSchedulerPolicy jobScheduler = null;
 		if (cmd.hasOption(SPOT_INSTANCES)) {
-			SpotPrice initialSpotPrice = new SpotPrice("", new Date(), 0.1);
-			jobScheduler = new SpotInstancesScheduler(peers.get(0), initialSpotPrice);
+			// SpotPrice initialSpotPrice = new SpotPrice("", new Date(), 0.1);
+			SpotPrice initialSpotPrice = SpotInstaceTraceFormat.extractFirstSpotPrice(cmd.getOptionValue(AVAILABILITY));
+			long machineSpeed = Long.parseLong(cmd.getOptionValue(MACHINES_DESCRIPTION));
+			jobScheduler = new SpotInstancesScheduler(peers.get(0), initialSpotPrice, machineSpeed);
 			SpotPriceEventDispatcher.getInstance().addListener((SpotInstancesScheduler) jobScheduler);
 		} else {
 			if (cmd.hasOption(SCHEDULER)) {

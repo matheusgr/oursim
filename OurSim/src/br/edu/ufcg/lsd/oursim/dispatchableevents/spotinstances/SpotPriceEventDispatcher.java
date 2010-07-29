@@ -2,20 +2,22 @@ package br.edu.ufcg.lsd.oursim.dispatchableevents.spotinstances;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.EventDispatcher;
+import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
+import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotValue;
 
 /**
  * 
  * A dispatcher to the spot price's related events.
- *
+ * 
  * @author Edigley P. Fraga, edigley@lsd.ufcg.edu.br
  * @since 28/07/2010
  * 
  * @see {@link SpotPriceEventListener}
  * @see {@link SpotPriceEventFilter}
- *
+ * 
  */
-public class SpotPriceEventDispatcher extends EventDispatcher<SpotPrice, SpotPriceEventListener, SpotPriceEventFilter> {
+public class SpotPriceEventDispatcher extends EventDispatcher<SpotValue, SpotPriceEventListener, SpotPriceEventFilter> {
 
 	private static SpotPriceEventDispatcher instance = null;
 
@@ -48,16 +50,26 @@ public class SpotPriceEventDispatcher extends EventDispatcher<SpotPrice, SpotPri
 	 * @param machineName
 	 * @param time
 	 */
-	public void dispatchNewSpotPrice(SpotPrice spotPrice) {
-		dispatch(null, new Event<SpotPrice>(spotPrice));
+	public void dispatchNewSpotPrice(SpotValue spotValue) {
+		dispatch(null, new Event<SpotValue>(spotValue));
+	}
+
+	public void dispatchFullHourCompleted(SpotValue spotValue) {
+		Event<SpotValue> spotValueEvent = new Event<SpotValue>(spotValue);
+		for (SpotPriceEventListener listener : this.getListeners()) {
+			if (this.getListenerToFilter().get(listener).accept(spotValueEvent)) {
+				listener.fullHourCompleted(spotValueEvent);
+			}
+		}
 	}
 
 	@Override
-	protected void dispatch(Enum type, Event<SpotPrice> spotPriceEvent) {
+	protected void dispatch(Enum type, Event<SpotValue> spotPriceEvent) {
 		for (SpotPriceEventListener listener : this.getListeners()) {
 			if (this.getListenerToFilter().get(listener).accept(spotPriceEvent)) {
 				listener.newSpotPrice(spotPriceEvent);
 			}
 		}
 	}
+
 }

@@ -2,7 +2,7 @@ package br.edu.ufcg.lsd.oursim.dispatchableevents.spotinstances;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.EventListenerAdapter;
-import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
+import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotValue;
 
 /**
  * 
@@ -15,7 +15,11 @@ import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
 public abstract class SpotPriceEventListenerAdapter implements SpotPriceEventListener, EventListenerAdapter {
 
 	@Override
-	public void newSpotPrice(Event<SpotPrice> spotPriceEvent) {
+	public void fullHourCompleted(Event<SpotValue> spotPriceEvent) {
+	}
+
+	@Override
+	public void newSpotPrice(Event<SpotValue> spotPriceEvent) {
 	}
 
 }

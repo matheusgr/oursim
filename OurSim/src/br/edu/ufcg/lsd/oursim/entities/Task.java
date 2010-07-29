@@ -98,6 +98,8 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	
 	private double bidValue;
 
+	private double cost;
+
 	public Task(long id, String executable, long duration, long submissionTime, Job sourceJob) {
 		super(id, submissionTime);
 		this.executable = new File(executable, -1);
@@ -409,6 +411,14 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 
 	public void setBidValue(double bidValue) {
 		this.bidValue = bidValue;
+	}
+
+	public double getCost() {
+		return cost;
+	}
+
+	public void setCost(double cost) {
+		this.cost = cost;
 	}
 
 }

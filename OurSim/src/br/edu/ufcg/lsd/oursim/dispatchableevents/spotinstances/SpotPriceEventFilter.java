@@ -2,7 +2,7 @@ package br.edu.ufcg.lsd.oursim.dispatchableevents.spotinstances;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.EventFilter;
-import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
+import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotValue;
 
 /**
  * 
@@ -14,7 +14,7 @@ import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
  * @since 19/05/2010
  * 
  */
-public interface SpotPriceEventFilter extends EventFilter<Event<SpotPrice>> {
+public interface SpotPriceEventFilter extends EventFilter<Event<SpotValue>> {
 
 	/**
 	 * A lenient SpotPriceEventFilter that accepts all events.
@@ -22,13 +22,13 @@ public interface SpotPriceEventFilter extends EventFilter<Event<SpotPrice>> {
 	SpotPriceEventFilter ACCEPT_ALL = new SpotPriceEventFilter() {
 
 		@Override
-		public boolean accept(Event<SpotPrice> spotPriceEvent) {
+		public boolean accept(Event<SpotValue> spotPriceEvent) {
 			return true;
 		}
 
 	};
 
 	@Override
-	boolean accept(Event<SpotPrice> spotPriceEvent);
+	boolean accept(Event<SpotValue> spotPriceEvent);
 
 }
