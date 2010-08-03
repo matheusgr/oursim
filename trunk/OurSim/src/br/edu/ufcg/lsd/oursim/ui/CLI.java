@@ -18,8 +18,8 @@ package br.edu.ufcg.lsd.oursim.ui;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
@@ -124,13 +124,6 @@ public class CLI {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		args = "-v -w resources/nordugrid_janeiro_2006.txt -s replication -r 3 -pd resources/nordugrid_site_description.txt -d -o oursim_trace.txt"
-				.split("\\s+");
-		args = "-w resources/nordugrid_janeiro_2006.txt -s replication -r 3 -pd resources/nordugrid_site_description.txt -synthetic_av -o oursim_trace.txt"
-				.split("\\s+");
-		args = "-spot -bid 0.042 -md 3000 -w resources/nordugrid_setembro_2005.txt -av /home/edigley/local/traces/spot_instances/spot-instance-prices/eu-west-1.linux.m1.small.csv -o oursim_trace.txt"
-				.split("\\s+");
-
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
@@ -141,9 +134,8 @@ public class CLI {
 		if (hasOptions(cmd, OUTPUT, WORKLOAD)) {
 
 			String workloadFilePath = cmd.getOptionValue(WORKLOAD);
-			// JobEventDispatcher.getInstance().addListener(new
-			// PrintOutput(cmd.getOptionValue(OUTPUT)));
-			JobEventDispatcher.getInstance().addListener(new PrintOutput());
+			PrintOutput printOutput = new PrintOutput(cmd.getOptionValue(OUTPUT));
+			JobEventDispatcher.getInstance().addListener(printOutput);
 
 			if (cmd.hasOption(VERBOSE)) {
 				JobEventDispatcher.getInstance().addListener(new JobPrintOutput());
@@ -186,7 +178,19 @@ public class CLI {
 				long timeOfFirstSpotPrice = SpotInstaceTraceFormat.extractTimeFromFirstSpotPrice(spotTraceFilePath);
 				availability = new SpotPriceFluctuation(spotTraceFilePath, timeOfFirstSpotPrice);
 				long timeOfFirstSubmission = GWAFormat.extractSubmissionTimeFromFirstJob(workloadFilePath);
-				double bidValue = Double.parseDouble(cmd.getOptionValue(BID_VALUE));
+				double bidValue = -1;
+				try {
+					bidValue = Double.parseDouble(cmd.getOptionValue(BID_VALUE));
+				} catch (NumberFormatException e) {
+					if (cmd.getOptionValue(BID_VALUE).equals("min")) {
+						bidValue = SpotInstaceTraceFormat.extractlowestSpotPrice(spotTraceFilePath).getPrice();
+					} else if (cmd.getOptionValue(BID_VALUE).equals("max")) {
+						bidValue = SpotInstaceTraceFormat.extractHighestSpotPrice(spotTraceFilePath).getPrice();
+					} else {
+						System.err.println("bid inválido.");
+						System.exit(10);
+					}
+				}
 				workload = new OnDemandGWANorduGridWorkloadWithBidValue(workloadFilePath, peersMap, timeOfFirstSubmission, bidValue);
 
 			}
@@ -211,17 +215,29 @@ public class CLI {
 
 			oursim.start();
 
-			System.out.println("Simulation ended.");
+			printOutput.close();
+			FileWriter fw = new FileWriter(cmd.getOptionValue(OUTPUT), true);
 
-			System.out.println("# Total of submitted            jobs: " + jobEventCounter.getNumberOfSubmittedJobs());
-			System.out.println("# Total of finished             jobs: " + jobEventCounter.getNumberOfFinishedJobs());
-			System.out.println("# Total of preemptions for all  jobs: " + jobEventCounter.getNumberOfPreemptionsForAllJobs());
-			System.out.println("# Total of finished            tasks: " + taskEventCounter.getNumberOfFinishedTasks());
-			System.out.println("# Total of preemptions for all tasks: " + taskEventCounter.getNumberOfPreemptionsForAllTasks());
-			System.out.println("# Total of                    events: " + EventQueue.totalNumberOfEvents);
+			String resume = "";
 
+			resume += "# Total of submitted            jobs: " + jobEventCounter.getNumberOfSubmittedJobs() + ".\n";
+			resume += "# Total of finished             jobs: " + jobEventCounter.getNumberOfFinishedJobs() + ".\n";
+			resume += "# Total of preemptions for all  jobs: " + jobEventCounter.getNumberOfPreemptionsForAllJobs() + ".\n";
+			resume += "# Total of finished            tasks: " + taskEventCounter.getNumberOfFinishedTasks() + ".\n";
+			resume += "# Total of preemptions for all tasks: " + taskEventCounter.getNumberOfPreemptionsForAllTasks() + ".\n";
+			resume += "# Total cost of all finished	  jobs: " + jobEventCounter.getTotalCostOfAllFinishedJobs() + ".\n";
+			resume += "# Total cost of all preempted	  jobs: " + jobEventCounter.getTotalCostOfAllPreemptedJobs() + ".\n";
+			resume += "# Total of preemptions for all tasks: " + taskEventCounter.getNumberOfPreemptionsForAllTasks() + ".\n";
+			resume += "# Total of                    events: " + EventQueue.totalNumberOfEvents + ".\n";
+
+			System.out.println(resume);
+			fw.write(resume);
+			
 			stopWatch.stop();
-			System.out.println("Simulation                  duration:" + stopWatch);
+			System.out.println("Simulation ended. Duration: " + stopWatch);
+			fw.write("# Simulation                  duration:" + stopWatch + ".\n");
+
+			fw.close();
 
 		} else {
 			System.err.println("Informe todos os parâmetros obrigatórios.");
@@ -280,9 +296,9 @@ public class CLI {
 	private static JobSchedulerPolicy defineScheduler(CommandLine cmd, ArrayList<Peer> peers) throws FileNotFoundException, java.text.ParseException {
 		JobSchedulerPolicy jobScheduler = null;
 		if (cmd.hasOption(SPOT_INSTANCES)) {
-			// SpotPrice initialSpotPrice = new SpotPrice("", new Date(), 0.1);
 			SpotPrice initialSpotPrice = SpotInstaceTraceFormat.extractFirstSpotPrice(cmd.getOptionValue(AVAILABILITY));
 			long machineSpeed = Long.parseLong(cmd.getOptionValue(MACHINES_DESCRIPTION));
+			// XXX utilizar um peer específico para a nuvem spot instance
 			jobScheduler = new SpotInstancesScheduler(peers.get(0), initialSpotPrice, machineSpeed);
 			SpotPriceEventDispatcher.getInstance().addListener((SpotInstancesScheduler) jobScheduler);
 		} else {
