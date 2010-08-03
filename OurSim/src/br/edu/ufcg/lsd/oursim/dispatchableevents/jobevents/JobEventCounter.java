@@ -12,19 +12,27 @@ public class JobEventCounter extends JobEventListenerAdapter {
 
 	private int numberOfPreemptionsForAllJobs = 0;
 
+	private double totalCostOfAllFinishedJobs = 0;
+
+	private double totalCostOfAllPreemptedJobs = 0;
+
 	private Set<Long> idsOfFinishedJobs = new HashSet<Long>();
 
 	private Set<Long> idsOfSubmittedJobs = new HashSet<Long>();
 
 	@Override
 	public final void jobFinished(Event<Job> jobEvent) {
+		Job job = jobEvent.getSource();
 		this.numberOfFinishedJobs++;
-		this.idsOfFinishedJobs.add(jobEvent.getSource().getId());
+		this.idsOfFinishedJobs.add(job.getId());
+		this.totalCostOfAllFinishedJobs += job.getCost();
 	}
 
 	@Override
 	public final void jobPreempted(Event<Job> jobEvent) {
+		Job job = jobEvent.getSource();
 		this.numberOfPreemptionsForAllJobs++;
+		this.totalCostOfAllPreemptedJobs += job.getCost();
 	}
 
 	@Override
@@ -43,6 +51,14 @@ public class JobEventCounter extends JobEventListenerAdapter {
 
 	public final int getNumberOfPreemptionsForAllJobs() {
 		return numberOfPreemptionsForAllJobs;
+	}
+
+	public double getTotalCostOfAllFinishedJobs() {
+		return totalCostOfAllFinishedJobs;
+	}
+
+	public double getTotalCostOfAllPreemptedJobs() {
+		return totalCostOfAllPreemptedJobs;
 	}
 
 }
