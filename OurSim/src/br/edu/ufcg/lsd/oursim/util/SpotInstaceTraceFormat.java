@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.Scanner;
 
 import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
+import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPriceFluctuation;
 
 public class SpotInstaceTraceFormat {
 
@@ -24,12 +25,6 @@ public class SpotInstaceTraceFormat {
 	}
 
 	public static long extractTimeFromFirstSpotPrice(String spotTraceFilePath) throws ParseException, FileNotFoundException {
-		// Scanner sc = new Scanner(new File(spotTraceFilePath));
-		// SpotPrice firestSpotPriceRecord =
-		// SpotInstaceTraceFormat.createSpotPriceFromSpotTraceRecord(sc.nextLine(),
-		// 0);
-		// long startingTime = firestSpotPriceRecord.getTime();
-		// return startingTime;
 		return extractFirstSpotPrice(spotTraceFilePath).getTime();
 	}
 
@@ -37,6 +32,30 @@ public class SpotInstaceTraceFormat {
 		Scanner sc = new Scanner(new File(spotTraceFilePath));
 		SpotPrice firestSpotPriceRecord = SpotInstaceTraceFormat.createSpotPriceFromSpotTraceRecord(sc.nextLine(), 0);
 		return firestSpotPriceRecord;
+	}
+
+	public static SpotPrice extractHighestSpotPrice(String spotTraceFilePath) throws ParseException, FileNotFoundException {
+		SpotPriceFluctuation spotTrace = new SpotPriceFluctuation(spotTraceFilePath);
+		SpotPrice highestSpotPrice = new SpotPrice("", 0, Double.MIN_VALUE, 0);
+		while (spotTrace.peek() != null) {
+			SpotPrice polledSpotPrice = spotTrace.poll();
+			if (polledSpotPrice.getPrice() > highestSpotPrice.getPrice()) {
+				highestSpotPrice = polledSpotPrice;
+			}
+		}
+		return highestSpotPrice;
+	}
+
+	public static SpotPrice extractlowestSpotPrice(String spotTraceFilePath) throws ParseException, FileNotFoundException {
+		SpotPriceFluctuation spotTrace = new SpotPriceFluctuation(spotTraceFilePath);
+		SpotPrice lowestSpotPrice = new SpotPrice("", 0, Double.MAX_VALUE, 0);
+		while (spotTrace.peek() != null) {
+			SpotPrice polledSpotPrice = spotTrace.poll();
+			if (polledSpotPrice.getPrice() < lowestSpotPrice.getPrice()) {
+				lowestSpotPrice = polledSpotPrice;
+			}
+		}
+		return lowestSpotPrice;
 	}
 
 }
