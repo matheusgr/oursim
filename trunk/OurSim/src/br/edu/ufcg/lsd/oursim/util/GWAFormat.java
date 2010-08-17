@@ -64,34 +64,63 @@ public final class GWAFormat {
 
 	public final static Map<String, Peer> extractPeersFromGWAFile(String workloadFilePath, int numberOfResourcesByPeer, ResourceSharingPolicy sharingPolicy)
 			throws FileNotFoundException {
-		Map<String, Peer> peers = new HashMap<String, Peer>();
+		try {
+			Map<String, Peer> peers = new HashMap<String, Peer>();
+			Scanner sc = new Scanner(new File(workloadFilePath));
+			while (sc.hasNextLine()) {
+				Scanner scLine = new Scanner(sc.nextLine());
+				// skip the 16 firsts tokens. The site's
+				// token is the 17th in the gwa format.
+				for (int i = 0; i < 16; i++) {
+					scLine.next();
+				}
+				String OrigSiteID = scLine.next();
 
-		Scanner sc = new Scanner(new File(workloadFilePath));
-		while (sc.hasNextLine()) {
-			Scanner scLine = new Scanner(sc.nextLine());
-			// skip the 16 firsts tokens. The site's
-			// token is the 17th in the gwa format.
-			for (int i = 0; i < 16; i++) {
-				scLine.next();
+				if (!peers.containsKey(OrigSiteID)) {
+					Peer peer = (numberOfResourcesByPeer > 0) ? new Peer(OrigSiteID, numberOfResourcesByPeer, sharingPolicy) : new Peer(OrigSiteID,
+							sharingPolicy);
+					peers.put(peer.getName(), peer);
+				}
 			}
-			String OrigSiteID = scLine.next();
+			return peers;
+		} catch (Exception e) {
+			Map<String, Peer> peers = new HashMap<String, Peer>();
+			Scanner sc = new Scanner(new File(workloadFilePath));
+			while (sc.hasNextLine()) {
+				Scanner scLine = new Scanner(sc.nextLine());
+				// skip the 16 firsts tokens. The site's
+				// token is the 17th in the gwa format.
+				for (int i = 0; i < 5; i++) {
+					scLine.next();
+				}
+				String OrigSiteID = scLine.next();
 
-			if (!peers.containsKey(OrigSiteID)) {
-				Peer peer = (numberOfResourcesByPeer > 0) ? new Peer(OrigSiteID, numberOfResourcesByPeer, sharingPolicy) : new Peer(OrigSiteID, sharingPolicy);
-				peers.put(peer.getName(), peer);
+				if (!peers.containsKey(OrigSiteID)) {
+					Peer peer = (numberOfResourcesByPeer > 0) ? new Peer(OrigSiteID, numberOfResourcesByPeer, sharingPolicy) : new Peer(OrigSiteID,
+							sharingPolicy);
+					peers.put(peer.getName(), peer);
+				}
 			}
+			return peers;
 		}
-
-		return peers;
 
 	}
 
 	public static final long extractSubmissionTimeFromFirstJob(String workloadFilePath) throws IOException {
-		Scanner sc = new Scanner(new File(workloadFilePath));
-		String firstLine = sc.nextLine();
-		GWAJobDescription gwajob = GWAFormat.createGWAJobDescription(firstLine);
-		sc.close();
-		return gwajob.SubmitTime;
+		try {
+			Scanner sc = new Scanner(new File(workloadFilePath));
+			String firstLine = sc.nextLine();
+			GWAJobDescription gwajob = GWAFormat.createGWAJobDescription(firstLine);
+			sc.close();
+			return gwajob.SubmitTime;
+		} catch (Exception e) {
+			Scanner sc = new Scanner(new File(workloadFilePath));
+			String firstLine = sc.nextLine();
+			Scanner scLine = new Scanner(firstLine);
+			long submitTime = scLine.nextLong();
+			sc.close();
+			return submitTime;
+		}
 	}
 
 	public static long extractSubmissionTimeFromLastJob(String workloadFilePath) throws IOException {
@@ -109,8 +138,15 @@ public final class GWAFormat {
 		String lastLine = strLine;
 
 		rfile.close();
-		GWAJobDescription gwajob = GWAFormat.createGWAJobDescription(lastLine);
-		return gwajob.SubmitTime;
+		try {
+			GWAJobDescription gwajob = GWAFormat.createGWAJobDescription(lastLine);
+			return gwajob.SubmitTime;
+		} catch (Exception e) {
+			Scanner scLine = new Scanner(lastLine);
+			long submitTime = scLine.nextLong();
+			scLine.close();
+			return submitTime;
+		}
 
 		// Third One -
 		// FileInputStream fis=new FileInputStream("D:\\ test\\sample.txt");

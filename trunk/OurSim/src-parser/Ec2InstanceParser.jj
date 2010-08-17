@@ -1,0 +1,214 @@
+/**
+ * JavaCC file
+ */
+ 
+options {
+  JDK_VERSION = "1.5";
+  STATIC = false;
+}
+PARSER_BEGIN(Ec2InstanceParser)
+package br.edu.ufcg.lsd.oursim.entities.spotinstances.parser;
+
+import java.io.*; 
+import java.util.*;
+import br.edu.ufcg.lsd.oursim.entities.spotinstances.*;
+import br.edu.ufcg.lsd.oursim.entities.Processor;
+ 
+public class Ec2InstanceParser {
+	
+	List<EC2Instance> instances;
+	List<EC2InstanceBadge> badges = new ArrayList<EC2InstanceBadge>();
+	
+	public static void main(String args[]) throws ParseException, Exception {
+    	Ec2InstanceParser parser = new Ec2InstanceParser(new FileInputStream(new File("resources/ec2_instances.txt")));
+		try { 			List<EC2Instance> result = parser.parse();
+ 			for(EC2Instance instance: result){
+ 				System.out.println(instance.type);
+ 			}
+      	} catch (Exception e) {        	System.out.println("NOK.");        	e.printStackTrace();      	} catch (Error e) {        	System.out.println("Oops.");        	e.printStackTrace();      	}
+  	}
+  
+	public static String removeQuotes(String arg) {
+		return arg.replace("\"","");
+	}
+	
+	private static long parseSpeed(String field) {
+		//6.5-ECU[2x3.25]
+		int begin = field.indexOf("[") + 1;
+		int end = field.lastIndexOf("]");
+		String payload = field.substring(begin, end);
+		int indexOfX = payload.indexOf("x");
+		int numberOfCores = Integer.parseInt(payload.substring(0, indexOfX));
+		double numberOfECUPerCore = Double.parseDouble(payload.substring(indexOfX+1, payload.length()));
+		return Math.round((numberOfCores * numberOfECUPerCore) * Processor.EC2_COMPUTE_UNIT.getSpeed());
+	}
+  
+} 
+PARSER_END(Ec2InstanceParser)
+
+SKIP :
+{
+ 	" "
+|	"\r"
+|	"\t"
+|   "\n"
+|	"\r\n"
+}
+TOKEN : 
+{
+  < A_COLCHETE: "[" >
+|
+  < F_COLCHETE: "]" >
+|
+  < X: "x" >
+|
+  < INTEGER: (["0"-"9"])+ >
+|
+  < DECIMAL: (["0"-"9"])+ ( "." (["0"-"9"])+ ) >
+|
+  < VALUE : (["a"-"z","A"-"Z","0"-"9","_","[","]"])+ >
+|
+  < ALIAS : "$" (["a"-"z","A"-"Z","0"-"9","_","[","]"])+ >
+| 
+  < STRING : "\""
+   ( ( ~["\"","\\","\n","\r"])
+   | ("\\" (
+             ["n","t","v","b","r","f","a","\\","?","'","\""]
+            |
+             "0" (["0"-"7"])*
+            |
+             ["1"-"9"] (["0"-"9"])*
+            |
+             ("0x" | "0X") (["0"-"9","a"-"f","A"-"F"])+
+           )
+     ) 
+   )*
+   "\"" >
+}
+
+
+SPECIAL_TOKEN :
+{
+  <SINGLE_LINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+}
+
+MORE : { 
+	"/*" : IN_MULTI_LINE_COMMENT 
+} 
+
+<IN_MULTI_LINE_COMMENT> SPECIAL_TOKEN : 
+{ 
+	<MULTI_LINE_COMMENT: "*/" > : DEFAULT 
+} 
+
+<IN_MULTI_LINE_COMMENT> MORE : 
+{ 
+	< ~[] > 
+} 
+
+List<EC2Instance> parse() throws Exception :
+{ 
+	instances = new ArrayList<EC2Instance>();
+}
+{
+  (instance())+
+  {
+  	return instances;
+  }
+}
+
+EC2Instance instance() :
+{
+
+	EC2Instance retorno = new EC2Instance();	
+	int numberOfCores;
+	double numberOfECUPerCore;
+	badges = new ArrayList<EC2InstanceBadge>();
+	String speedField;
+	int arch;
+}
+{
+	//m1.small	1.7		1-ECU[1x1]		160		32	[ ( "US – N. Virginia", 0.085, 0.12), ( "US – N. California", 0.095, 0.13), ( "EU – Ireland", 0.095, 0.12), ( "APAC – Singapore", 0.095, 0.12) ]
+	retorno.type=string_literal()	
+	retorno.memory=decimal()
+	speedField = string_literal()	
+	retorno.storage=decimal() 
+	arch=integer()
+	<A_COLCHETE> (cpu())+ <F_COLCHETE>	
+	{
+//		for (EC2InstanceBadge badge: badges){//		}
+		retorno.badges = badges;
+		retorno.speed =	parseSpeed(speedField);
+		retorno.arch = ""+arch;
+			
+		instances.add(retorno);  
+		return retorno;
+	}
+}
+
+Processor cpu() :
+{
+	String region;
+	String so;	
+	EC2InstanceBadge linux = new EC2InstanceBadge();
+	EC2InstanceBadge windows = new EC2InstanceBadge();}
+{
+	"("
+		region=string_literal() "," linux.price=decimal() "," windows.price=decimal()	 
+	")" 
+	","
+	
+	{
+		linux.region = region;
+		linux.so = "linux";
+		windows.region = region;
+		windows.so = "windows";
+		badges.add(linux);
+		badges.add(windows);
+		return null;
+	}
+}
+
+String value() :
+{
+	String returnValue;
+}
+{
+  returnValue = <VALUE>.image
+  {
+  	return returnValue; 
+  }
+}
+
+int integer() :
+{
+	String returnValue;
+}
+{
+  returnValue = <INTEGER>.image
+  {
+  	return Integer.parseInt(returnValue); 
+  }
+}
+
+double decimal() :
+{
+	String returnValue = null;
+}
+{
+  [ returnValue = <INTEGER>.image | returnValue = <DECIMAL>.image ]
+  {
+  	return Double.parseDouble(returnValue); 
+  }
+}
+
+String string_literal() :
+{
+	String returnValue;
+}
+{
+  returnValue = <STRING>.image
+  {
+  	return removeQuotes(returnValue); 
+  }
+}

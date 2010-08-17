@@ -2,7 +2,7 @@ package br.edu.ufcg.lsd.oursim.dispatchableevents.spotinstances;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.EventListenerAdapter;
-import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotValue;
+import br.edu.ufcg.lsd.oursim.entities.spotinstances.SpotValue;
 
 /**
  * 

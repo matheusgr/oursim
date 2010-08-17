@@ -3,8 +3,8 @@ package br.edu.ufcg.lsd.oursim.dispatchableevents.spotinstances;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.EventDispatcher;
 import br.edu.ufcg.lsd.oursim.entities.Task;
+import br.edu.ufcg.lsd.oursim.entities.spotinstances.SpotValue;
 import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
-import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotValue;
 
 /**
  * 

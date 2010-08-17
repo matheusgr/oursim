@@ -1,4 +1,4 @@
-package br.edu.ufcg.lsd.oursim.io.input.spotinstances;
+package br.edu.ufcg.lsd.oursim.entities.spotinstances;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;

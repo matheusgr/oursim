@@ -106,7 +106,9 @@ public final class EventQueue implements Closeable {
 			PreemptedTaskEvent ev = (PreemptedTaskEvent) event;
 			assert task2FinishTaskEvent.containsKey(ev.source);
 			this.task2FinishTaskEvent.remove(ev.source).cancel();
-			this.task2FullHourCompletedEvent.remove(ev.source).cancel();
+			if (this.task2FullHourCompletedEvent.containsKey(ev.source)) {
+				this.task2FullHourCompletedEvent.remove(ev.source).cancel();
+			}
 		} else if (event instanceof FinishTaskEvent) {
 			FinishTaskEvent ev = (FinishTaskEvent) event;
 			if (task2FinishTaskEvent.containsKey(ev.source)) {

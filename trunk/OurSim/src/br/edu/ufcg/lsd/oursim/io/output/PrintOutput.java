@@ -90,22 +90,16 @@ public final class PrintOutput implements Output {
 		this.showProgress = showProgress;
 		this.out = new PrintStream(new File(fileName));
 		if (this.showProgress) {
-			this.out.println(COMMENT_CHARACTER + SUBMIT_HEADER);
-			this.out.println(COMMENT_CHARACTER + START_HEADER);
-			this.out.println(COMMENT_CHARACTER + PREEMPT_HEADER);
-			this.out.print(COMMENT_CHARACTER);
+//			this.out.println(COMMENT_CHARACTER + SUBMIT_HEADER);
+//			this.out.println(COMMENT_CHARACTER + START_HEADER);
+//			this.out.println(COMMENT_CHARACTER + PREEMPT_HEADER);
+//			this.out.print(COMMENT_CHARACTER);
 		}
 		this.out.println(FINISH_HEADER);
 	}
 
 	@Override
 	public final void jobSubmitted(Event<Job> jobEvent) {
-//			Job job = jobEvent.getSource();
-//			long id = job.getId();
-//			long submissionTime = job.getSubmissionTime();
-//			StringBuilder sb = new StringBuilder(SUBMIT_LABEL);
-//			sb.append(SEP).append(submissionTime).append(SEP).append(id);
-//			this.out.println(sb);
 			
 			Job job = jobEvent.getSource();
 
@@ -131,24 +125,6 @@ public final class PrintOutput implements Output {
 	public final void jobStarted(Event<Job> jobEvent) {
 		if (showProgress) {
 			Job job = jobEvent.getSource();
-			long id = job.getId();
-			long startTime = job.getStartTime();
-			StringBuilder sb = new StringBuilder(START_LABEL);
-			sb.append(SEP).append(startTime).append(SEP).append(id);
-			this.out.println(sb);
-		}
-	}
-
-	@Override
-	public final void jobPreempted(Event<Job> jobEvent) {
-		if (showProgress) {
-//			Job job = jobEvent.getSource();
-//			long id = job.getId();
-//			long preemptionTime = jobEvent.getTime();
-//			StringBuilder sb = new StringBuilder(PREEMPT_LABEL);
-//			sb.append(SEP).append(preemptionTime).append(SEP).append(id);
-//			this.out.println(sb);
-			Job job = jobEvent.getSource();
 			
 			long jobId = job.getId();
 			long submissionTime = job.getSubmissionTime();
@@ -160,7 +136,7 @@ public final class PrintOutput implements Output {
 			long queuingTime = job.getQueueingTime();
 			long numberOfPreemptions = job.getNumberOfPreemptions();
 
-			StringBuilder sb = new StringBuilder(PREEMPT_LABEL);
+			StringBuilder sb = new StringBuilder(START_LABEL);
 			sb.append(SEP)
 			.append(finishTime).append(SEP)
 			.append(jobId).append(SEP)
@@ -170,6 +146,31 @@ public final class PrintOutput implements Output {
 			.append(makeSpan).append(SEP)
 			.append(cost).append(SEP)
 			.append(queuingTime).append(SEP)
+			.append(numberOfPreemptions);
+			this.out.println(sb);
+		}
+	}
+
+	@Override
+	public final void jobPreempted(Event<Job> jobEvent) {
+		if (showProgress) {
+			Job job = jobEvent.getSource();
+			
+			long jobId = job.getId();
+			long submissionTime = job.getSubmissionTime();
+			double cost = job.getCost();
+			long numberOfPreemptions = job.getNumberOfPreemptions();
+
+			StringBuilder sb = new StringBuilder(PREEMPT_LABEL);
+			sb.append(SEP)
+			.append("NA").append(SEP)
+			.append(jobId).append(SEP)
+			.append(submissionTime).append(SEP)
+			.append("NA").append(SEP)
+			.append("NA").append(SEP)
+			.append("NA").append(SEP)
+			.append(cost).append(SEP)
+			.append("NA").append(SEP)
 			.append(numberOfPreemptions);
 			this.out.println(sb);
 		}

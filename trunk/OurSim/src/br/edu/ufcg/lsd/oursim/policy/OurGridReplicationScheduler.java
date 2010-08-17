@@ -7,6 +7,8 @@ import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.entities.Task;
+import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
+import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.FinishJobEvent;
 
 /**
  * 
@@ -66,8 +68,8 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 
 	@Override
 	public final void taskSubmitted(Event<Task> taskEvent) {
-//		Task task = taskEvent.getSource();
-//		this.getSubmittedTasks().add(task);
+		// Task task = taskEvent.getSource();
+		// this.getSubmittedTasks().add(task);
 		super.taskSubmitted(taskEvent);
 		addReplies(taskEvent.getSource());
 	}
@@ -77,6 +79,9 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 		super.taskFinished(taskEvent);
 		stopRemainingReplies(taskEvent.getSource());
 		taskEvent.getSource().finishSourceTask();
+//		if (taskEvent.getSource().getSourceJob().isFinished()) {
+//			getEventQueue().addEvent(new FinishJobEvent(EventQueue.getInstance().getCurrentTime(), taskEvent.getSource().getSourceJob()));
+//		}
 	}
 
 	private void addReplies(Task task) {
@@ -91,7 +96,8 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 			// para as replicas que ainda estiverem rodando
 			if (reply.isRunning()) {
 				if (reply.getEstimatedFinishTime() > task.getFinishTime()) {
-					assert this.getRunningTasks().contains(reply);
+					// ocorria problema quando a task tinha acabado de iniciar
+					assert this.getRunningTasks().contains(reply) || reply.getStartTime() == getCurrentTime() : getCurrentTime() + ": " + reply;
 					assert !reply.isFinished();
 					reply.getTargetPeer().cancelTask(reply);
 					this.getRunningTasks().remove(reply);

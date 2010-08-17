@@ -2,8 +2,8 @@ package br.edu.ufcg.lsd.oursim.simulationevents;
 
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Task;
+import br.edu.ufcg.lsd.oursim.entities.spotinstances.BidValue;
 import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
-import br.edu.ufcg.lsd.oursim.io.input.spotinstances.BidValue;
 import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.FinishJobEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.PreemptedJobEvent;
@@ -62,7 +62,7 @@ public class ActiveEntityAbstract implements ActiveEntity {
 
 	@Override
 	public void addSubmitJobEvent(long submitTime, Job job) {
-		assert submitTime >= getCurrentTime();
+		assert submitTime >= getCurrentTime(): submitTime +" >= "+ getCurrentTime();
 		this.getEventQueue().addEvent(new SubmitJobEvent(submitTime, job));
 	}
 

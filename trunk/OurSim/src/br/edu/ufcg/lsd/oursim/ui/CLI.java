@@ -16,6 +16,16 @@
 
 package br.edu.ufcg.lsd.oursim.ui;
 
+import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.createSpotInstancesScheduler;
+import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.defineWorkloadToSpotInstances;
+import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.hasOptions;
+import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.parseCommandLine;
+import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.prepareOutputAccounting;
+import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.printOutput;
+import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.printResume;
+import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.showMessageAndExit;
+import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.treatWrongCommand;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -25,20 +35,11 @@ import java.util.Random;
 import java.util.Scanner;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.apache.commons.lang.time.StopWatch;
 
 import br.edu.ufcg.lsd.oursim.OurSim;
-import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventCounter;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
-import br.edu.ufcg.lsd.oursim.dispatchableevents.spotinstances.SpotPriceEventDispatcher;
-import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventCounter;
-import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventDispatcher;
-import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
 import br.edu.ufcg.lsd.oursim.entities.Machine;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.entities.Processor;
@@ -47,15 +48,13 @@ import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityCharacterization
 import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.io.input.availability.DedicatedResourcesAvailabilityCharacterization;
 import br.edu.ufcg.lsd.oursim.io.input.availability.MarkovModelAvailabilityCharacterization;
-import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
 import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPriceFluctuation;
+import br.edu.ufcg.lsd.oursim.io.input.workload.OnDemandBoTGWANorduGridWorkload;
 import br.edu.ufcg.lsd.oursim.io.input.workload.OnDemandGWANorduGridWorkload;
-import br.edu.ufcg.lsd.oursim.io.input.workload.OnDemandGWANorduGridWorkloadWithBidValue;
+import br.edu.ufcg.lsd.oursim.io.input.workload.OnDemandGWANorduGridWorkloadWithFilter;
 import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
-import br.edu.ufcg.lsd.oursim.io.output.JobPrintOutput;
+import br.edu.ufcg.lsd.oursim.io.output.ComputingElementEventCounter;
 import br.edu.ufcg.lsd.oursim.io.output.PrintOutput;
-import br.edu.ufcg.lsd.oursim.io.output.TaskPrintOutput;
-import br.edu.ufcg.lsd.oursim.io.output.WorkerEventsPrintOutput;
 import br.edu.ufcg.lsd.oursim.policy.FifoSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
 import br.edu.ufcg.lsd.oursim.policy.NoFSharingPolicy;
@@ -63,7 +62,6 @@ import br.edu.ufcg.lsd.oursim.policy.OurGridPersistentScheduler;
 import br.edu.ufcg.lsd.oursim.policy.OurGridReplicationScheduler;
 import br.edu.ufcg.lsd.oursim.policy.OurGridScheduler;
 import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
-import br.edu.ufcg.lsd.oursim.policy.SpotInstancesScheduler;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 import br.edu.ufcg.lsd.oursim.util.AvailabilityTraceFormat;
 import br.edu.ufcg.lsd.oursim.util.GWAFormat;
@@ -87,6 +85,8 @@ public class CLI {
 
 	private static final String WORKLOAD = "w";
 
+	private static final String WORKLOAD_TYPE = "wt";
+
 	private static final String REPLIES = "r";
 
 	private static final String NUM_PEERS = "np";
@@ -102,6 +102,12 @@ public class CLI {
 	private static final String OUTPUT = "o";
 
 	private static final String SPOT_INSTANCES = "spot";
+
+	private static final String INSTANCE_TYPE = "type";
+
+	private static final String INSTANCE_REGION = "region";
+
+	private static final String INSTANCE_SO = "so";
 
 	private static final String BID_VALUE = "bid";
 
@@ -124,6 +130,9 @@ public class CLI {
 	 */
 	public static void main(String[] args) throws Exception {
 
+		args = "-w resources/nordugrid_setembro_2005_bots_menor_3600_sorted.txt -wt bot -s replication -r 3 -pd resources/nordugrid_site_description.txt -synthetic_av -o oursim-og-trace.txt"
+				.split("\\s+");
+
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
@@ -133,23 +142,10 @@ public class CLI {
 
 		if (hasOptions(cmd, OUTPUT, WORKLOAD)) {
 
-			String workloadFilePath = cmd.getOptionValue(WORKLOAD);
-			PrintOutput printOutput = new PrintOutput(cmd.getOptionValue(OUTPUT));
+			PrintOutput printOutput = new PrintOutput(cmd.getOptionValue(OUTPUT), true);
 			JobEventDispatcher.getInstance().addListener(printOutput);
 
-			if (cmd.hasOption(VERBOSE)) {
-				JobEventDispatcher.getInstance().addListener(new JobPrintOutput());
-				TaskEventDispatcher.getInstance().addListener(new TaskPrintOutput());
-				WorkerEventDispatcher.getInstance().addListener(new WorkerEventsPrintOutput());
-				EventQueue.LOG = true;
-				EventQueue.LOG_FILEPATH = "events_oursim.txt";
-			}
-
-			JobEventCounter jobEventCounter = new JobEventCounter();
-			JobEventDispatcher.getInstance().addListener(jobEventCounter);
-
-			TaskEventCounter taskEventCounter = new TaskEventCounter();
-			TaskEventDispatcher.getInstance().addListener(taskEventCounter);
+			ComputingElementEventCounter computingElementEventCounter = prepareOutputAccounting(cmd, VERBOSE);
 
 			OurSim oursim = null;
 			Input<? extends AvailabilityRecord> availability = null;
@@ -157,100 +153,70 @@ public class CLI {
 			JobSchedulerPolicy jobScheduler = null;
 			Map<String, Peer> peersMap = null;
 
-			if (!cmd.hasOption(SPOT_INSTANCES)) {
+			if (cmd.hasOption(SPOT_INSTANCES)) {
+				peersMap = GWAFormat.extractPeersFromGWAFile(cmd.getOptionValue(WORKLOAD), 0, FifoSharingPolicy.getInstance());
+				String spotTraceFilePath = cmd.getOptionValue(AVAILABILITY);
+				long timeOfFirstSpotPrice = SpotInstaceTraceFormat.extractTimeFromFirstSpotPrice(spotTraceFilePath);
+				availability = new SpotPriceFluctuation(spotTraceFilePath, timeOfFirstSpotPrice);
+				workload = defineWorkloadToSpotInstances(cmd, cmd.getOptionValue(WORKLOAD), workload, peersMap, spotTraceFilePath, BID_VALUE);
+			} else {
 				ResourceSharingPolicy sharingPolicy = cmd.hasOption(NOF) ? NoFSharingPolicy.getInstance() : FifoSharingPolicy.getInstance();
 				int numberOfResourcesByPeer = cmd.hasOption(NUM_RESOURCES_BY_PEER) ? Integer.parseInt(cmd.getOptionValue(NUM_RESOURCES_BY_PEER)) : 0;
-				peersMap = GWAFormat.extractPeersFromGWAFile(workloadFilePath, numberOfResourcesByPeer, sharingPolicy);
+				peersMap = GWAFormat.extractPeersFromGWAFile(cmd.getOptionValue(WORKLOAD), numberOfResourcesByPeer, sharingPolicy);
 				if (numberOfResourcesByPeer == 0 && cmd.hasOption(PEERS_DESCRIPTION)) {
 					String peersDescriptionFilePath = cmd.getOptionValue(PEERS_DESCRIPTION);
 					addResourcesToPeers(peersMap, peersDescriptionFilePath);
 				}
-				long durationOfWorkloadInSeconds = GWAFormat.extractDurationInSecondsOfWorkload(workloadFilePath);
+				long durationOfWorkloadInSeconds = GWAFormat.extractDurationInSecondsOfWorkload(cmd.getOptionValue(WORKLOAD));
 				int amountOfSecondsInADay = 60 * 60 * 24;
 				// adiciona um dia além da duração do workload
 				durationOfWorkloadInSeconds += amountOfSecondsInADay;
 				availability = defineAvailability(cmd, peersMap, durationOfWorkloadInSeconds);
-				long timeOfFirstSubmission = GWAFormat.extractSubmissionTimeFromFirstJob(workloadFilePath);
-				workload = new OnDemandGWANorduGridWorkload(workloadFilePath, peersMap, timeOfFirstSubmission);
-			} else {
-				peersMap = GWAFormat.extractPeersFromGWAFile(workloadFilePath, 0, FifoSharingPolicy.getInstance());
-				String spotTraceFilePath = cmd.getOptionValue(AVAILABILITY);
-				long timeOfFirstSpotPrice = SpotInstaceTraceFormat.extractTimeFromFirstSpotPrice(spotTraceFilePath);
-				availability = new SpotPriceFluctuation(spotTraceFilePath, timeOfFirstSpotPrice);
-				long timeOfFirstSubmission = GWAFormat.extractSubmissionTimeFromFirstJob(workloadFilePath);
-				double bidValue = -1;
-				try {
-					bidValue = Double.parseDouble(cmd.getOptionValue(BID_VALUE));
-				} catch (NumberFormatException e) {
-					if (cmd.getOptionValue(BID_VALUE).equals("min")) {
-						bidValue = SpotInstaceTraceFormat.extractlowestSpotPrice(spotTraceFilePath).getPrice();
-					} else if (cmd.getOptionValue(BID_VALUE).equals("max")) {
-						bidValue = SpotInstaceTraceFormat.extractHighestSpotPrice(spotTraceFilePath).getPrice();
-					} else {
-						System.err.println("bid inválido.");
-						System.exit(10);
-					}
-				}
-				workload = new OnDemandGWANorduGridWorkloadWithBidValue(workloadFilePath, peersMap, timeOfFirstSubmission, bidValue);
-
-			}
-
-			if (availability == null) {
-				System.err.println("Combinação de parâmetros de availability inválida.");
-				System.exit(10);
+				long timeOfFirstSubmission = GWAFormat.extractSubmissionTimeFromFirstJob(cmd.getOptionValue(WORKLOAD));
+				workload = defineWorkloadType(cmd, cmd.getOptionValue(WORKLOAD), peersMap, timeOfFirstSubmission);
 			}
 
 			ArrayList<Peer> peers = new ArrayList<Peer>(peersMap.values());
 
 			jobScheduler = defineScheduler(cmd, peers);
 
-			if (jobScheduler == null) {
-				System.err.println("Deve informar um tipo válido de scheduler.");
-				System.exit(1);
-			}
-
 			oursim = new OurSim(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
-
-			System.out.println("Starting Simulation...");
 
 			oursim.start();
 
 			printOutput.close();
+
 			FileWriter fw = new FileWriter(cmd.getOptionValue(OUTPUT), true);
 
-			String resume = "";
+			fw.write(printResume(computingElementEventCounter) + ".\n");
 
-			resume += "# Total of submitted            jobs: " + jobEventCounter.getNumberOfSubmittedJobs() + ".\n";
-			resume += "# Total of finished             jobs: " + jobEventCounter.getNumberOfFinishedJobs() + ".\n";
-			resume += "# Total of preemptions for all  jobs: " + jobEventCounter.getNumberOfPreemptionsForAllJobs() + ".\n";
-			resume += "# Total of finished            tasks: " + taskEventCounter.getNumberOfFinishedTasks() + ".\n";
-			resume += "# Total of preemptions for all tasks: " + taskEventCounter.getNumberOfPreemptionsForAllTasks() + ".\n";
-			resume += "# Total cost of all finished	  jobs: " + jobEventCounter.getTotalCostOfAllFinishedJobs() + ".\n";
-			resume += "# Total cost of all preempted	  jobs: " + jobEventCounter.getTotalCostOfAllPreemptedJobs() + ".\n";
-			resume += "# Total of preemptions for all tasks: " + taskEventCounter.getNumberOfPreemptionsForAllTasks() + ".\n";
-			resume += "# Total of                    events: " + EventQueue.totalNumberOfEvents + ".\n";
+			printOutput(computingElementEventCounter);
 
-			System.out.println(resume);
-			fw.write(resume);
-			
 			stopWatch.stop();
-			System.out.println("Simulation ended. Duration: " + stopWatch);
 			fw.write("# Simulation                  duration:" + stopWatch + ".\n");
 
 			fw.close();
 
 		} else {
-			System.err.println("Informe todos os parâmetros obrigatórios.");
-			HelpFormatter formatter = new HelpFormatter();
-			if (cmd.hasOption(HELP)) {
-				formatter.printHelp(EXECUTION_LINE, options);
-			} else if (cmd.hasOption(USAGE)) {
-				formatter.printHelp(EXECUTION_LINE, options, true);
-			} else {
-				formatter.printHelp(EXECUTION_LINE, options, true);
-			}
-			System.exit(1);
+			treatWrongCommand(options, cmd, HELP, USAGE, EXECUTION_LINE);
 		}
+	}
+
+	private static Workload defineWorkloadType(CommandLine cmd, String workloadFilePath, Map<String, Peer> peersMap, long timeOfFirstSubmission)
+			throws FileNotFoundException {
+		Workload workload = null;
+		if (cmd.hasOption(WORKLOAD_TYPE)) {
+			String type = cmd.getOptionValue(WORKLOAD_TYPE);
+			if (type.equals("bot")) {
+				workload = new OnDemandBoTGWANorduGridWorkload(workloadFilePath, peersMap, timeOfFirstSubmission);
+			} else if (type.equals("filter")) {
+				workload = new OnDemandGWANorduGridWorkloadWithFilter(workloadFilePath, peersMap, timeOfFirstSubmission);
+			}
+		} else {
+			workload = new OnDemandGWANorduGridWorkload(workloadFilePath, peersMap, timeOfFirstSubmission);
+		}
+
+		return workload;
 	}
 
 	private static Input<AvailabilityRecord> defineAvailability(CommandLine cmd, Map<String, Peer> peersMap, long durationOfWorkload)
@@ -264,19 +230,40 @@ public class CLI {
 		} else if (cmd.hasOption(SYNTHETIC_AVAILABILITY)) {
 			availability = new MarkovModelAvailabilityCharacterization(peersMap, durationOfWorkload, 0);
 		}
+
+		if (availability == null) {
+			showMessageAndExit("Combinação de parâmetros de availability inválida.");
+		}
+
 		return availability;
 	}
 
+	private static JobSchedulerPolicy defineScheduler(CommandLine cmd, ArrayList<Peer> peers) throws FileNotFoundException, java.text.ParseException {
+		JobSchedulerPolicy jobScheduler = null;
+		if (cmd.hasOption(SPOT_INSTANCES)) {
+			jobScheduler = createSpotInstancesScheduler(cmd, INSTANCE_TYPE, INSTANCE_REGION, INSTANCE_SO, AVAILABILITY);
+		} else {
+			if (cmd.hasOption(SCHEDULER)) {
+				String scheduler = cmd.getOptionValue(SCHEDULER);
+				if (scheduler.equals("persistent")) {
+					jobScheduler = new OurGridPersistentScheduler(peers);
+				} else if (scheduler.equals("replication") && cmd.hasOption(REPLIES)) {
+					int numberOfReplies = Integer.parseInt(cmd.getOptionValue(REPLIES));
+					jobScheduler = new OurGridReplicationScheduler(peers, numberOfReplies);
+				}
+			} else {
+				jobScheduler = new OurGridScheduler(peers);
+			}
+		}
+
+		if (jobScheduler == null) {
+			showMessageAndExit("Deve informar um tipo válido de scheduler.");
+		}
+
+		return jobScheduler;
+	}
+
 	private static void addResourcesToPeers(Map<String, Peer> peersMap, String peersDescriptionFilePath) throws FileNotFoundException {
-		// AvailabilityTraceFormat.addResourcesToPeer(peersMap.values().iterator().next(),
-		// cmd.getOptionValue(MACHINES_DESCRIPTION));
-		// if ((workload.peek() == null && jobScheduler.isFinished()) ||
-		// availability.peek() == null) {
-		// availability.stop();
-		// workload.stop();
-		// queue.clear();
-		// System.out.println("--------------------------------------------------------------");
-		// }
 		Scanner sc = new Scanner(new File(peersDescriptionFilePath));
 		sc.nextLine();// desconsidera o cabeçalho
 		while (sc.hasNextLine()) {
@@ -292,36 +279,13 @@ public class CLI {
 			}
 		}
 	}
-
-	private static JobSchedulerPolicy defineScheduler(CommandLine cmd, ArrayList<Peer> peers) throws FileNotFoundException, java.text.ParseException {
-		JobSchedulerPolicy jobScheduler = null;
-		if (cmd.hasOption(SPOT_INSTANCES)) {
-			SpotPrice initialSpotPrice = SpotInstaceTraceFormat.extractFirstSpotPrice(cmd.getOptionValue(AVAILABILITY));
-			long machineSpeed = Long.parseLong(cmd.getOptionValue(MACHINES_DESCRIPTION));
-			// XXX utilizar um peer específico para a nuvem spot instance
-			jobScheduler = new SpotInstancesScheduler(peers.get(0), initialSpotPrice, machineSpeed);
-			SpotPriceEventDispatcher.getInstance().addListener((SpotInstancesScheduler) jobScheduler);
-		} else {
-			if (cmd.hasOption(SCHEDULER)) {
-				String scheduler = cmd.getOptionValue(SCHEDULER);
-				if (scheduler.equals("persistent")) {
-					jobScheduler = new OurGridPersistentScheduler(peers);
-				} else if (scheduler.equals("replication") && cmd.hasOption(REPLIES)) {
-					int numberOfReplies = Integer.parseInt(cmd.getOptionValue(REPLIES));
-					jobScheduler = new OurGridReplicationScheduler(peers, numberOfReplies);
-				}
-			} else {
-				jobScheduler = new OurGridScheduler(peers);
-			}
-		}
-		return jobScheduler;
-	}
-
+	
 	private static Options prepareOptions() {
 		Options options = new Options();
 
 		options.addOption(AVAILABILITY, "availability", true, "Arquivo com a caracterização da disponibilidade para todos os recursos.");
 		options.addOption(WORKLOAD, "workload", true, "Arquivo com o workload no format GWA (Grid Workload Archive).");
+		options.addOption(WORKLOAD_TYPE, "workload_type", true, "The type of workload to read the workload file.");
 		options.addOption(MACHINES_DESCRIPTION, "machinesdescription", true, "Arquivo com a descrição das máquinas presentes em cada peer.");
 		options.addOption(SCHEDULER, "scheduler", true, "Indica qual scheduler deverá ser usado.");
 		options.addOption(REPLIES, "replies", true, "O número de réplicas para cada task.");
@@ -332,39 +296,17 @@ public class CLI {
 		options.addOption(NODE_MIPS_RATING, "speed", true, "A velocidade de cada máquina.");
 		options.addOption(NOF, "nof", false, "Utiliza a Rede de Favores (NoF).");
 		options.addOption(SPOT_INSTANCES, "spot_instances", false, "Simular modelo amazon spot instances.");
+		options.addOption(INSTANCE_TYPE, "instance_type", true, "Tipo de instância a ser simulada.");
+		options.addOption(INSTANCE_REGION, "instance_region", true, "Região a qual a instância pertence.");
+		options.addOption(INSTANCE_SO, "instance_so", true, "Sistema operacional da instância a ser simulada.");
 		options.addOption(BID_VALUE, "bid_value", true, "Valor do bid para alocação de instâncias no modelo amazon spot instances..");
 		options.addOption(DEDICATED_RESOURCES, "dedicated", false, "Indica que os recursos são todos dedicados.");
 		options.addOption(VERBOSE, "verbose", false, "Informa todos os eventos importantes.");
 		options.addOption(SYNTHETIC_AVAILABILITY, "synthetic_availability", false, "Indica que a disponibilidade dos recursos deve ser gerada sinteticamente.");
 		options.addOption(HELP, false, "Comando de ajuda.");
 		options.addOption(USAGE, false, "Instruções de uso.");
+
 		return options;
-	}
-
-	private static boolean hasOptions(CommandLine cmd, String... options) {
-		for (String option : options) {
-			if (!cmd.hasOption(option)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private static CommandLine parseCommandLine(String[] args, Options options) {
-		CommandLineParser parser = new PosixParser();
-		CommandLine cmd = null;
-
-		try {
-			cmd = parser.parse(options, args);
-		} catch (ParseException e) {
-			showMessageAndExit(e);
-		}
-		return cmd;
-	}
-
-	private static void showMessageAndExit(Exception e) {
-		System.err.println(e.getMessage());
-		System.exit(1);
 	}
 
 }
