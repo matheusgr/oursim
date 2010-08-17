@@ -34,4 +34,5 @@ public class OnDemandGWANorduGridWorkloadWithBidValue extends OnDemandGWANorduGr
 		}
 		return nextJob;
 	}
+
 }

@@ -177,7 +177,12 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		long earliestTaskStartTime = Long.MAX_VALUE;
 		for (Task task : tasks) {
 			if (task.isRunning() || task.isFinished()) {
-				earliestTaskStartTime = Math.min(earliestTaskStartTime, task.getStartTime());
+				try {
+					earliestTaskStartTime = Math.min(earliestTaskStartTime, task.getStartTime());
+				} catch (Exception e) {
+					System.out.println(task);
+					System.exit(1);
+				}
 			}
 		}
 		return earliestTaskStartTime != Long.MAX_VALUE ? earliestTaskStartTime : null;

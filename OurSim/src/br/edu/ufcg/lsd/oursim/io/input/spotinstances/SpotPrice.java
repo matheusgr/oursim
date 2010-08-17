@@ -5,6 +5,7 @@ import java.util.Date;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
+import br.edu.ufcg.lsd.oursim.entities.spotinstances.SpotValue;
 import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
 
 public class SpotPrice extends AvailabilityRecord implements SpotValue {

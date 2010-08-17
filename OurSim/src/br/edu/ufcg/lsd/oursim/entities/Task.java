@@ -93,9 +93,9 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	private Set<Task> replies = new HashSet<Task>();
 
 	private long replyId;
-	
+
 	private boolean cancelled = false;
-	
+
 	private double bidValue;
 
 	private double cost;
@@ -204,22 +204,27 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 
 	@Override
 	public void finish(long time) {
-		assert this.finishTime == null || isAnyReplyFinished() ;
+		assert this.finishTime == null || isAnyReplyFinished();
+		assert this.startTime != null;
 		this.finishTime = time;
 	}
 
 	@Override
 	public Long getStartTime() {
+		assert startTime != null || finishTime == null;
 		return startTime;
 	}
 
 	@Override
 	public void preempt(long time) {
 		assert this.startTime != null;
-
-		this.numberOfpreemptions++;
-		this.startTime = null;
-		this.targetPeer = null;
+		if (this.finishTime == null) {
+			this.numberOfpreemptions++;
+			this.startTime = null;
+			this.targetPeer = null;
+		} else {
+//			System.err.println("Tentou preemptar uma já concluída: " + time + " " + this);
+		}
 	}
 
 	/**
@@ -316,15 +321,6 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 		}
 		return false;
 	}
-	
-//	public boolean hasAnyReplyFinished() {
-//		for (Task reply : replies) {
-//			if (reply.isFinished()) {
-//				return true;
-//			}
-//		}
-//		return false;
-//	}
 
 	public Long getAnyReplyFinishTime() {
 		for (Task reply : replies) {
@@ -375,6 +371,8 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	}
 
 	public void finishSourceTask() {
+		assert this.startTime != null;
+		assert this.finishTime != null;
 		for (Task reply : replies) {
 			if (reply.getReplyId() == SOURCE_TASK_REPLY_ID) {
 				reply.finishTime = this.finishTime;
@@ -393,7 +391,7 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	public boolean isCancelled() {
 		return cancelled;
 	}
-	
+
 	@Override
 	public String toString() {
 		// [id, duration, submissionTime, startTime, finishTime,

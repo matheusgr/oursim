@@ -1,4 +1,4 @@
-package br.edu.ufcg.lsd.oursim.io.input.spotinstances;
+package br.edu.ufcg.lsd.oursim.entities.spotinstances;
 
 public interface SpotValue {
 

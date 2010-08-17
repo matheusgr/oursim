@@ -68,7 +68,7 @@ public class MarkovModelAvailabilityCharacterization implements Input<Availabili
 			}
 		}
 
-		if (shouldStop || (this.nextAV.getTime() > this.quantDeSegundos)) {
+		if (shouldStop || (this.nextAV != null && this.nextAV.getTime() > this.quantDeSegundos)) {
 			this.nextAvailabilityRecords.clear();
 			this.nextAV = null;
 			this.shouldStop = true;
