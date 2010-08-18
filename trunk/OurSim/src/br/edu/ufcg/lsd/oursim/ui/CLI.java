@@ -59,6 +59,7 @@ import br.edu.ufcg.lsd.oursim.policy.OurGridPersistentScheduler;
 import br.edu.ufcg.lsd.oursim.policy.OurGridReplicationScheduler;
 import br.edu.ufcg.lsd.oursim.policy.OurGridScheduler;
 import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
+import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityAbstract;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 import br.edu.ufcg.lsd.oursim.util.AvailabilityTraceFormat;
 import br.edu.ufcg.lsd.oursim.util.GWAFormat;
@@ -67,41 +68,41 @@ public class CLI {
 
 	public static final Random RANDOM = new Random(9354269l);
 
-	private static final String NOF = "nof";
+	public static final String NOF = "nof";
 
-	private static final String AVAILABILITY = "av";
+	public static final String AVAILABILITY = "av";
 
-	private static final String SYNTHETIC_AVAILABILITY = "synthetic_av";
+	public static final String SYNTHETIC_AVAILABILITY = "synthetic_av";
 
-	private static final String MACHINES_DESCRIPTION = "md";
+	public static final String MACHINES_DESCRIPTION = "md";
 
-	private static final String DEDICATED_RESOURCES = "d";
+	public static final String DEDICATED_RESOURCES = "d";
 
-	private static final String VERBOSE = "v";
+	public static final String VERBOSE = "v";
 
-	private static final String WORKLOAD = "w";
+	public static final String WORKLOAD = "w";
 
-	private static final String WORKLOAD_TYPE = "wt";
+	public static final String WORKLOAD_TYPE = "wt";
 
-	private static final String REPLIES = "r";
+	public static final String REPLIES = "r";
 
-	private static final String NUM_PEERS = "np";
+	public static final String NUM_PEERS = "np";
 
-	private static final String NUM_RESOURCES_BY_PEER = "nr";
+	public static final String NUM_RESOURCES_BY_PEER = "nr";
 
-	private static final String PEERS_DESCRIPTION = "pd";
+	public static final String PEERS_DESCRIPTION = "pd";
 
-	private static final String NODE_MIPS_RATING = "r";
+	public static final String NODE_MIPS_RATING = "r";
 
-	private static final String SCHEDULER = "s";
+	public static final String SCHEDULER = "s";
 
-	private static final String OUTPUT = "o";
+	public static final String OUTPUT = "o";
 
-	private static final String HELP = "help";
+	public static final String HELP = "help";
 
-	private static final String USAGE = "usage";
+	public static final String USAGE = "usage";
 
-	private static final String EXECUTION_LINE = "java -jar oursim.jar";
+	public static final String EXECUTION_LINE = "java -jar oursim.jar";
 
 	/**
 	 * Exemplo:
@@ -159,6 +160,8 @@ public class CLI {
 			jobScheduler = defineScheduler(cmd, peers);
 
 			oursim = new OurSim(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
+
+			oursim.setActiveEntity(new ActiveEntityAbstract());
 
 			oursim.start();
 
@@ -254,7 +257,7 @@ public class CLI {
 		}
 	}
 
-	private static Options prepareOptions() {
+	public static Options prepareOptions() {
 		Options options = new Options();
 
 		options.addOption(AVAILABILITY, "availability", true, "Arquivo com a caracterização da disponibilidade para todos os recursos.");

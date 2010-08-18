@@ -20,7 +20,7 @@ import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 
 public class CLIUTil {
 
-	static boolean hasOptions(CommandLine cmd, String... options) {
+	public static boolean hasOptions(CommandLine cmd, String... options) {
 		for (String option : options) {
 			if (!cmd.hasOption(option)) {
 				return false;
@@ -29,7 +29,7 @@ public class CLIUTil {
 		return true;
 	}
 
-	static CommandLine parseCommandLine(String[] args, Options options) {
+	public static CommandLine parseCommandLine(String[] args, Options options) {
 		CommandLineParser parser = new PosixParser();
 		CommandLine cmd = null;
 
@@ -41,16 +41,16 @@ public class CLIUTil {
 		return cmd;
 	}
 
-	static void showMessageAndExit(Exception e) {
+	public static void showMessageAndExit(Exception e) {
 		showMessageAndExit(e.getMessage());
 	}
 
-	static void showMessageAndExit(String message) {
+	public static void showMessageAndExit(String message) {
 		System.err.println(message);
 		System.exit(1);
 	}
 
-	static void printOutput(ComputingElementEventCounter computingElementEventCounter) {
+	public static void printOutput(ComputingElementEventCounter computingElementEventCounter) {
 
 		DecimalFormat dft = new DecimalFormat("000.00");
 
@@ -80,7 +80,7 @@ public class CLIUTil {
 		System.out.print("\n");
 	}
 
-	static String printResume(ComputingElementEventCounter computingElementEventCounter) {
+	public static String printResume(ComputingElementEventCounter computingElementEventCounter) {
 
 		DecimalFormat dft = new DecimalFormat("000.00");
 
@@ -100,7 +100,7 @@ public class CLIUTil {
 		return resume;
 	}
 
-	static ComputingElementEventCounter prepareOutputAccounting(CommandLine cmd, String VERBOSE) {
+	public static ComputingElementEventCounter prepareOutputAccounting(CommandLine cmd, String VERBOSE) {
 		ComputingElementEventCounter computingElementEventCounter = new ComputingElementEventCounter();
 
 		if (cmd.hasOption(VERBOSE)) {
@@ -117,7 +117,7 @@ public class CLIUTil {
 		return computingElementEventCounter;
 	}
 
-	static void treatWrongCommand(Options options, CommandLine cmd, String HELP, String USAGE, String EXECUTION_LINE) {
+	public static void treatWrongCommand(Options options, CommandLine cmd, String HELP, String USAGE, String EXECUTION_LINE) {
 		System.err.println("Informe todos os parâmetros obrigatórios.");
 		HelpFormatter formatter = new HelpFormatter();
 		if (cmd.hasOption(HELP)) {

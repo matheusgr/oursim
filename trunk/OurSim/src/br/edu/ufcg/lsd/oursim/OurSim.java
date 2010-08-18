@@ -14,7 +14,7 @@ import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.io.input.availability.DedicatedResourcesAvailabilityCharacterization;
 import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
-import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityAbstract;
+import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntity;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 import br.edu.ufcg.lsd.oursim.simulationevents.TimedEvent;
 
@@ -27,7 +27,11 @@ import br.edu.ufcg.lsd.oursim.simulationevents.TimedEvent;
  * @since 27/05/2010
  * 
  */
-public class OurSim extends ActiveEntityAbstract {
+public class OurSim {
+
+	private ActiveEntity activeEntity;
+
+	private EventQueue eventQueue;
 
 	/**
 	 * the peers that comprise the grid.
@@ -85,7 +89,7 @@ public class OurSim extends ActiveEntityAbstract {
 	 */
 	public OurSim(EventQueue queue, List<Peer> peers, JobSchedulerPolicy jobScheduler, Workload workload,
 			Input<? extends AvailabilityRecord> availabilityCharacterization) {
-		this.setEventQueue(queue);
+		this.eventQueue = queue;
 		this.peers = peers;
 		this.jobScheduler = jobScheduler;
 		this.workload = workload;
@@ -99,18 +103,18 @@ public class OurSim extends ActiveEntityAbstract {
 		prepareListeners(peers, jobScheduler);
 
 		// shares the eventQueue with the scheduler
-		this.jobScheduler.setEventQueue(this.getEventQueue());
+		this.jobScheduler.setEventQueue(this.activeEntity.getEventQueue());
 
 		// setUP the peers to the simulation
 		for (Peer peer : peers) {
 			// shares the eventQueue with the peers.
-			peer.setEventQueue(this.getEventQueue());
+			peer.setEventQueue(this.activeEntity.getEventQueue());
 		}
 
 		// adds the workload to the scheduler
 		// this.jobScheduler.addWorkload(workload);
 
-		run(getEventQueue(), jobScheduler, workload, availabilityCharacterization);
+		run(this.activeEntity.getEventQueue(), jobScheduler, workload, availabilityCharacterization);
 
 		clearListeners(peers, jobScheduler);
 	}
@@ -174,7 +178,7 @@ public class OurSim extends ActiveEntityAbstract {
 		long nextAvRecordTime = (availability.peek() != null) ? availability.peek().getTime() : -1;
 		while (availability.peek() != null && availability.peek().getTime() == nextAvRecordTime) {
 			AvailabilityRecord av = availability.poll();
-			this.addAvailabilityRecordEvent(av.getTime(), av);
+			this.activeEntity.addAvailabilityRecordEvent(av.getTime(), av);
 			// this.addWorkerAvailableEvent(av.getTime(), av.getMachineName(),
 			// av.getDuration());
 		}
@@ -192,7 +196,7 @@ public class OurSim extends ActiveEntityAbstract {
 		while (workload.peek() != null && workload.peek().getSubmissionTime() == nextSubmissionTime) {
 			Job job = workload.poll();
 			long time = job.getSubmissionTime();
-			this.addSubmitJobEvent(time, job);
+			this.activeEntity.addSubmitJobEvent(time, job);
 		}
 	}
 
@@ -256,6 +260,11 @@ public class OurSim extends ActiveEntityAbstract {
 		TaskEventDispatcher.getInstance().removeListener(sp);
 		WorkerEventDispatcher.getInstance().removeListener(sp);
 
+	}
+
+	public void setActiveEntity(ActiveEntity activeEntity) {
+		this.activeEntity = activeEntity;
+		this.activeEntity.setEventQueue(eventQueue);
 	}
 
 }
