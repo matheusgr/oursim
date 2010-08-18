@@ -45,21 +45,9 @@ public class ActiveEntityAbstract implements ActiveEntity {
 		return eventQueue.getCurrentTime();
 	}
 
-	//XXX
-//	@Override
-//	public void addNewSpotPriceEvent(SpotPrice spotPrice) {
-//		this.getEventQueue().addEvent(new NewSpotPriceEvent(spotPrice));
-//	}
-//
-//	@Override
-//	public void addFullHourCompletedEvent(BidValue bidValue) {
-//		long oneHourFromNow = getCurrentTime() + (60 * 60);
-//		this.getEventQueue().addEvent(new FullHourCompletedEvent(oneHourFromNow, bidValue));
-//	}
-
 	@Override
 	public void addSubmitJobEvent(long submitTime, Job job) {
-		assert submitTime >= getCurrentTime(): submitTime +" >= "+ getCurrentTime();
+		assert submitTime >= getCurrentTime() : submitTime + " >= " + getCurrentTime();
 		this.getEventQueue().addEvent(new SubmitJobEvent(submitTime, job));
 	}
 
@@ -129,11 +117,18 @@ public class ActiveEntityAbstract implements ActiveEntity {
 
 	@Override
 	public void addAvailabilityRecordEvent(long time, AvailabilityRecord avRecord) {
-//XXX		if (avRecord instanceof SpotPrice) {
-//			this.getEventQueue().addEvent(new NewSpotPriceEvent((SpotPrice) avRecord));
-//		} else {
+		// XXX if (avRecord instanceof SpotPrice) {
+		// this.getEventQueue().addEvent(new NewSpotPriceEvent((SpotPrice)
+		// avRecord));
+		// } else {
+		// this.addWorkerAvailableEvent(time, avRecord.getMachineName(),
+		// avRecord.getDuration());
+		// }
+		if (avRecord.getClass() == AvailabilityRecord.class) {
 			this.addWorkerAvailableEvent(time, avRecord.getMachineName(), avRecord.getDuration());
-//		}
+		} else {
+			System.out.println("(avRecord.getClass() == AvailabilityRecord.class) -----> " + (avRecord.getClass() == AvailabilityRecord.class));
+		}
 	}
 
 }
