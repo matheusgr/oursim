@@ -1,0 +1,11 @@
+#Wed Aug 18 18:27:28 BRT 2010
+CLEAR_CONSOLE=true
+JAVACC_OPTIONS=-OUTPUT_DIRECTORY\=/home/edigley/workspace/SpotInstancesSimulator/src/br/edu/ufcg/lsd/spotinstancessimulator/parser
+JJDOC_OPTIONS=
+JJTREE_OPTIONS=
+JJ_NATURE=true
+JTB_OPTIONS=
+RUNTIME_JAR=
+SHOW_CONSOLE=true
+SUPPRESS_WARNINGS=false
+eclipse.preferences.version=1
