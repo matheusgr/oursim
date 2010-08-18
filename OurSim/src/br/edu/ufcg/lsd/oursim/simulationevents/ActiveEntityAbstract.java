@@ -2,15 +2,11 @@ package br.edu.ufcg.lsd.oursim.simulationevents;
 
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Task;
-import br.edu.ufcg.lsd.oursim.entities.spotinstances.BidValue;
 import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
-import br.edu.ufcg.lsd.oursim.io.input.spotinstances.SpotPrice;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.FinishJobEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.PreemptedJobEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.StartedJobEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.SubmitJobEvent;
-import br.edu.ufcg.lsd.oursim.simulationevents.spotinstances.FullHourCompletedEvent;
-import br.edu.ufcg.lsd.oursim.simulationevents.spotinstances.NewSpotPriceEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.CancelledTaskEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.FinishTaskEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.PreemptedTaskEvent;
@@ -49,16 +45,17 @@ public class ActiveEntityAbstract implements ActiveEntity {
 		return eventQueue.getCurrentTime();
 	}
 
-	@Override
-	public void addNewSpotPriceEvent(SpotPrice spotPrice) {
-		this.getEventQueue().addEvent(new NewSpotPriceEvent(spotPrice));
-	}
-
-	@Override
-	public void addFullHourCompletedEvent(BidValue bidValue) {
-		long oneHourFromNow = getCurrentTime() + (60 * 60);
-		this.getEventQueue().addEvent(new FullHourCompletedEvent(oneHourFromNow, bidValue));
-	}
+	//XXX
+//	@Override
+//	public void addNewSpotPriceEvent(SpotPrice spotPrice) {
+//		this.getEventQueue().addEvent(new NewSpotPriceEvent(spotPrice));
+//	}
+//
+//	@Override
+//	public void addFullHourCompletedEvent(BidValue bidValue) {
+//		long oneHourFromNow = getCurrentTime() + (60 * 60);
+//		this.getEventQueue().addEvent(new FullHourCompletedEvent(oneHourFromNow, bidValue));
+//	}
 
 	@Override
 	public void addSubmitJobEvent(long submitTime, Job job) {
@@ -132,11 +129,11 @@ public class ActiveEntityAbstract implements ActiveEntity {
 
 	@Override
 	public void addAvailabilityRecordEvent(long time, AvailabilityRecord avRecord) {
-		if (avRecord instanceof SpotPrice) {
-			this.getEventQueue().addEvent(new NewSpotPriceEvent((SpotPrice) avRecord));
-		} else {
+//XXX		if (avRecord instanceof SpotPrice) {
+//			this.getEventQueue().addEvent(new NewSpotPriceEvent((SpotPrice) avRecord));
+//		} else {
 			this.addWorkerAvailableEvent(time, avRecord.getMachineName(), avRecord.getDuration());
-		}
+//		}
 	}
 
 }
