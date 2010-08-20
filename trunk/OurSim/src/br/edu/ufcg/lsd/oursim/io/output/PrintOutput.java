@@ -37,11 +37,24 @@ public final class PrintOutput implements Output {
 
 	private static final String PREEMPT_HEADER = PREEMPT_LABEL.concat(SEP).concat("preemptionTime").concat(SEP).concat("jobId");
 
+	private static final String HEADER = "type".concat(SEP)
+	.concat("finishTime").concat(SEP)
+	.concat("jobId").concat(SEP)
+	.concat("submissionTime").concat(SEP)
+	.concat("startTime").concat(SEP)
+	.concat("expectedDuration").concat(SEP)
+	.concat("runtimeDuration").concat(SEP)
+	.concat("makeSpan").concat(SEP)
+	.concat("cost").concat(SEP)
+	.concat("queuingTime").concat(SEP)
+	.concat("numberOfPreemption");
+
 	private static final String FINISH_HEADER =	FINISH_LABEL.concat(SEP)
 	.concat("finishTime").concat(SEP)
 	.concat("jobId").concat(SEP)
 	.concat("submissionTime").concat(SEP)
 	.concat("startTime").concat(SEP)
+	.concat("expectedDuration").concat(SEP)
 	.concat("runtimeDuration").concat(SEP)
 	.concat("makeSpan").concat(SEP)
 	.concat("cost").concat(SEP)
@@ -53,6 +66,7 @@ public final class PrintOutput implements Output {
 	.concat("jobId").concat(SEP)
 	.concat("submissionTime").concat(SEP)
 	.concat("startTime").concat(SEP)
+	.concat("expectedDuration").concat(SEP)
 	.concat("runtimeDuration").concat(SEP)
 	.concat("makeSpan").concat(SEP)
 	.concat("cost").concat(SEP)
@@ -95,7 +109,7 @@ public final class PrintOutput implements Output {
 //			this.out.println(COMMENT_CHARACTER + PREEMPT_HEADER);
 //			this.out.print(COMMENT_CHARACTER);
 		}
-		this.out.println(FINISH_HEADER);
+		this.out.println(HEADER);
 	}
 
 	@Override
@@ -117,6 +131,7 @@ public final class PrintOutput implements Output {
 			.append("NA").append(SEP)
 			.append("NA").append(SEP)
 			.append("NA").append(SEP)
+			.append("NA").append(SEP)
 			.append("NA");
 			this.out.println(sb);
 	}
@@ -130,6 +145,7 @@ public final class PrintOutput implements Output {
 			long submissionTime = job.getSubmissionTime();
 			long finishTime = job.getFinishTime();
 			long startTime = job.getStartTime();
+			long duration = job.getDuration();
 			long runTimeDuration = job.getRunningTime();
 			long makeSpan = job.getMakeSpan();
 			double cost = job.getCost();
@@ -142,6 +158,7 @@ public final class PrintOutput implements Output {
 			.append(jobId).append(SEP)
 			.append(submissionTime).append(SEP)
 			.append(startTime).append(SEP)
+			.append(duration).append(SEP)
 			.append(runTimeDuration).append(SEP)
 			.append(makeSpan).append(SEP)
 			.append(cost).append(SEP)
@@ -159,6 +176,7 @@ public final class PrintOutput implements Output {
 			long jobId = job.getId();
 			long submissionTime = job.getSubmissionTime();
 			double cost = job.getCost();
+			long duration = job.getDuration();
 			long numberOfPreemptions = job.getNumberOfPreemptions();
 
 			StringBuilder sb = new StringBuilder(PREEMPT_LABEL);
@@ -167,6 +185,7 @@ public final class PrintOutput implements Output {
 			.append(jobId).append(SEP)
 			.append(submissionTime).append(SEP)
 			.append("NA").append(SEP)
+			.append(duration).append(SEP)
 			.append("NA").append(SEP)
 			.append("NA").append(SEP)
 			.append(cost).append(SEP)
@@ -186,8 +205,17 @@ public final class PrintOutput implements Output {
 		long finishTime = job.getFinishTime();
 		long startTime = job.getStartTime();
 		long runTimeDuration = job.getRunningTime();
+		long duration = job.getDuration();
 		long makeSpan = job.getMakeSpan();
-		double cost = job.getCost();
+//		double cost = job.getCost();
+		StringBuilder tasks = new StringBuilder("[");
+		String sep = "";
+		for (Task task : job.getTasks()) {
+			tasks.append(sep).append(task.getDuration());
+			sep = ",";
+		}
+		tasks.append("]");
+		String cost = tasks.toString();
 		long queuingTime = job.getQueueingTime();
 		long numberOfPreemptions = job.getNumberOfPreemptions();
 
@@ -197,6 +225,7 @@ public final class PrintOutput implements Output {
 		.append(jobId).append(SEP)
 		.append(submissionTime).append(SEP)
 		.append(startTime).append(SEP)
+		.append(duration).append(SEP)
 		.append(runTimeDuration).append(SEP)
 		.append(makeSpan).append(SEP)
 		.append(cost).append(SEP)

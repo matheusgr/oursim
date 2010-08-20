@@ -78,8 +78,8 @@ public class OnDemandBoTGWANorduGridWorkload implements Workload {
 	public final static Job createJob(String line, Map<String, Peer> peers, long startingTime) {
 		Scanner scLine = new Scanner(line);
 		long submitTime = scLine.nextLong();
-		long taskID = scLine.nextLong();
 		long jobID = scLine.nextLong();
+		long taskID = scLine.nextLong();
 		long runTime = scLine.nextLong();
 		String userID = scLine.next();
 		String siteID = scLine.next();
