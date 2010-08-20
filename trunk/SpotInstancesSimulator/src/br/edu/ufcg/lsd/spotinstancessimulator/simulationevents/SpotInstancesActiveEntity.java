@@ -2,9 +2,11 @@ package br.edu.ufcg.lsd.spotinstancessimulator.simulationevents;
 
 import java.util.Date;
 
+import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntity;
 import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityAbstract;
+import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.SubmitJobEvent;
 import br.edu.ufcg.lsd.spotinstancessimulator.entities.BidValue;
 import br.edu.ufcg.lsd.spotinstancessimulator.io.input.SpotPrice;
 
@@ -36,21 +38,27 @@ public class SpotInstancesActiveEntity extends ActiveEntityAbstract {
 		}
 	}
 
-	public static void main(String[] args) {
-		AvailabilityRecord av = new AvailabilityRecord("", 1324l, 25);
-		SpotPrice sp = new SpotPrice("", new Date(), 123d); 
-		
-		System.out.println(sp instanceof AvailabilityRecord);
-		System.out.println(AvailabilityRecord.class.isInstance(sp));
-		
-		System.out.println(av.getClass().getCanonicalName().equals(AvailabilityRecord.class.getCanonicalName()));
-		System.out.println(av.getClass() == AvailabilityRecord.class);
-		
-		System.out.println(sp.getClass().getCanonicalName().equals(AvailabilityRecord.class.getCanonicalName()));
-		System.out.println(sp.getClass() == AvailabilityRecord.class);
-		
-		System.out.println(sp.getClass().getCanonicalName().equals(SpotPrice.class.getCanonicalName()));
-		System.out.println(sp.getClass() == SpotPrice.class);
+	@Override
+	public void addSubmitJobEvent(long submitTime, Job job) {
+		assert submitTime >= getCurrentTime() : submitTime + " >= " + getCurrentTime();
+		this.getEventQueue().addEvent(new SubmitJobEvent(submitTime, job));
 	}
+
+//	public static void main(String[] args) {
+//		AvailabilityRecord av = new AvailabilityRecord("", 1324l, 25);
+//		SpotPrice sp = new SpotPrice("", new Date(), 123d); 
+//		
+//		System.out.println(sp instanceof AvailabilityRecord);
+//		System.out.println(AvailabilityRecord.class.isInstance(sp));
+//		
+//		System.out.println(av.getClass().getCanonicalName().equals(AvailabilityRecord.class.getCanonicalName()));
+//		System.out.println(av.getClass() == AvailabilityRecord.class);
+//		
+//		System.out.println(sp.getClass().getCanonicalName().equals(AvailabilityRecord.class.getCanonicalName()));
+//		System.out.println(sp.getClass() == AvailabilityRecord.class);
+//		
+//		System.out.println(sp.getClass().getCanonicalName().equals(SpotPrice.class.getCanonicalName()));
+//		System.out.println(sp.getClass() == SpotPrice.class);
+//	}
 
 }
