@@ -23,8 +23,16 @@
 		</copy>
 		<zip destfile="${dist.dir}/${jar.name}.zip" basedir="${dist.dir}/${application.name}" />
 		<delete dir="${build.classes.dir}" />
+		
+		<antcall target="dist2clients" />
+		
 	</target>
 
+	<target name="dist2clients">
+		<echo>Copiando o jar para os projetos clientes...</echo>
+		<copy file="${jar.path}" todir="../SpotInstancesSimulator/lib" />
+	</target>
+	
 	<!-- compila -->
 	<target name="compile">
 		<echo>Compilando...</echo>

@@ -108,7 +108,7 @@ public class GWASplit {
 	private static void getBoTs(String workloadFilePath, String outputFilePath, long delta) throws IOException {
 		BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath));
 
-//		writer.append("SubmitTime TaskId JobId RunTime UserId SiteId \n");
+		// writer.append("SubmitTime TaskId JobId RunTime UserId SiteId \n");
 
 		Scanner sc = new Scanner(new File(workloadFilePath));
 		String line = null;
@@ -144,9 +144,10 @@ public class GWASplit {
 							jobsInConstructionMap.put(gwaJob.UserID, new ArrayList<String>());
 						}
 					}
+					gwaJob.SubmitTime = lastGwaJob.SubmitTime;
 					lastGwaJobMap.put(gwaJob.UserID, gwaJob);
 					if (gwaJob.RunTime <= 3600) {
-						jobsInConstructionMap.get(gwaJob.UserID).add(asRecord(nextJobIdMap.get(gwaJob.UserID), gwaJob));
+						jobsInConstructionMap.get(gwaJob.UserID).add(asRecord(nextJobIdMap.get(gwaJob.UserID), gwaJob, lastGwaJob));
 					}
 				} else {
 					lastGwaJobMap.put(gwaJob.UserID, gwaJob);
@@ -157,7 +158,7 @@ public class GWASplit {
 					jobsInConstructionMap.get(gwaJob.UserID).clear();
 					nextJobIdMap.put(gwaJob.UserID, nextJobId++);
 					if (gwaJob.RunTime <= 3600) {
-						jobsInConstructionMap.get(gwaJob.UserID).add(asRecord(nextJobIdMap.get(gwaJob.UserID), gwaJob));
+						jobsInConstructionMap.get(gwaJob.UserID).add(asRecord(nextJobIdMap.get(gwaJob.UserID), gwaJob, gwaJob));
 					}
 				}
 			}
@@ -262,6 +263,17 @@ public class GWASplit {
 
 	}
 
+	private static String asRecord(long jobId, GWAJobDescription task, GWAJobDescription job) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(job.SubmitTime).append("\t");
+		sb.append(jobId).append("\t");
+		sb.append(task.JobID).append("\t");
+		sb.append(task.RunTime).append("\t");
+		sb.append(task.UserID).append("\t");
+		sb.append(task.OrigSiteID);
+		return sb.toString();
+	}
+
 	private static String asRecord(long jobId, GWAJobDescription gwaJob) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(gwaJob.SubmitTime).append("\t");
@@ -280,12 +292,17 @@ public class GWASplit {
 
 		Collection<Job> bots = new ArrayList<Job>();
 
-		getBoTs("resources/nordugrid_janeiro_2006.txt", "resources/nordugrid_janeiro_2006_bots_menor_3600.txt", 120);
+//		getBoTs("resources/nordugrid_janeiro_2006.txt", "resources/nordugrid_janeiro_2006_bots_menor_3600.txt", 120);
 		// depois sort -k 3,1 resources/nordugrid_janeiro_2006_bots.txt >
 		// resources/nordugrid_janeiro_2006_bots_sorted.tx
-		// getBoTs("resources/nordugrid_setembro_2005.txt",
-		// "resources/nordugrid_setembro_2005_bots.txt", 120);
-
+		// sort -g -k 1 resources/nordugrid_janeiro_2006_bots_menor_3600.txt >
+		// resources/nordugrid_janeiro_2006_bots_menor_3600_sorted.txt
+		 
+		getBoTs("resources/nordugrid_setembro_2005.txt",
+		 "resources/nordugrid_setembro_2005_bots.txt", 120);
+		// depois sort -k 3,1 resources/nordugrid_setembro_2005_bots.txt >
+		// resources/nordugrid_setembro_2005_bots_sorted.tx
+		// grep -rwi "F" oursim-og-trace.txt
 		for (Job job : bots) {
 			System.out.println(job);
 		}

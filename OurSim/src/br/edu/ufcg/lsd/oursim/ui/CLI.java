@@ -27,6 +27,7 @@ import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.treatWrongCommand;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
@@ -117,9 +118,6 @@ public class CLI {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		args = "-w resources/nordugrid_setembro_2005_bots_menor_3600_sorted.txt -wt bot -s replication -r 3 -pd resources/nordugrid_site_description.txt -synthetic_av -o oursim-og-trace.txt"
-				.split("\\s+");
-
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
@@ -134,32 +132,19 @@ public class CLI {
 
 			ComputingElementEventCounter computingElementEventCounter = prepareOutputAccounting(cmd, VERBOSE);
 
-			OurSim oursim = null;
-			Input<? extends AvailabilityRecord> availability = null;
-			Workload workload = null;
-			JobSchedulerPolicy jobScheduler = null;
-			Map<String, Peer> peersMap = null;
-
 			ResourceSharingPolicy sharingPolicy = cmd.hasOption(NOF) ? NoFSharingPolicy.getInstance() : FifoSharingPolicy.getInstance();
-			int numberOfResourcesByPeer = cmd.hasOption(NUM_RESOURCES_BY_PEER) ? Integer.parseInt(cmd.getOptionValue(NUM_RESOURCES_BY_PEER)) : 0;
-			peersMap = GWAFormat.extractPeersFromGWAFile(cmd.getOptionValue(WORKLOAD), numberOfResourcesByPeer, sharingPolicy);
-			if (numberOfResourcesByPeer == 0 && cmd.hasOption(PEERS_DESCRIPTION)) {
-				String peersDescriptionFilePath = cmd.getOptionValue(PEERS_DESCRIPTION);
-				addResourcesToPeers(peersMap, peersDescriptionFilePath);
-			}
-			long durationOfWorkloadInSeconds = GWAFormat.extractDurationInSecondsOfWorkload(cmd.getOptionValue(WORKLOAD));
-			int amountOfSecondsInADay = 60 * 60 * 24;
-			// adiciona um dia além da duração do workload
-			durationOfWorkloadInSeconds += amountOfSecondsInADay;
-			availability = defineAvailability(cmd, peersMap, durationOfWorkloadInSeconds);
-			long timeOfFirstSubmission = GWAFormat.extractSubmissionTimeFromFirstJob(cmd.getOptionValue(WORKLOAD));
-			workload = defineWorkloadType(cmd, cmd.getOptionValue(WORKLOAD), peersMap, timeOfFirstSubmission);
+
+			Map<String, Peer> peersMap = prepareGrid(cmd, sharingPolicy);
+
+			Input<? extends AvailabilityRecord> availability = prepareSystemAvailability(cmd, peersMap);
+
+			Workload workload = prepareWorkload(cmd, peersMap);
 
 			ArrayList<Peer> peers = new ArrayList<Peer>(peersMap.values());
 
-			jobScheduler = defineScheduler(cmd, peers);
+			JobSchedulerPolicy jobScheduler = defineScheduler(cmd, peers);
 
-			oursim = new OurSim(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
+			OurSim oursim = new OurSim(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
 
 			oursim.setActiveEntity(new ActiveEntityAbstract());
 
@@ -181,6 +166,35 @@ public class CLI {
 		} else {
 			treatWrongCommand(options, cmd, HELP, USAGE, EXECUTION_LINE);
 		}
+	}
+
+	private static Workload prepareWorkload(CommandLine cmd, Map<String, Peer> peersMap) throws IOException, FileNotFoundException {
+		Workload workload;
+		long timeOfFirstSubmission = GWAFormat.extractSubmissionTimeFromFirstJob(cmd.getOptionValue(WORKLOAD));
+		workload = defineWorkloadType(cmd, cmd.getOptionValue(WORKLOAD), peersMap, timeOfFirstSubmission);
+		return workload;
+	}
+
+	private static Input<? extends AvailabilityRecord> prepareSystemAvailability(CommandLine cmd, Map<String, Peer> peersMap) throws IOException,
+			FileNotFoundException {
+		Input<? extends AvailabilityRecord> availability;
+		long durationOfWorkloadInSeconds = GWAFormat.extractDurationInSecondsOfWorkload(cmd.getOptionValue(WORKLOAD));
+		int amountOfSecondsInADay = 60 * 60 * 24;
+		// adiciona um dia além da duração do workload
+		durationOfWorkloadInSeconds += amountOfSecondsInADay;
+		availability = defineAvailability(cmd, peersMap, durationOfWorkloadInSeconds);
+		return availability;
+	}
+
+	private static Map<String, Peer> prepareGrid(CommandLine cmd, ResourceSharingPolicy sharingPolicy) throws FileNotFoundException {
+		Map<String, Peer> peersMap;
+		int numberOfResourcesByPeer = cmd.hasOption(NUM_RESOURCES_BY_PEER) ? Integer.parseInt(cmd.getOptionValue(NUM_RESOURCES_BY_PEER)) : 0;
+		peersMap = GWAFormat.extractPeersFromGWAFile(cmd.getOptionValue(WORKLOAD), numberOfResourcesByPeer, sharingPolicy);
+		if (numberOfResourcesByPeer == 0 && cmd.hasOption(PEERS_DESCRIPTION)) {
+			String peersDescriptionFilePath = cmd.getOptionValue(PEERS_DESCRIPTION);
+			addResourcesToPeers(peersMap, peersDescriptionFilePath);
+		}
+		return peersMap;
 	}
 
 	private static Workload defineWorkloadType(CommandLine cmd, String workloadFilePath, Map<String, Peer> peersMap, long timeOfFirstSubmission)

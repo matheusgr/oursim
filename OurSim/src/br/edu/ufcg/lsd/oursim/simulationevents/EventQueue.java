@@ -166,7 +166,8 @@ public final class EventQueue implements Closeable {
 		// checks if the next event is a valid one
 		if (pq.peek() != null && !pq.peek().isCancelled()) {
 			if (this.currentTime > pq.peek().getTime()) {
-				System.err.println(this);
+				System.err.println("EventQueue:"+this);
+				System.err.println("Event:"+pq.peek());
 				System.err.println("Offending Event! " + pq.peek() + " CT: " + currentTime);
 				System.exit(1);
 			}

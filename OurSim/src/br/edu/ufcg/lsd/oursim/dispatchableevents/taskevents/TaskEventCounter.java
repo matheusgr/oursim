@@ -17,6 +17,7 @@ public class TaskEventCounter extends TaskEventListenerAdapter {
 	@Override
 	public void taskFinished(Event<Task> taskEvent) {
 		this.numberOfFinishedTasks++;
+		//XXX o id não é único para todas as tasks. A chave única deve considerar task e ID.
 		idsOfFinishedTasks.add(taskEvent.getSource().getId());
 	}
 
@@ -26,8 +27,7 @@ public class TaskEventCounter extends TaskEventListenerAdapter {
 	}
 
 	public final int getNumberOfFinishedTasks() {
-		assert numberOfFinishedTasks == idsOfFinishedTasks.size();
-		return idsOfFinishedTasks.size();
+		return numberOfFinishedTasks;
 	}
 
 	public final int getNumberOfPreemptionsForAllTasks() {

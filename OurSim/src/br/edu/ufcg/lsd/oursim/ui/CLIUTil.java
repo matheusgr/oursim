@@ -54,8 +54,7 @@ public class CLIUTil {
 
 		DecimalFormat dft = new DecimalFormat("000.00");
 
-		// System.out.println("submitted finished preempted notStarted
-		// success finishedCost preemptedCost totalCost");
+		System.out.println("submitted finished preempted notStarted success finishedCost preemptedCost totalCost");
 		System.out.print(computingElementEventCounter.getNumberOfSubmittedJobs());
 		System.out.print(" ");
 		System.out.print(computingElementEventCounter.getNumberOfFinishedJobs());
