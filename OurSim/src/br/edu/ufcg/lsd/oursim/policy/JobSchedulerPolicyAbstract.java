@@ -10,7 +10,7 @@ import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
-import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityAbstract;
+import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityImp;
 
 /**
  * 
@@ -22,7 +22,7 @@ import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityAbstract;
  * @since 18/05/2010
  * 
  */
-public abstract class JobSchedulerPolicyAbstract extends ActiveEntityAbstract implements JobSchedulerPolicy {
+public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp implements JobSchedulerPolicy {
 
 	/**
 	 * The jobs that have been submitted to this scheduler.

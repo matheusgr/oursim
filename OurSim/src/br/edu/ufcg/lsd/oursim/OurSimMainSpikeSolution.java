@@ -142,7 +142,7 @@ public final class OurSimMainSpikeSolution {
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
-		JobEventDispatcher.getInstance().addListener(new PrintOutput("oursim_trace.txt"));
+		JobEventDispatcher.getInstance().addListener(new PrintOutput(new File("oursim_trace.txt")));
 		JobEventDispatcher.getInstance().addListener(new PrintOutput());
 
 		JobEventCounter jobEventCounter = new JobEventCounter();

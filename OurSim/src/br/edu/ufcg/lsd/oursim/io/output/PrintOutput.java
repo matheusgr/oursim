@@ -19,6 +19,8 @@ import br.edu.ufcg.lsd.oursim.entities.Task;
  */
 public final class PrintOutput implements Output {
 
+	private static final String MISSING_VALUE = "NA";
+
 	private static final String COMMENT_CHARACTER = "#";
 
 	private static final String SEP = ":";
@@ -31,47 +33,22 @@ public final class PrintOutput implements Output {
 
 	private static final String FINISH_LABEL = "F";
 
-	private static final String SUBMIT_HEADER = SUBMIT_LABEL.concat(SEP).concat("submissionTime").concat(SEP).concat("jobId");
-
-	private static final String START_HEADER = START_LABEL.concat(SEP).concat("startTime").concat(SEP).concat("jobId");
-
-	private static final String PREEMPT_HEADER = PREEMPT_LABEL.concat(SEP).concat("preemptionTime").concat(SEP).concat("jobId");
-
 	private static final String HEADER = "type".concat(SEP)
-	.concat("finishTime").concat(SEP)
-	.concat("jobId").concat(SEP)
-	.concat("submissionTime").concat(SEP)
-	.concat("startTime").concat(SEP)
-	.concat("expectedDuration").concat(SEP)
-	.concat("runtimeDuration").concat(SEP)
-	.concat("makeSpan").concat(SEP)
-	.concat("cost").concat(SEP)
-	.concat("queuingTime").concat(SEP)
-	.concat("numberOfPreemption");
-
-	private static final String FINISH_HEADER =	FINISH_LABEL.concat(SEP)
-	.concat("finishTime").concat(SEP)
-	.concat("jobId").concat(SEP)
-	.concat("submissionTime").concat(SEP)
-	.concat("startTime").concat(SEP)
-	.concat("expectedDuration").concat(SEP)
-	.concat("runtimeDuration").concat(SEP)
-	.concat("makeSpan").concat(SEP)
-	.concat("cost").concat(SEP)
-	.concat("queuingTime").concat(SEP)
-	.concat("numberOfPreemption");
-
-	private static final String SUBMIT_HEADER_2 = SUBMIT_LABEL.concat(SEP)
-	.concat("finishTime").concat(SEP)
-	.concat("jobId").concat(SEP)
-	.concat("submissionTime").concat(SEP)
-	.concat("startTime").concat(SEP)
-	.concat("expectedDuration").concat(SEP)
-	.concat("runtimeDuration").concat(SEP)
-	.concat("makeSpan").concat(SEP)
-	.concat("cost").concat(SEP)
-	.concat("queuingTime").concat(SEP)
-	.concat("numberOfPreemption");
+								.concat("time").concat(SEP)
+								.concat("jobId").concat(SEP)
+								.concat("submissionTime").concat(SEP)
+								.concat("startTime").concat(SEP)
+								.concat("expectedDuration").concat(SEP)
+								.concat("runtimeDuration").concat(SEP)
+								.concat("makeSpan").concat(SEP)
+								.concat("cost").concat(SEP)
+								.concat("queuingTime").concat(SEP)
+								.concat("numberOfPreemption").concat(SEP)
+								.concat("localResources").concat(SEP)
+								.concat("remoteResources").concat(SEP)
+								.concat("remoteRate").concat(SEP)
+								.concat("nsl").concat(SEP)
+								.concat("userId");
 
 	/**
 	 * the stream where the results will be printed out.
@@ -88,8 +65,8 @@ public final class PrintOutput implements Output {
 		this.out = System.out;
 	}
 
-	public PrintOutput(String fileName) throws IOException {
-		this(fileName, false);
+	public PrintOutput(File file) throws IOException {
+		this(file, false);
 	}
 
 	/**
@@ -100,21 +77,15 @@ public final class PrintOutput implements Output {
 	 *            The name of the file where the results will be printed out.
 	 * @throws FileNotFoundException
 	 */
-	public PrintOutput(String fileName, boolean showProgress) throws IOException {
+	public PrintOutput(File file, boolean showProgress) throws IOException {
 		this.showProgress = showProgress;
-		this.out = new PrintStream(new File(fileName));
-		if (this.showProgress) {
-//			this.out.println(COMMENT_CHARACTER + SUBMIT_HEADER);
-//			this.out.println(COMMENT_CHARACTER + START_HEADER);
-//			this.out.println(COMMENT_CHARACTER + PREEMPT_HEADER);
-//			this.out.print(COMMENT_CHARACTER);
-		}
+		this.out = new PrintStream(file);
 		this.out.println(HEADER);
 	}
 
 	@Override
 	public final void jobSubmitted(Event<Job> jobEvent) {
-			
+		if (showProgress) {
 			Job job = jobEvent.getSource();
 
 			long jobId = job.getId();
@@ -126,14 +97,16 @@ public final class PrintOutput implements Output {
 			.append(submissionTime).append(SEP)
 			.append(jobId).append(SEP)
 			.append(submissionTime).append(SEP)
-			.append("NA").append(SEP)
+			.append(MISSING_VALUE).append(SEP)
 			.append(duration).append(SEP)
-			.append("NA").append(SEP)
-			.append("NA").append(SEP)
-			.append("NA").append(SEP)
-			.append("NA").append(SEP)
-			.append("NA");
+			.append(MISSING_VALUE).append(SEP)
+			.append(MISSING_VALUE).append(SEP)
+			.append(MISSING_VALUE).append(SEP)
+			.append(MISSING_VALUE).append(SEP)
+			.append(MISSING_VALUE).append(SEP)
+			.append(job.getUserId());
 			this.out.println(sb);
+		}
 	}
 
 	@Override
@@ -163,7 +136,8 @@ public final class PrintOutput implements Output {
 			.append(makeSpan).append(SEP)
 			.append(cost).append(SEP)
 			.append(queuingTime).append(SEP)
-			.append(numberOfPreemptions);
+			.append(numberOfPreemptions).append(SEP)
+			.append(job.getUserId());
 			this.out.println(sb);
 		}
 	}
@@ -181,16 +155,17 @@ public final class PrintOutput implements Output {
 
 			StringBuilder sb = new StringBuilder(PREEMPT_LABEL);
 			sb.append(SEP)
-			.append("NA").append(SEP)
+			.append(MISSING_VALUE).append(SEP)
 			.append(jobId).append(SEP)
 			.append(submissionTime).append(SEP)
-			.append("NA").append(SEP)
+			.append(MISSING_VALUE).append(SEP)
 			.append(duration).append(SEP)
-			.append("NA").append(SEP)
-			.append("NA").append(SEP)
+			.append(MISSING_VALUE).append(SEP)
+			.append(MISSING_VALUE).append(SEP)
 			.append(cost).append(SEP)
-			.append("NA").append(SEP)
-			.append(numberOfPreemptions);
+			.append(MISSING_VALUE).append(SEP)
+			.append(numberOfPreemptions).append(SEP)
+			.append(job.getUserId());
 			this.out.println(sb);
 		}
 	}
@@ -230,7 +205,12 @@ public final class PrintOutput implements Output {
 		.append(makeSpan).append(SEP)
 		.append(cost).append(SEP)
 		.append(queuingTime).append(SEP)
-		.append(numberOfPreemptions);
+		.append(numberOfPreemptions).append(SEP)
+		.append(job.numberOfLocalResourcesUsed()).append(SEP)
+		.append(job.numberOfRemoteResourcesUsed()).append(SEP)
+		.append(job.numberOfRemoteResourcesUsed()/(job.getTasks().size()*1.0)).append(SEP)
+		.append(job.getNSL()).append(SEP)
+		.append(job.getUserId());
 		this.out.println(sb);
 	}
 

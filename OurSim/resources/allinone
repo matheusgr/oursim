@@ -1,6 +1,0 @@
-#!/bin/bash
-
-PROJECT=$1
-DIR=$2
-
-bash ../../organizedirectories && bash ../../createpom $PROJECT $DIR > pom.xml && bash ../../installdependencies $PROJECT $DIR && mvn clean install sonar:sonar -Dmaven.test.failure.ignore=true

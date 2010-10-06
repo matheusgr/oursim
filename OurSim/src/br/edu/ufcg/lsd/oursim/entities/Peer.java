@@ -17,7 +17,7 @@ import br.edu.ufcg.lsd.oursim.policy.FifoSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.ranking.PeerRankingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.ranking.TaskPreemptionRankingPolicy;
-import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityAbstract;
+import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityImp;
 
 /**
  * 
@@ -30,7 +30,7 @@ import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityAbstract;
  * @since 18/05/2010
  * 
  */
-public class Peer extends ActiveEntityAbstract implements WorkerEventListener {
+public class Peer extends ActiveEntityImp implements WorkerEventListener {
 
 	public static final Peer DEFAULT_PEER = new Peer("Default_Peer",FifoSharingPolicy.getInstance());
 	

@@ -5,7 +5,6 @@ import java.util.Set;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.entities.Job;
-import br.edu.ufcg.lsd.oursim.entities.Task;
 
 public class JobEventCounter extends JobEventListenerAdapter {
 
@@ -24,7 +23,6 @@ public class JobEventCounter extends JobEventListenerAdapter {
 	@Override
 	public final void jobFinished(Event<Job> jobEvent) {
 		Job job = jobEvent.getSource();
-//		System.out.println(jobEvent.getSource().getFinishTime() + " " + jobEvent.getSource().getId());
 		this.numberOfFinishedJobs++;
 		this.idsOfFinishedJobs.add(job.getId());
 		this.totalCostOfAllFinishedJobs += job.getCost();
@@ -40,12 +38,6 @@ public class JobEventCounter extends JobEventListenerAdapter {
 
 	@Override
 	public final void jobSubmitted(Event<Job> jobEvent) {
-		if (jobEvent.getSource().getId()==1120) {
-			System.out.println(jobEvent.getSource());
-			for (Task task : jobEvent.getSource().getTasks()) {
-				System.out.println("  " + task);
-			}
-		}
 		this.idsOfSubmittedJobs.add(jobEvent.getSource().getId());
 	}
 
