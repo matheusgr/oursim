@@ -41,6 +41,7 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 	 */
 	public OurGridReplicationScheduler(List<Peer> peers, int replicationLevel) {
 		super(peers);
+		assert replicationLevel > 0;
 		this.replicationLevel = replicationLevel;
 	}
 

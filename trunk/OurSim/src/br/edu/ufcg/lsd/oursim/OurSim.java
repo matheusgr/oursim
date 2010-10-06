@@ -1,5 +1,8 @@
 package br.edu.ufcg.lsd.oursim;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
@@ -119,6 +122,8 @@ public class OurSim {
 		clearListeners(peers, jobScheduler);
 	}
 
+	private BufferedWriter bw;
+
 	/**
 	 * the method that effectively performs the simulation. This method contains
 	 * the main loop guiding the whole simulation.
@@ -132,7 +137,28 @@ public class OurSim {
 	 *            belonging to the peers.
 	 */
 	private void run(EventQueue queue, JobSchedulerPolicy jobScheduler, Workload workload, Input<? extends AvailabilityRecord> availability) {
+
+		try {
+			bw = new BufferedWriter(new FileWriter("oursim_system_utilization.txt"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		do {
+
+			try {
+				if (queue.peek()!= null) {
+					double utilization = 0;
+					for (Peer peer : peers) {
+						utilization += peer.getUtilization();
+					}
+					utilization = utilization / (peers.size() * 1.0);
+					bw.append(queue.peek().getTime() + ":" + utilization).append("\n");
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
 			this.addFutureEvents(workload, availability);
 
 			long currentTime = (queue.peek() != null) ? queue.peek().getTime() : -1;
@@ -147,6 +173,14 @@ public class OurSim {
 			// time, the scheduler must be invoked
 			jobScheduler.schedule();
 		} while (queue.peek() != null || workload.peek() != null || availability.peek() != null);
+
+		try {
+			if (bw != null) {
+				bw.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**

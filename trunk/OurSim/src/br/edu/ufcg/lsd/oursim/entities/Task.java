@@ -96,6 +96,8 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 
 	private boolean cancelled = false;
 
+	private boolean hasLocallyRunned = false;
+
 	private double bidValue;
 
 	private double cost;
@@ -206,6 +208,7 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	public void finish(long time) {
 		assert this.finishTime == null || isAnyReplyFinished();
 		assert this.startTime != null;
+		this.hasLocallyRunned = this.sourceJob.getSourcePeer().hasMachine(this.taskExecution.getMachine().getName());
 		this.finishTime = time;
 	}
 
@@ -223,7 +226,7 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 			this.startTime = null;
 			this.targetPeer = null;
 		} else {
-//			System.err.println("Tentou preemptar uma já concluída: " + time + " " + this);
+			System.err.println("Tentou preemptar uma já concluída: " + time + " " + this);
 		}
 	}
 
@@ -417,6 +420,10 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 
 	public void setCost(double cost) {
 		this.cost = cost;
+	}
+
+	public boolean hasLocallyRunned() {
+		return hasLocallyRunned;
 	}
 
 }

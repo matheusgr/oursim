@@ -1,7 +1,6 @@
 package br.edu.ufcg.lsd.oursim.util;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -11,7 +10,6 @@ import java.util.Scanner;
 
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
-import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 
 public final class GWAFormat {
@@ -84,11 +82,12 @@ public final class GWAFormat {
 			}
 			return peers;
 		} catch (Exception e) {
+			// for marcus workload' format
 			Map<String, Peer> peers = new HashMap<String, Peer>();
 			Scanner sc = new Scanner(new File(workloadFilePath));
 			while (sc.hasNextLine()) {
 				Scanner scLine = new Scanner(sc.nextLine());
-				// skip the 16 firsts tokens. The site's
+				// skip the 5 firsts tokens. The site's
 				// token is the 17th in the gwa format.
 				for (int i = 0; i < 5; i++) {
 					scLine.next();

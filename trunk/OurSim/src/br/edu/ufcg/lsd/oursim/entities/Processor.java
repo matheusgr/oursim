@@ -139,7 +139,7 @@ public class Processor {
 	 * @see {@link #calculateNumberOfInstructionsProcessed(long)}
 	 */
 	public long calculateTimeToExecute(long numberOfInstruction) throws IllegalArgumentException {
-		assert numberOfInstruction > 0;
+		assert numberOfInstruction > 0: numberOfInstruction + " > 0";
 		if (numberOfInstruction < 1) {
 			throw new IllegalArgumentException("numberOfInstruction must be at least 1.");
 		}

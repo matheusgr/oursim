@@ -16,13 +16,11 @@
 
 package br.edu.ufcg.lsd.oursim.ui;
 
-import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.hasOptions;
+import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.formatSummaryStatistics;
 import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.parseCommandLine;
 import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.prepareOutputAccounting;
-import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.printOutput;
-import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.printResume;
 import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.showMessageAndExit;
-import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.treatWrongCommand;
+import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.showSummaryStatistics;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,22 +29,23 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
-import java.util.Scanner;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang.time.StopWatch;
 
 import br.edu.ufcg.lsd.oursim.OurSim;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
-import br.edu.ufcg.lsd.oursim.entities.Machine;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
-import br.edu.ufcg.lsd.oursim.entities.Processor;
 import br.edu.ufcg.lsd.oursim.io.input.Input;
 import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityCharacterization;
 import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.io.input.availability.DedicatedResourcesAvailabilityCharacterization;
 import br.edu.ufcg.lsd.oursim.io.input.availability.MarkovModelAvailabilityCharacterization;
+import br.edu.ufcg.lsd.oursim.io.input.workload.IosupWorkload;
+import br.edu.ufcg.lsd.oursim.io.input.workload.MarcusWorkload;
 import br.edu.ufcg.lsd.oursim.io.input.workload.OnDemandBoTGWANorduGridWorkload;
 import br.edu.ufcg.lsd.oursim.io.input.workload.OnDemandGWANorduGridWorkload;
 import br.edu.ufcg.lsd.oursim.io.input.workload.OnDemandGWANorduGridWorkloadWithFilter;
@@ -60,10 +59,11 @@ import br.edu.ufcg.lsd.oursim.policy.OurGridPersistentScheduler;
 import br.edu.ufcg.lsd.oursim.policy.OurGridReplicationScheduler;
 import br.edu.ufcg.lsd.oursim.policy.OurGridScheduler;
 import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
-import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityAbstract;
+import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityImp;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 import br.edu.ufcg.lsd.oursim.util.AvailabilityTraceFormat;
 import br.edu.ufcg.lsd.oursim.util.GWAFormat;
+import br.edu.ufcg.lsd.oursim.util.TimeUtil;
 
 public class CLI {
 
@@ -84,8 +84,6 @@ public class CLI {
 	public static final String WORKLOAD = "w";
 
 	public static final String WORKLOAD_TYPE = "wt";
-
-	public static final String REPLIES = "r";
 
 	public static final String NUM_PEERS = "np";
 
@@ -111,89 +109,65 @@ public class CLI {
 	 * <pre>
 	 *   java -jar oursim.jar -w resources/trace_filtrado_primeiros_1000_jobs.txt -m resources/hostinfo_sdsc.dat -synthetic_av -o oursim_trace.txt
 	 *   -w resources/trace_filtrado_primeiros_1000_jobs.txt -s persistent -nr 20 -md resources/hostinfo_sdsc.dat -av resources/disponibilidade.txt -o oursim_trace.txt
+	 *   -w resources/new_iosup_workload.txt -s persistent -pd resources/iosup_site_description.txt -wt iosup -nr 1 -synthetic_av -o oursim_trace.txt
+	 *   -w resources/new_workload.txt -s persistent -pd resources/marcus_site_description.txt -wt marcus -nr 20 -d -o oursim_trace.txt
+	 *   1 mês + 1 dia = 2678400 segundos
 	 * </pre>
 	 * 
 	 * @param args
 	 * @throws FileNotFoundException
 	 */
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws IOException {
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
-		Options options = prepareOptions();
+		CommandLine cmd = parseCommandLine(args, prepareOptions(), HELP, USAGE, EXECUTION_LINE);
 
-		CommandLine cmd = parseCommandLine(args, options);
+		PrintOutput printOutput = new PrintOutput((File) cmd.getOptionObject(OUTPUT), false);
+		JobEventDispatcher.getInstance().addListener(printOutput);
 
-		if (hasOptions(cmd, OUTPUT, WORKLOAD)) {
+		ComputingElementEventCounter computingElementEventCounter = prepareOutputAccounting(cmd, cmd.hasOption(VERBOSE));
 
-			PrintOutput printOutput = new PrintOutput(cmd.getOptionValue(OUTPUT), true);
-			JobEventDispatcher.getInstance().addListener(printOutput);
+		ResourceSharingPolicy sharingPolicy = cmd.hasOption(NOF) ? NoFSharingPolicy.getInstance() : FifoSharingPolicy.getInstance();
 
-			ComputingElementEventCounter computingElementEventCounter = prepareOutputAccounting(cmd, VERBOSE);
+		Map<String, Peer> peersMap = prepareGrid(cmd, sharingPolicy);
 
-			ResourceSharingPolicy sharingPolicy = cmd.hasOption(NOF) ? NoFSharingPolicy.getInstance() : FifoSharingPolicy.getInstance();
+		Input<? extends AvailabilityRecord> availability = defineAvailability(cmd, peersMap);
 
-			Map<String, Peer> peersMap = prepareGrid(cmd, sharingPolicy);
+		long timeOfFirstSubmission = cmd.getOptionValue(WORKLOAD_TYPE).equals("gwa") ? GWAFormat
+				.extractSubmissionTimeFromFirstJob(cmd.getOptionValue(WORKLOAD)) : 0;
+		Workload workload = defineWorkloadType(cmd, cmd.getOptionValue(WORKLOAD), peersMap, timeOfFirstSubmission);
 
-			Input<? extends AvailabilityRecord> availability = prepareSystemAvailability(cmd, peersMap);
+		ArrayList<Peer> peers = new ArrayList<Peer>(peersMap.values());
 
-			Workload workload = prepareWorkload(cmd, peersMap);
+		JobSchedulerPolicy jobScheduler = defineScheduler(cmd, peers);
 
-			ArrayList<Peer> peers = new ArrayList<Peer>(peersMap.values());
+		OurSim oursim = new OurSim(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
 
-			JobSchedulerPolicy jobScheduler = defineScheduler(cmd, peers);
+		oursim.setActiveEntity(new ActiveEntityImp());
 
-			OurSim oursim = new OurSim(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
+		oursim.start();
 
-			oursim.setActiveEntity(new ActiveEntityAbstract());
+		printOutput.close();
 
-			oursim.start();
+		FileWriter fw = new FileWriter(cmd.getOptionValue(OUTPUT), true);
 
-			printOutput.close();
+		fw.write(formatSummaryStatistics(computingElementEventCounter) + ".\n");
 
-			FileWriter fw = new FileWriter(cmd.getOptionValue(OUTPUT), true);
+		showSummaryStatistics(computingElementEventCounter);
 
-			fw.write(printResume(computingElementEventCounter) + ".\n");
+		stopWatch.stop();
+		fw.write("# Simulation                  duration:" + stopWatch + ".\n");
 
-			printOutput(computingElementEventCounter);
+		fw.close();
 
-			stopWatch.stop();
-			fw.write("# Simulation                  duration:" + stopWatch + ".\n");
-
-			fw.close();
-
-		} else {
-			treatWrongCommand(options, cmd, HELP, USAGE, EXECUTION_LINE);
-		}
-	}
-
-	private static Workload prepareWorkload(CommandLine cmd, Map<String, Peer> peersMap) throws IOException, FileNotFoundException {
-		Workload workload;
-		long timeOfFirstSubmission = GWAFormat.extractSubmissionTimeFromFirstJob(cmd.getOptionValue(WORKLOAD));
-		workload = defineWorkloadType(cmd, cmd.getOptionValue(WORKLOAD), peersMap, timeOfFirstSubmission);
-		return workload;
-	}
-
-	private static Input<? extends AvailabilityRecord> prepareSystemAvailability(CommandLine cmd, Map<String, Peer> peersMap) throws IOException,
-			FileNotFoundException {
-		Input<? extends AvailabilityRecord> availability;
-		long durationOfWorkloadInSeconds = GWAFormat.extractDurationInSecondsOfWorkload(cmd.getOptionValue(WORKLOAD));
-		int amountOfSecondsInADay = 60 * 60 * 24;
-		// adiciona um dia além da duração do workload
-		durationOfWorkloadInSeconds += amountOfSecondsInADay;
-		availability = defineAvailability(cmd, peersMap, durationOfWorkloadInSeconds);
-		return availability;
 	}
 
 	private static Map<String, Peer> prepareGrid(CommandLine cmd, ResourceSharingPolicy sharingPolicy) throws FileNotFoundException {
-		Map<String, Peer> peersMap;
-		int numberOfResourcesByPeer = cmd.hasOption(NUM_RESOURCES_BY_PEER) ? Integer.parseInt(cmd.getOptionValue(NUM_RESOURCES_BY_PEER)) : 0;
-		peersMap = GWAFormat.extractPeersFromGWAFile(cmd.getOptionValue(WORKLOAD), numberOfResourcesByPeer, sharingPolicy);
-		if (numberOfResourcesByPeer == 0 && cmd.hasOption(PEERS_DESCRIPTION)) {
-			String peersDescriptionFilePath = cmd.getOptionValue(PEERS_DESCRIPTION);
-			addResourcesToPeers(peersMap, peersDescriptionFilePath);
-		}
+		int numberOfResourcesByPeer = Integer.parseInt(cmd.getOptionValue(NUM_RESOURCES_BY_PEER, "0"));
+		File peerDescriptionFile = (File) cmd.getOptionObject(PEERS_DESCRIPTION);
+		Map<String, Peer> peersMap = SystemConfigurationCommandParser.readPeersDescription(peerDescriptionFile, numberOfResourcesByPeer, sharingPolicy);
 		return peersMap;
 	}
 
@@ -206,6 +180,11 @@ public class CLI {
 				workload = new OnDemandBoTGWANorduGridWorkload(workloadFilePath, peersMap, timeOfFirstSubmission);
 			} else if (type.equals("filter")) {
 				workload = new OnDemandGWANorduGridWorkloadWithFilter(workloadFilePath, peersMap, timeOfFirstSubmission);
+			} else if (type.equals("marcus")) {
+				workload = new MarcusWorkload(workloadFilePath, peersMap, TimeUtil.ONE_MONTH);
+				JobEventDispatcher.getInstance().addListener((MarcusWorkload) workload);
+			} else if (type.equals("iosup")) {
+				workload = new IosupWorkload(workloadFilePath, peersMap, 0);
 			}
 		} else {
 			workload = new OnDemandGWANorduGridWorkload(workloadFilePath, peersMap, timeOfFirstSubmission);
@@ -214,8 +193,7 @@ public class CLI {
 		return workload;
 	}
 
-	private static Input<AvailabilityRecord> defineAvailability(CommandLine cmd, Map<String, Peer> peersMap, long durationOfWorkload)
-			throws FileNotFoundException {
+	private static Input<AvailabilityRecord> defineAvailability(CommandLine cmd, Map<String, Peer> peersMap) throws FileNotFoundException {
 		Input<AvailabilityRecord> availability = null;
 		if (cmd.hasOption(DEDICATED_RESOURCES)) {
 			availability = new DedicatedResourcesAvailabilityCharacterization(peersMap.values());
@@ -223,7 +201,8 @@ public class CLI {
 			long startingTime = AvailabilityTraceFormat.extractTimeFromFirstAvailabilityRecord(cmd.getOptionValue(AVAILABILITY), true);
 			availability = new AvailabilityCharacterization(cmd.getOptionValue(AVAILABILITY), startingTime, true);
 		} else if (cmd.hasOption(SYNTHETIC_AVAILABILITY)) {
-			availability = new MarkovModelAvailabilityCharacterization(peersMap, durationOfWorkload, 0);
+			long availabilityThreshold = ((Number) cmd.getOptionObject(SYNTHETIC_AVAILABILITY)).longValue();
+			availability = new MarkovModelAvailabilityCharacterization(peersMap, availabilityThreshold, 0);
 		}
 
 		if (availability == null) {
@@ -233,15 +212,15 @@ public class CLI {
 		return availability;
 	}
 
-	private static JobSchedulerPolicy defineScheduler(CommandLine cmd, ArrayList<Peer> peers) throws FileNotFoundException, java.text.ParseException {
+	private static JobSchedulerPolicy defineScheduler(CommandLine cmd, ArrayList<Peer> peers) {
 		JobSchedulerPolicy jobScheduler = null;
 		if (cmd.hasOption(SCHEDULER)) {
 			String scheduler = cmd.getOptionValue(SCHEDULER);
 			if (scheduler.equals("persistent")) {
 				jobScheduler = new OurGridPersistentScheduler(peers);
-			} else if (scheduler.equals("replication") && cmd.hasOption(REPLIES)) {
-				int numberOfReplies = Integer.parseInt(cmd.getOptionValue(REPLIES));
-				jobScheduler = new OurGridReplicationScheduler(peers, numberOfReplies);
+			} else if (scheduler.equals("replication") && cmd.getOptionValues(SCHEDULER).length == 2) {
+				int numberOfReplicas = Integer.parseInt(cmd.getOptionValues(SCHEDULER)[1]);
+				jobScheduler = new OurGridReplicationScheduler(peers, numberOfReplicas);
 			}
 		} else {
 			jobScheduler = new OurGridScheduler(peers);
@@ -254,41 +233,58 @@ public class CLI {
 		return jobScheduler;
 	}
 
-	private static void addResourcesToPeers(Map<String, Peer> peersMap, String peersDescriptionFilePath) throws FileNotFoundException {
-		Scanner sc = new Scanner(new File(peersDescriptionFilePath));
-		sc.nextLine();// desconsidera o cabeçalho
-		while (sc.hasNextLine()) {
-			Scanner scLine = new Scanner(sc.nextLine());
-			String peerName = scLine.next();
-			if (peersMap.containsKey(peerName)) {
-				int peerSize = scLine.nextInt();
-				Peer peer = peersMap.get(peerName);
-				for (int i = 0; i < peerSize; i++) {
-					String machineFullName = peer.getName() + "_m_" + i;
-					peer.addMachine(new Machine(machineFullName, Processor.EC2_COMPUTE_UNIT.getSpeed()));
-				}
-			}
-		}
-	}
-
 	public static Options prepareOptions() {
 		Options options = new Options();
 
-		options.addOption(AVAILABILITY, "availability", true, "Arquivo com a caracterização da disponibilidade para todos os recursos.");
-		options.addOption(WORKLOAD, "workload", true, "Arquivo com o workload no format GWA (Grid Workload Archive).");
-		options.addOption(WORKLOAD_TYPE, "workload_type", true, "The type of workload to read the workload file.");
-		options.addOption(MACHINES_DESCRIPTION, "machinesdescription", true, "Arquivo com a descrição das máquinas presentes em cada peer.");
-		options.addOption(SCHEDULER, "scheduler", true, "Indica qual scheduler deverá ser usado.");
-		options.addOption(REPLIES, "replies", true, "O número de réplicas para cada task.");
-		options.addOption(OUTPUT, "output", true, "O nome do arquivo em que o output da simulação será gravado.");
-		options.addOption(NUM_RESOURCES_BY_PEER, "nresources", true, "O número de réplicas para cada task.");
-		options.addOption(NUM_PEERS, "npeers", true, "O número de peers do grid.");
-		options.addOption(PEERS_DESCRIPTION, "peers_description", true, "Arquivo descrevendo os peers.");
-		options.addOption(NODE_MIPS_RATING, "speed", true, "A velocidade de cada máquina.");
-		options.addOption(NOF, "nof", false, "Utiliza a Rede de Favores (NoF).");
-		options.addOption(DEDICATED_RESOURCES, "dedicated", false, "Indica que os recursos são todos dedicados.");
+		Option availability = new Option(AVAILABILITY, "availability", true, "Arquivo com a caracterização da disponibilidade para todos os recursos.");
+		Option dedicatedResources = new Option(DEDICATED_RESOURCES, "dedicated", false, "Indica que os recursos são todos dedicados.");
+		Option syntAvail = new Option(SYNTHETIC_AVAILABILITY, "synthetic_availability", true, "Disponibilidade dos recursos deve ser gerada sinteticamente.");
+		Option workload = new Option(WORKLOAD, "workload", true, "Arquivo com o workload no format GWA (Grid Workload Archive).");
+		Option workloadType = new Option(WORKLOAD_TYPE, "workload_type", true, "The type of workload to read the workload file.");
+		Option machinesDescription = new Option(MACHINES_DESCRIPTION, "machinesdescription", true, "Descrição das máquinas presentes em cada peer.");
+		Option speedOption = new Option(NODE_MIPS_RATING, "speed", true, "A velocidade de cada máquina.");
+		Option scheduler = new Option(SCHEDULER, "scheduler", true, "Indica qual scheduler deverá ser usado.");
+		Option peersDescription = new Option(PEERS_DESCRIPTION, "peers_description", true, "Arquivo descrevendo os peers.");
+		Option numResByPeer = new Option(NUM_RESOURCES_BY_PEER, "nresources", true, "O número de réplicas para cada task.");
+		Option numPeers = new Option(NUM_PEERS, "npeers", true, "O número de peers do grid.");
+		Option nofOption = new Option(NOF, "nof", false, "Utiliza a Rede de Favores (NoF).");
+		Option output = new Option(OUTPUT, "output", true, "O nome do arquivo em que o output da simulação será gravado.");
+
+		workload.setRequired(true);
+		peersDescription.setRequired(true);
+		output.setRequired(true);
+
+		workload.setType(File.class);
+		peersDescription.setType(File.class);
+		machinesDescription.setType(File.class);
+		availability.setType(File.class);
+		output.setType(File.class);
+		numResByPeer.setType(Number.class);
+		numPeers.setType(Number.class);
+		speedOption.setType(Number.class);
+		syntAvail.setType(Number.class);
+
+		scheduler.setArgs(2);
+
+		OptionGroup availGroup = new OptionGroup();
+		availGroup.addOption(availability);
+		availGroup.addOption(dedicatedResources);
+		availGroup.addOption(syntAvail);
+
+		options.addOptionGroup(availGroup);
+
+		options.addOption(workload);
+		options.addOption(workloadType);
+		options.addOption(machinesDescription);
+		options.addOption(scheduler);
+		options.addOption(output);
+		options.addOption(numResByPeer);
+		options.addOption(numPeers);
+		options.addOption(peersDescription);
+		options.addOption(speedOption);
+		options.addOption(nofOption);
+
 		options.addOption(VERBOSE, "verbose", false, "Informa todos os eventos importantes.");
-		options.addOption(SYNTHETIC_AVAILABILITY, "synthetic_availability", false, "Indica que a disponibilidade dos recursos deve ser gerada sinteticamente.");
 		options.addOption(HELP, false, "Comando de ajuda.");
 		options.addOption(USAGE, false, "Instruções de uso.");
 

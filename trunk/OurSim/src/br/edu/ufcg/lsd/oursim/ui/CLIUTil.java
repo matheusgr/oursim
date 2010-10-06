@@ -29,7 +29,7 @@ public class CLIUTil {
 		return true;
 	}
 
-	public static CommandLine parseCommandLine(String[] args, Options options) {
+	public static CommandLine parseCommandLine(String[] args, Options options, String HELP, String USAGE, String EXECUTION_LINE) {
 		CommandLineParser parser = new PosixParser();
 		CommandLine cmd = null;
 
@@ -38,6 +38,9 @@ public class CLIUTil {
 		} catch (ParseException e) {
 			showMessageAndExit(e);
 		}
+
+		checkForHelpAsk(options, cmd, HELP, USAGE, EXECUTION_LINE);
+
 		return cmd;
 	}
 
@@ -50,7 +53,7 @@ public class CLIUTil {
 		System.exit(1);
 	}
 
-	public static void printOutput(ComputingElementEventCounter computingElementEventCounter) {
+	public static void showSummaryStatistics(ComputingElementEventCounter computingElementEventCounter) {
 
 		DecimalFormat dft = new DecimalFormat("000.00");
 
@@ -79,7 +82,7 @@ public class CLIUTil {
 		System.out.print("\n");
 	}
 
-	public static String printResume(ComputingElementEventCounter computingElementEventCounter) {
+	public static String formatSummaryStatistics(ComputingElementEventCounter computingElementEventCounter) {
 
 		DecimalFormat dft = new DecimalFormat("000.00");
 
@@ -99,10 +102,10 @@ public class CLIUTil {
 		return resume;
 	}
 
-	public static ComputingElementEventCounter prepareOutputAccounting(CommandLine cmd, String VERBOSE) {
+	public static ComputingElementEventCounter prepareOutputAccounting(CommandLine cmd, boolean verbose) {
 		ComputingElementEventCounter computingElementEventCounter = new ComputingElementEventCounter();
 
-		if (cmd.hasOption(VERBOSE)) {
+		if (verbose) {
 			JobEventDispatcher.getInstance().addListener(new JobPrintOutput());
 			TaskEventDispatcher.getInstance().addListener(new TaskPrintOutput());
 			WorkerEventDispatcher.getInstance().addListener(new WorkerEventsPrintOutput());
@@ -128,5 +131,57 @@ public class CLIUTil {
 		}
 		System.exit(1);
 	}
+
+	public static void checkForHelpAsk(Options options, CommandLine cmd, String HELP, String USAGE, String EXECUTION_LINE) {
+		HelpFormatter formatter = new HelpFormatter();
+		if (cmd.hasOption(HELP)) {
+			formatter.printHelp(EXECUTION_LINE, options);
+		} else if (cmd.hasOption(USAGE)) {
+			formatter.printHelp(EXECUTION_LINE, options, true);
+		} else {
+			return;
+		}
+		System.exit(1);
+	}
+
+	// options.addOption(AVAILABILITY, "availability", true, "Arquivo com a
+	// caracterização da disponibilidade para todos os recursos.");
+	// options.addOption(WORKLOAD, "workload", true, "Arquivo com o workload no
+	// format GWA (Grid Workload Archive).");
+	// options.addOption(WORKLOAD_TYPE, "workload_type", true, "The type of
+	// workload to read the workload file.");
+	// options.addOption(MACHINES_DESCRIPTION, "machinesdescription", true,
+	// "Arquivo com a descrição das máquinas presentes em cada peer.");
+	// options.addOption(SCHEDULER, "scheduler", true, "Indica qual scheduler
+	// deverá ser usado.");
+	// options.addOption(REPLIES, "replies", true, "O número de réplicas para
+	// cada task.");
+	// options.addOption(OUTPUT, "output", true, "O nome do arquivo em que o
+	// output da simulação será gravado.");
+	// options.addOption(NUM_RESOURCES_BY_PEER, "nresources", true, "O número de
+	// réplicas para cada task.");
+	// options.addOption(NUM_PEERS, "npeers", true, "O número de peers do
+	// grid.");
+	// options.addOption(PEERS_DESCRIPTION, "peers_description", true, "Arquivo
+	// descrevendo os peers.");
+	// options.addOption(NODE_MIPS_RATING, "speed", true, "A velocidade de cada
+	// máquina.");
+	// options.addOption(NOF, "nof", false, "Utiliza a Rede de Favores (NoF).");
+	// options.addOption(DEDICATED_RESOURCES, "dedicated", false, "Indica que os
+	// recursos são todos dedicados.");
+	// options.addOption(SYNTHETIC_AVAILABILITY, "synthetic_availability",
+	// false, "Indica que a disponibilidade dos recursos deve ser gerada
+	// sinteticamente.");
+
+	// long durationOfWorkloadInSeconds =
+	// cmd.getOptionValue(WORKLOAD_TYPE).equals("gwa") ?
+	// GWAFormat.extractDurationInSecondsOfWorkload(cmd
+	// .getOptionValue(WORKLOAD)) : Long.MAX_VALUE;
+	// // adiciona um dia além da duração do workload
+	// durationOfWorkloadInSeconds = TimeUtil.ONE_MONTH + TimeUtil.ONE_DAY;
+
+	// long timeOfFirstSubmission =
+	// cmd.getOptionValue(WORKLOAD_TYPE).equals("gwa") ? GWAFormat
+	// .extractSubmissionTimeFromFirstJob(cmd.getOptionValue(WORKLOAD)) : 0;
 
 }

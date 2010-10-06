@@ -42,6 +42,10 @@ public class Job extends ComputableElement implements Comparable<Job> {
 	 */
 	private int replicationLevel = 0;
 
+	private String userId;
+
+	private long thinkTime;
+
 	/**
 	 * Field to assure the uniqueness of the id of each task.
 	 */
@@ -124,6 +128,31 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		}
 	}
 
+	public int numberOfLocalResourcesUsed() {
+		int total = 0;
+		for (Task task : tasks) {
+			total += task.hasLocallyRunned() ? 1 : 0;
+		}
+		return total;
+	}
+
+	public int numberOfRemoteResourcesUsed() {
+		return this.tasks.size() - numberOfLocalResourcesUsed();
+
+	}
+
+	public double getNSL() {
+		return this.getMakeSpan() / (this.sumOfTasksRuntime() * 1.0);
+	}
+
+	private long sumOfTasksRuntime() {
+		long sum = 0;
+		for (Task task : tasks) {
+			sum += task.getDuration();
+		}
+		return sum;
+	}
+
 	/**
 	 * Adds a task to this job by the information of its executing parameters.
 	 * 
@@ -177,12 +206,7 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		long earliestTaskStartTime = Long.MAX_VALUE;
 		for (Task task : tasks) {
 			if (task.isRunning() || task.isFinished()) {
-				try {
-					earliestTaskStartTime = Math.min(earliestTaskStartTime, task.getStartTime());
-				} catch (Exception e) {
-					System.out.println(task);
-					System.exit(1);
-				}
+				earliestTaskStartTime = Math.min(earliestTaskStartTime, task.getStartTime());
 			}
 		}
 		return earliestTaskStartTime != Long.MAX_VALUE ? earliestTaskStartTime : null;
@@ -342,18 +366,41 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		}
 	}
 
-	@Override
-	public String toString() {
-		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("id", id).append("submissionTime", submissionTime).append("sourcePeer",
-				sourcePeer.getName()).append("#tasks", tasks.size()).toString();
-	}
-
 	public double getCost() {
 		double totalCost = 0;
 		for (Task task : tasks) {
 			totalCost += task.getCost();
 		}
 		return totalCost;
+	}
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
+	public void setSubmissionTime(long submissionTime) {
+		super.setSubmissionTime(submissionTime);
+		for (Task task : tasks) {
+			task.setSubmissionTime(submissionTime);
+		}
+	}
+
+	public long getThinkTime() {
+		return thinkTime;
+	}
+
+	public void setThinkTime(long thinkTime) {
+		this.thinkTime = thinkTime;
+	}
+
+	@Override
+	public String toString() {
+		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("id", id).append("submissionTime", submissionTime).append("sourcePeer",
+				sourcePeer.getName()).append("#tasks", tasks.size()).toString();
 	}
 
 }
