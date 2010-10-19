@@ -41,7 +41,11 @@ public final class PrintOutput implements Output {
 								.concat("expectedDuration").concat(SEP)
 								.concat("runtimeDuration").concat(SEP)
 								.concat("makeSpan").concat(SEP)
-								.concat("cost").concat(SEP)
+								.concat("size").concat(SEP)
+								.concat("tasks").concat(SEP)
+								.concat("remoteTasksSize").concat(SEP)
+								.concat("remoteTasks").concat(SEP)
+								.concat("remoteMakeSpan").concat(SEP)
 								.concat("queuingTime").concat(SEP)
 								.concat("numberOfPreemption").concat(SEP)
 								.concat("localResources").concat(SEP)
@@ -182,19 +186,33 @@ public final class PrintOutput implements Output {
 		long runTimeDuration = job.getRunningTime();
 		long duration = job.getDuration();
 		long makeSpan = job.getMakeSpan();
+		long remoteMakeSpan = 0;
 //		double cost = job.getCost();
-		StringBuilder tasks = new StringBuilder("[");
+//		StringBuilder tasks = new StringBuilder("[");
+		StringBuilder tasks = new StringBuilder();
+		StringBuilder remoteTasks = new StringBuilder();
 		String sep = "";
+		String sep2 = "";
+		int remTasksSize = 0;
 		for (Task task : job.getTasks()) {
 			tasks.append(sep).append(task.getDuration());
-			sep = ",";
+			if (!task.hasLocallyRunned()) {
+				remoteTasks.append(sep2).append(task.getDuration());
+				remTasksSize++;
+				sep2 = ";";
+				remoteMakeSpan = Math.max(remoteMakeSpan, task.getMakeSpan());
+			}
+			sep = ";";
 		}
-		tasks.append("]");
-		String cost = tasks.toString();
+//		tasks.append("]");
+		String size = job.getTasks().size()+"";
+		String tasksStr = tasks.toString();
+		String remoteTasksSize = remTasksSize +"";
 		long queuingTime = job.getQueueingTime();
 		long numberOfPreemptions = job.getNumberOfPreemptions();
 
 		StringBuilder sb = new StringBuilder(FINISH_LABEL);
+		String remoteTasksTMP = remoteTasks.toString().isEmpty() ? MISSING_VALUE : remoteTasks.toString();
 		sb.append(SEP)
 		.append(finishTime).append(SEP)
 		.append(jobId).append(SEP)
@@ -203,7 +221,11 @@ public final class PrintOutput implements Output {
 		.append(duration).append(SEP)
 		.append(runTimeDuration).append(SEP)
 		.append(makeSpan).append(SEP)
-		.append(cost).append(SEP)
+		.append(size).append(SEP)
+		.append(tasksStr).append(SEP)
+		.append(remoteTasksSize).append(SEP)
+		.append(remoteTasksTMP).append(SEP)
+		.append(remoteMakeSpan+"").append(SEP)
 		.append(queuingTime).append(SEP)
 		.append(numberOfPreemptions).append(SEP)
 		.append(job.numberOfLocalResourcesUsed()).append(SEP)
