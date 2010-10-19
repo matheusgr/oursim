@@ -97,6 +97,8 @@ public class CLI {
 
 	public static final String OUTPUT = "o";
 
+	public static final String UTILIZATION = "u";
+	
 	public static final String HELP = "help";
 
 	public static final String USAGE = "usage";
@@ -118,6 +120,8 @@ public class CLI {
 	 * @throws FileNotFoundException
 	 */
 	public static void main(String[] args) throws IOException {
+		
+		args = "-w resources/iosup_workload_30_dias_70_sites.txt -wt iosup -s persistent -pd resources/iosup_site_description.txt -nr 5 -synthetic_av 610000 -o oursim_trace.txt -u oursim_system_utilization.txt".split("\\s+");
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
@@ -146,7 +150,9 @@ public class CLI {
 		OurSim oursim = new OurSim(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
 
 		oursim.setActiveEntity(new ActiveEntityImp());
-
+		if (cmd.hasOption(UTILIZATION)) {
+			oursim.setUtilizationFile((File) cmd.getOptionObject(UTILIZATION));
+		}
 		oursim.start();
 
 		printOutput.close();
@@ -240,6 +246,7 @@ public class CLI {
 		Option dedicatedResources = new Option(DEDICATED_RESOURCES, "dedicated", false, "Indica que os recursos são todos dedicados.");
 		Option syntAvail = new Option(SYNTHETIC_AVAILABILITY, "synthetic_availability", true, "Disponibilidade dos recursos deve ser gerada sinteticamente.");
 		Option workload = new Option(WORKLOAD, "workload", true, "Arquivo com o workload no format GWA (Grid Workload Archive).");
+		Option utilization = new Option(UTILIZATION, "utilization", true, "Arquivo em que será registrada a utilização da grade.");
 		Option workloadType = new Option(WORKLOAD_TYPE, "workload_type", true, "The type of workload to read the workload file.");
 		Option machinesDescription = new Option(MACHINES_DESCRIPTION, "machinesdescription", true, "Descrição das máquinas presentes em cada peer.");
 		Option speedOption = new Option(NODE_MIPS_RATING, "speed", true, "A velocidade de cada máquina.");
@@ -258,6 +265,7 @@ public class CLI {
 		peersDescription.setType(File.class);
 		machinesDescription.setType(File.class);
 		availability.setType(File.class);
+		utilization.setType(File.class);
 		output.setType(File.class);
 		numResByPeer.setType(Number.class);
 		numPeers.setType(Number.class);
@@ -283,6 +291,7 @@ public class CLI {
 		options.addOption(peersDescription);
 		options.addOption(speedOption);
 		options.addOption(nofOption);
+		options.addOption(utilization);
 
 		options.addOption(VERBOSE, "verbose", false, "Informa todos os eventos importantes.");
 		options.addOption(HELP, false, "Comando de ajuda.");

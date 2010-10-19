@@ -184,4 +184,17 @@ public class CLIUTil {
 	// cmd.getOptionValue(WORKLOAD_TYPE).equals("gwa") ? GWAFormat
 	// .extractSubmissionTimeFromFirstJob(cmd.getOptionValue(WORKLOAD)) : 0;
 
+	public static void main(String[] args) {
+		String cmd = "";
+		String sep = "";
+		for (int nRes = 21; nRes < 40; nRes++) {
+			cmd += sep
+					+ "java -Xms500M -Xmx1500M -XX:-UseGCOverheadLimit -jar oursim.jar -w resources/iosup_workload_30_dias_70_sites.txt -s persistent -pd resources/iosup_site_description.txt -wt iosup -nr "
+					+ nRes + " -synthetic_av 2678400 -o oursim-trace-" + nRes + ".txt";
+			sep = " && ";
+
+		}
+		System.out.println(cmd);
+	}
+
 }

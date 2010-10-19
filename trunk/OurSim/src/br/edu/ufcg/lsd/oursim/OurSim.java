@@ -1,6 +1,7 @@
 package br.edu.ufcg.lsd.oursim;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
@@ -56,6 +57,8 @@ public class OurSim {
 	 * the peers.
 	 */
 	private Input<? extends AvailabilityRecord> availabilityCharacterization;
+
+	private File utilizationFile = null;
 
 	/**
 	 * An convenient constructor to simulations that deals <b>only</b> with
@@ -122,8 +125,6 @@ public class OurSim {
 		clearListeners(peers, jobScheduler);
 	}
 
-	private BufferedWriter bw;
-
 	/**
 	 * the method that effectively performs the simulation. This method contains
 	 * the main loop guiding the whole simulation.
@@ -138,26 +139,11 @@ public class OurSim {
 	 */
 	private void run(EventQueue queue, JobSchedulerPolicy jobScheduler, Workload workload, Input<? extends AvailabilityRecord> availability) {
 
-		try {
-			bw = new BufferedWriter(new FileWriter("oursim_system_utilization.txt"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		BufferedWriter bw = createBufferedWriter(utilizationFile);
 
 		do {
 
-			try {
-				if (queue.peek()!= null) {
-					double utilization = 0;
-					for (Peer peer : peers) {
-						utilization += peer.getUtilization();
-					}
-					utilization = utilization / (peers.size() * 1.0);
-					bw.append(queue.peek().getTime() + ":" + utilization).append("\n");
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			accountForUtilization(queue, bw, peers);
 
 			this.addFutureEvents(workload, availability);
 
@@ -174,6 +160,37 @@ public class OurSim {
 			jobScheduler.schedule();
 		} while (queue.peek() != null || workload.peek() != null || availability.peek() != null);
 
+		closeBufferedWriter(bw);
+	}
+
+	private static void accountForUtilization(EventQueue queue, BufferedWriter bw, List<Peer> peers) {
+		try {
+			if (queue.peek() != null && bw != null) {
+				double utilization = 0;
+				for (Peer peer : peers) {
+					utilization += peer.getUtilization();
+				}
+				utilization = utilization / (peers.size() * 1.0);
+				bw.append(queue.peek().getTime() + ":" + utilization).append("\n");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static BufferedWriter createBufferedWriter(File utilizationFile) {
+		try {
+			if (utilizationFile != null) {
+				return new BufferedWriter(new FileWriter(utilizationFile));
+			}
+			return null;
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static void closeBufferedWriter(BufferedWriter bw) {
 		try {
 			if (bw != null) {
 				bw.close();
@@ -299,6 +316,10 @@ public class OurSim {
 	public void setActiveEntity(ActiveEntity activeEntity) {
 		this.activeEntity = activeEntity;
 		this.activeEntity.setEventQueue(eventQueue);
+	}
+
+	public void setUtilizationFile(File utilizationFile) {
+		this.utilizationFile = utilizationFile;
 	}
 
 }

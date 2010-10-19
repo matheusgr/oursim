@@ -8,6 +8,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 import br.edu.ufcg.lsd.oursim.policy.ranking.ResourceRankingPolicy;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.EqualsBuilder;
 
 /**
  * 
@@ -403,4 +405,20 @@ public class Job extends ComputableElement implements Comparable<Job> {
 				sourcePeer.getName()).append("#tasks", tasks.size()).toString();
 	}
 
+	@Override
+	public boolean equals(final Object other) {
+		if (!(other instanceof Job))
+			return false;
+		Job castOther = (Job) other;
+		return new EqualsBuilder().append(id, castOther.id).append(sourcePeer.getName(), castOther.sourcePeer.getName()).append(replicationLevel, castOther.replicationLevel).append(userId,
+				castOther.userId).append(thinkTime, castOther.thinkTime).isEquals();
+	}
+
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder().append(id).append(sourcePeer.getName()).append(replicationLevel).append(userId).append(thinkTime).toHashCode();
+	}
+
+	
+	
 }
