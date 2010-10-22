@@ -17,10 +17,10 @@
 package br.edu.ufcg.lsd.oursim.ui;
 
 import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.formatSummaryStatistics;
+import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.getSummaryStatistics;
 import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.parseCommandLine;
 import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.prepareOutputAccounting;
 import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.showMessageAndExit;
-import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.showSummaryStatistics;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -98,7 +98,7 @@ public class CLI {
 	public static final String OUTPUT = "o";
 
 	public static final String UTILIZATION = "u";
-	
+
 	public static final String HELP = "help";
 
 	public static final String USAGE = "usage";
@@ -120,8 +120,6 @@ public class CLI {
 	 * @throws FileNotFoundException
 	 */
 	public static void main(String[] args) throws IOException {
-		
-		args = "-w resources/iosup_workload_30_dias_70_sites.txt -wt iosup -s persistent -pd resources/iosup_site_description.txt -nr 5 -synthetic_av 610000 -o oursim_trace.txt -u oursim_system_utilization.txt".split("\\s+");
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
@@ -157,14 +155,27 @@ public class CLI {
 
 		printOutput.close();
 
+		long availableTime = 0l;
+		long wastedTime = 0l;
+		long usefulTime = 0l;
+
+		for (Peer peer : peers) {
+			availableTime += peer.getAmountOfAvailableTime();
+			wastedTime += peer.getAmountOfWastedTime();
+			usefulTime += peer.getAmountOfUsefulTime();
+		}
+
 		FileWriter fw = new FileWriter(cmd.getOptionValue(OUTPUT), true);
-
-		fw.write(formatSummaryStatistics(computingElementEventCounter) + ".\n");
-
-		showSummaryStatistics(computingElementEventCounter);
-
 		stopWatch.stop();
 		fw.write("# Simulation                  duration:" + stopWatch + ".\n");
+
+		double utilization= (usefulTime / (availableTime * 1.0));
+		double realUtilization = ((usefulTime + wastedTime) / (availableTime * 1.0));
+		
+		int numberOfResourcesByPeer = Integer.parseInt(cmd.getOptionValue(NUM_RESOURCES_BY_PEER, "0"));
+		fw.write(formatSummaryStatistics(computingElementEventCounter,numberOfResourcesByPeer,utilization,realUtilization, stopWatch.getTime()) + "\n");
+
+		System.out.println(getSummaryStatistics(computingElementEventCounter,numberOfResourcesByPeer,utilization,realUtilization, stopWatch.getTime()));
 
 		fw.close();
 

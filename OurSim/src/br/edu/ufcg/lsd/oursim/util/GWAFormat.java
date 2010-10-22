@@ -65,6 +65,7 @@ public final class GWAFormat {
 		try {
 			Map<String, Peer> peers = new HashMap<String, Peer>();
 			Scanner sc = new Scanner(new File(workloadFilePath));
+			sc.nextLine();
 			while (sc.hasNextLine()) {
 				Scanner scLine = new Scanner(sc.nextLine());
 				// skip the 16 firsts tokens. The site's
@@ -85,12 +86,14 @@ public final class GWAFormat {
 			// for marcus workload' format
 			Map<String, Peer> peers = new HashMap<String, Peer>();
 			Scanner sc = new Scanner(new File(workloadFilePath));
+			sc.nextLine();
 			while (sc.hasNextLine()) {
 				Scanner scLine = new Scanner(sc.nextLine());
 				// skip the 5 firsts tokens. The site's
 				// token is the 17th in the gwa format.
-				for (int i = 0; i < 5; i++) {
+				for (int i = 0; i < 6; i++) {
 					scLine.next();
+					
 				}
 				String OrigSiteID = scLine.next();
 

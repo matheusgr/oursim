@@ -1,5 +1,7 @@
 package br.edu.ufcg.lsd.oursim.ui;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.DecimalFormat;
 
 import org.apache.commons.cli.CommandLine;
@@ -8,6 +10,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.apache.commons.io.FileUtils;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventDispatcher;
@@ -53,36 +56,68 @@ public class CLIUTil {
 		System.exit(1);
 	}
 
-	public static void showSummaryStatistics(ComputingElementEventCounter computingElementEventCounter) {
+	public static String getSummaryStatistics(ComputingElementEventCounter computingElementEventCounter, int nMachines, double utilization,
+			double realUtilization, long simulationDuration) {
 
 		DecimalFormat dft = new DecimalFormat("000.00");
 
-		System.out.println("submitted finished preempted notStarted success finishedCost preemptedCost totalCost");
-		System.out.print(computingElementEventCounter.getNumberOfSubmittedJobs());
-		System.out.print(" ");
-		System.out.print(computingElementEventCounter.getNumberOfFinishedJobs());
-		System.out.print(" ");
-		System.out.print(computingElementEventCounter.getNumberOfPreemptionsForAllJobs());
-		System.out.print(" ");
 		// submitted - (finished + preempted)
 		int notStarted = computingElementEventCounter.getNumberOfSubmittedJobs()
 				- (computingElementEventCounter.getNumberOfFinishedJobs() + computingElementEventCounter.getNumberOfPreemptionsForAllJobs());
-		System.out.print(notStarted);
-		System.out.print(" ");
-		System.out.print(dft.format(computingElementEventCounter.getNumberOfFinishedJobs() / (computingElementEventCounter.getNumberOfSubmittedJobs() * 1.0))
-				.replace(",", "."));
-		System.out.print(" ");
-		System.out.print(dft.format(computingElementEventCounter.getTotalCostOfAllFinishedJobs()).replace(",", "."));
-		System.out.print(" ");
-		System.out.print(dft.format(computingElementEventCounter.getTotalCostOfAllPreemptedJobs()).replace(",", "."));
-		System.out.print(" ");
-		System.out
-				.print(dft.format(computingElementEventCounter.getTotalCostOfAllFinishedJobs() + computingElementEventCounter.getTotalCostOfAllPreemptedJobs())
-						.replace(",", "."));
-		System.out.print("\n");
+
+		StringBuilder sb = new StringBuilder(
+				"# submitted finished preempted notStarted success finishedCost preemptedCost totalCost nMachines utilization realUtilization simulationDuration"
+						+ "\n");
+		sb.append("# " + computingElementEventCounter.getNumberOfSubmittedJobs()).append(" ").append(computingElementEventCounter.getNumberOfFinishedJobs())
+				.append(" ").append(computingElementEventCounter.getNumberOfPreemptionsForAllJobs()).append(" ").append(notStarted).append(" ").append(
+						dft.format(computingElementEventCounter.getNumberOfFinishedJobs() / (computingElementEventCounter.getNumberOfSubmittedJobs() * 1.0))
+								.replace(",", ".")).append(" ").append(
+						dft.format(computingElementEventCounter.getTotalCostOfAllFinishedJobs()).replace(",", ".")).append(" ").append(
+						dft.format(computingElementEventCounter.getTotalCostOfAllPreemptedJobs()).replace(",", ".")).append(" ").append(
+						dft
+								.format(
+										computingElementEventCounter.getTotalCostOfAllFinishedJobs()
+												+ computingElementEventCounter.getTotalCostOfAllPreemptedJobs()).replace(",", ".")).append(" ").append(
+						nMachines).append(" ").append(utilization).append(" ").append(realUtilization).append(" ").append(simulationDuration);
+
+		// System.out.println(sb.toString());
+
+		return sb.toString();
+		// System.out.println("submitted finished preempted notStarted success
+		// finishedCost preemptedCost totalCost");
+		// System.out.print(computingElementEventCounter.getNumberOfSubmittedJobs());
+		// System.out.print(" ");
+		// System.out.print(computingElementEventCounter.getNumberOfFinishedJobs());
+		// System.out.print(" ");
+		// System.out.print(computingElementEventCounter.getNumberOfPreemptionsForAllJobs());
+		// System.out.print(" ");
+		// // submitted - (finished + preempted)
+		// int notStarted =
+		// computingElementEventCounter.getNumberOfSubmittedJobs()
+		// - (computingElementEventCounter.getNumberOfFinishedJobs() +
+		// computingElementEventCounter.getNumberOfPreemptionsForAllJobs());
+		// System.out.print(notStarted);
+		// System.out.print(" ");
+		// System.out.print(dft.format(computingElementEventCounter.getNumberOfFinishedJobs()
+		// / (computingElementEventCounter.getNumberOfSubmittedJobs() * 1.0))
+		// .replace(",", "."));
+		// System.out.print(" ");
+		// System.out.print(dft.format(computingElementEventCounter.getTotalCostOfAllFinishedJobs()).replace(",",
+		// "."));
+		// System.out.print(" ");
+		// System.out.print(dft.format(computingElementEventCounter.getTotalCostOfAllPreemptedJobs()).replace(",",
+		// "."));
+		// System.out.print(" ");
+		// System.out
+		// .print(dft.format(computingElementEventCounter.getTotalCostOfAllFinishedJobs()
+		// + computingElementEventCounter.getTotalCostOfAllPreemptedJobs())
+		// .replace(",", "."));
+		// System.out.print("\n");
+
 	}
 
-	public static String formatSummaryStatistics(ComputingElementEventCounter computingElementEventCounter) {
+	public static String formatSummaryStatistics(ComputingElementEventCounter computingElementEventCounter, int nMachines, double utilization,
+			double realUtilization, long simulationDuration) {
 
 		DecimalFormat dft = new DecimalFormat("000.00");
 
@@ -98,7 +133,9 @@ public class CLIUTil {
 		resume += "# Total cost of all             jobs: "
 				+ dft.format(computingElementEventCounter.getTotalCostOfAllFinishedJobs() + computingElementEventCounter.getTotalCostOfAllPreemptedJobs())
 				+ ".\n";
-		resume += "# Total of                    events: " + EventQueue.totalNumberOfEvents;
+		resume += "# Total of                    events: " + EventQueue.totalNumberOfEvents + ".\n";
+		resume += getSummaryStatistics(computingElementEventCounter, nMachines, utilization, realUtilization, simulationDuration);
+		;
 		return resume;
 	}
 
@@ -184,16 +221,28 @@ public class CLIUTil {
 	// cmd.getOptionValue(WORKLOAD_TYPE).equals("gwa") ? GWAFormat
 	// .extractSubmissionTimeFromFirstJob(cmd.getOptionValue(WORKLOAD)) : 0;
 
-	public static void main(String[] args) {
-		String cmd = "";
+	public static void main(String[] args) throws IOException {
+		String java = " $JAVACALL ";
+		int nSites = 10;
+		String cmd = "JAVACALL='java -Xms500M -Xmx1500M -XX:-UseGCOverheadLimit -jar';";
+		cmd += "SPT=resources/eu-west-1.linux.m1.small.csv;";
+		cmd += "ISD=resources/iosup_site_description.txt;";
+		String spt = " $SPT ";
+		String isd = " $ISD ";
 		String sep = "";
-		for (int nRes = 21; nRes < 40; nRes++) {
-			cmd += sep
-					+ "java -Xms500M -Xmx1500M -XX:-UseGCOverheadLimit -jar oursim.jar -w resources/iosup_workload_30_dias_70_sites.txt -s persistent -pd resources/iosup_site_description.txt -wt iosup -nr "
-					+ nRes + " -synthetic_av 2678400 -o oursim-trace-" + nRes + ".txt";
+		for (int nRes = 1; nRes < 21; nRes++) {
+			cmd += sep + java + "oursim.jar -w resources/iosup_workload_7_dias_" + nSites
+					+ "_sites.txt -s persistent -pd "+isd+" -wt iosup -nr " + nRes + " -synthetic_av 2678400 -o oursim-trace-"
+					+ nRes + "_7_dias_" + nSites + "_sites.txt";
 			sep = " && ";
-
+			cmd += sep + "sort -g oursim-trace-" + nRes + "_7_dias_" + nSites + "_sites.txt_spot_workload.txt > " + "oursim-trace-" + nRes + "_7_dias_"
+					+ nSites + "_sites.txt_spot_workload_sorted.txt ";
+			sep = " && ";
+			cmd += sep + java + "spotsim.jar -spot -l 20 -bid max -w " + "oursim-trace-" + nRes + "_7_dias_" + nSites
+					+ "_sites.txt_spot_workload_sorted.txt -av " + spt + " -o spot-trace-" + nRes + "_7_dias_" + nSites + "_sites.txt";
+			sep = " && ";
 		}
+		FileUtils.writeStringToFile(new File("cmd.txt"), cmd);
 		System.out.println(cmd);
 	}
 
