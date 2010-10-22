@@ -104,6 +104,8 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 
 	private double cost;
 
+	private double wastedTime;
+
 	public Task(long id, String executable, long duration, long submissionTime, Job sourceJob) {
 		super(id, submissionTime);
 		this.executable = new File(executable, -1);
@@ -225,6 +227,7 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 		assert this.startTime != null;
 		if (this.finishTime == null) {
 			this.numberOfpreemptions++;
+			this.wastedTime += (time - startTime);
 			this.startTime = null;
 			this.targetPeer = null;
 		} else {
@@ -426,6 +429,10 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 
 	public boolean hasLocallyRunned() {
 		return hasLocallyRunned;
+	}
+
+	public double getWastedTime() {
+		return wastedTime;
 	}
 
 }

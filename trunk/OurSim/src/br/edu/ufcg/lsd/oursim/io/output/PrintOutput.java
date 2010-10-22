@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.entities.Job;
@@ -32,7 +34,7 @@ public final class PrintOutput implements Output {
 	private static final String PREEMPT_LABEL = "P";
 
 	private static final String FINISH_LABEL = "F";
-
+	
 	private static final String HEADER = "type".concat(SEP)
 								.concat("time").concat(SEP)
 								.concat("jobId").concat(SEP)
@@ -59,6 +61,8 @@ public final class PrintOutput implements Output {
 	 */
 	private PrintStream out;
 
+	private PrintStream out2;
+
 	private boolean showProgress;
 
 	/**
@@ -84,6 +88,8 @@ public final class PrintOutput implements Output {
 	public PrintOutput(File file, boolean showProgress) throws IOException {
 		this.showProgress = showProgress;
 		this.out = new PrintStream(file);
+		this.out2 = new PrintStream(new File(file.getParentFile(),file.getName()+"_spot_workload.txt"));
+		this.out2.println("submissionTime jobId numberOfTasks avgRuntime tasks userId peerId");
 		this.out.println(HEADER);
 	}
 
@@ -194,15 +200,31 @@ public final class PrintOutput implements Output {
 		String sep = "";
 		String sep2 = "";
 		int remTasksSize = 0;
+		StringBuilder sb2 = new StringBuilder();
+
+		Long remoteTasksRuntimeSum = 0l;
 		for (Task task : job.getTasks()) {
 			tasks.append(sep).append(task.getDuration());
 			if (!task.hasLocallyRunned()) {
 				remoteTasks.append(sep2).append(task.getDuration());
+				remoteTasksRuntimeSum += task.getDuration();
 				remTasksSize++;
 				sep2 = ";";
 				remoteMakeSpan = Math.max(remoteMakeSpan, task.getMakeSpan());
 			}
 			sep = ";";
+		}
+	
+		if (remTasksSize >0) {
+			//submissionTime, jobId, numberOfTasks, avgRuntime, tasks, userId, peerId
+			sb2.append(submissionTime).append(" ")
+			.append(jobId).append(" ")
+			.append(remTasksSize).append(" ")
+			.append(Math.round(remoteTasksRuntimeSum/(1.0*remTasksSize))).append(" ")
+			.append(remoteTasks).append(" ")
+			.append(job.getUserId()).append(" ")
+			.append(job.getSourcePeer().getName()).append(" ");
+			this.out2.println(sb2);
 		}
 //		tasks.append("]");
 		String size = job.getTasks().size()+"";

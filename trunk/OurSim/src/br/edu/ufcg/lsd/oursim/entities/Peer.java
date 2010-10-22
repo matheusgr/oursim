@@ -1,9 +1,11 @@
 package br.edu.ufcg.lsd.oursim.entities;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -18,6 +20,7 @@ import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.ranking.PeerRankingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.ranking.TaskPreemptionRankingPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityImp;
+import br.edu.ufcg.lsd.oursim.util.TimeUtil;
 
 /**
  * 
@@ -32,8 +35,8 @@ import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityImp;
  */
 public class Peer extends ActiveEntityImp implements WorkerEventListener {
 
-	public static final Peer DEFAULT_PEER = new Peer("Default_Peer",FifoSharingPolicy.getInstance());
-	
+	public static final Peer DEFAULT_PEER = new Peer("Default_Peer", FifoSharingPolicy.getInstance());
+
 	/**
 	 * The peer's name.
 	 */
@@ -55,6 +58,12 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 	private final ResourceManager resourceManager;
 
 	private final TaskManager taskManager;
+
+	// private long amountOfAvailableTime = 0;
+	private Map<String, Long> amountOfAvailableTime;
+	private Map<String, Long> amountOfWastedTime;
+	private Map<String, Long> amountOfUsefulTime;
+	private Map<String, Long> timeOfLastWorkAvailableEvent;
 
 	/**
 	 * All the jobs originated by this peer, that is, all the jobs that belongs
@@ -150,6 +159,11 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 
 		this.taskPreemptionRankingPolicy = new TaskPreemptionRankingPolicy(this);
 
+		this.amountOfAvailableTime = new HashMap<String, Long>();
+		this.amountOfWastedTime = new HashMap<String, Long>();
+		this.amountOfUsefulTime = new HashMap<String, Long>();
+		this.timeOfLastWorkAvailableEvent = new HashMap<String, Long>();
+
 	}
 
 	/**
@@ -174,6 +188,9 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 		// as have been added machines after the instantiation of the
 		// ResourceManager, this must be updated.
 		this.resourceManager.update(machine);
+		this.amountOfAvailableTime.put(machine.getName(), 0l);
+		this.amountOfWastedTime.put(machine.getName(), 0l);
+		this.amountOfUsefulTime.put(machine.getName(), 0l);
 	}
 
 	/**
@@ -276,12 +293,19 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 	 */
 	public final void finishTask(Task task) throws IllegalArgumentException {
 		assert this.taskManager.isInExecution(task) : task;
+
+		String machineName = this.taskManager.getMachine(task).getName();
+		long usefulTime = getCurrentTime() - task.getStartTime();
+
 		if (this.taskManager.isInExecution(task)) {
 			this.resourceManager.releaseResource(this.taskManager.finishTask(task));
 			this.resourceSharingPolicy.updateMutualBalance(this, task.getSourcePeer(), task);
 		} else {
 			throw new IllegalArgumentException("The task was not being executed in this peer.");
 		}
+
+		Long cum = this.amountOfUsefulTime.get(machineName);
+		this.amountOfUsefulTime.put(machineName, cum + usefulTime);
 	}
 
 	/**
@@ -294,6 +318,9 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 	public final void preemptTask(Task task) {
 		assert this.taskManager.isInExecution(task) : task;
 
+		String machineName = this.taskManager.getMachine(task).getName();
+		long wastedTime = getCurrentTime() - task.getStartTime();
+
 		if (this.taskManager.isInExecution(task)) {
 			this.resourceAllocationManager.deallocateTask(task);
 			this.resourceSharingPolicy.updateMutualBalance(this, task.getSourcePeer(), task);
@@ -301,18 +328,30 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 		} else {
 			throw new IllegalArgumentException("The task was not being executed in this peer.");
 		}
+
+		Long cum = this.amountOfWastedTime.get(machineName);
+		this.amountOfWastedTime.put(machineName, cum + wastedTime);
+
 	}
 
 	public final void cancelTask(Task task) {
-//		assert this.taskManager.isInExecution(task) : task;
-		
+		// assert this.taskManager.isInExecution(task) : task;
+
 		if (this.taskManager.isInExecution(task)) {
+			String machineName = this.taskManager.getMachine(task).getName();
+			long wastedTime = getCurrentTime() - task.getStartTime();
+
 			this.resourceAllocationManager.deallocateTask(task);
 			this.resourceSharingPolicy.updateMutualBalance(this, task.getSourcePeer(), task);
 			this.addCancelledTaskEvent(task);
+
+			Long cum = this.amountOfWastedTime.get(machineName);
+			this.amountOfWastedTime.put(machineName, cum + wastedTime);
 		} else {
-//			throw new IllegalArgumentException("The task was not being executed in this peer.");
+			// throw new IllegalArgumentException("The task was not being
+			// executed in this peer.");
 		}
+
 	}
 
 	/**
@@ -359,6 +398,7 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 		String machineName = workerEvent.getSource();
 		this.resourceManager.makeResourceAvailable(machineName);
 		// TODO: deve-se reescalonar os jobs agora pois tem recurso disponível
+		this.timeOfLastWorkAvailableEvent.put(machineName, workerEvent.getTime());
 	}
 
 	@Override
@@ -368,11 +408,20 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 		if (this.resourceManager.isAllocated(machineName)) {
 			Machine resource = this.resourceManager.getResource(machineName);
 			Task task = this.taskManager.getTask(resource);
-			preemptTask(task);// TODO nesse momento o resource não estará mais em
-								// allocated e sim em free pois o preempt
-								// efetivamente libera o recurso.
+			preemptTask(task);// TODO nesse momento o resource não estará mais
+			// em
+			// allocated e sim em free pois o preempt
+			// efetivamente libera o recurso.
 		}
 		this.resourceManager.makeResourceUnavailable(machineName);
+
+		assert this.amountOfAvailableTime.containsKey(machineName) : machineName;
+
+		Long cum = this.amountOfAvailableTime.get(machineName);
+		long timeElapsed = workerEvent.getTime() - this.timeOfLastWorkAvailableEvent.get(machineName);
+//		if (timeElapsed > 5 * TimeUtil.ONE_MINUTE) {
+			this.amountOfAvailableTime.put(machineName, cum + timeElapsed);
+//		}
 	}
 
 	@Override
@@ -433,6 +482,30 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 	@Override
 	public String toString() {
 		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("name", name).append("#machines", machines.size()).toString();
+	}
+
+	public Long getAmountOfAvailableTime() {
+		long amount = 0;
+		for (Entry<String, Long> entry : amountOfAvailableTime.entrySet()) {
+			amount += entry.getValue();
+		}
+		return amount;
+	}
+
+	public Long getAmountOfWastedTime() {
+		long amount = 0;
+		for (Entry<String, Long> entry : amountOfWastedTime.entrySet()) {
+			amount += entry.getValue();
+		}
+		return amount;
+	}
+
+	public Long getAmountOfUsefulTime() {
+		long amount = 0;
+		for (Entry<String, Long> entry : amountOfUsefulTime.entrySet()) {
+			amount += entry.getValue();
+		}
+		return amount;
 	}
 
 }
