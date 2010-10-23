@@ -79,6 +79,8 @@
 		<mkdir dir="${dist.dir}/${application.name}/doc" />
 		<mkdir dir="${dist.dir}/${application.name}/test" />
 
+		<copy file="../OurSim/dist/OurSim/oursim.jar" todir="lib" />
+		
 		<copy file="lib/commons-lang-2.4.jar" todir="${dist.dir}/${application.name}/lib" />
 		<copy file="lib/commons-io-1.4.jar" todir="${dist.dir}/${application.name}/lib" />
 		<copy file="lib/commons-collections-3.2.1.jar" todir="${dist.dir}/${application.name}/lib" />
