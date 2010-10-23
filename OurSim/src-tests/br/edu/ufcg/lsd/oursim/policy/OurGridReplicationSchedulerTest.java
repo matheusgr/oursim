@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import br.edu.ufcg.lsd.oursim.AbstractOurSimAPITest;
 import br.edu.ufcg.lsd.oursim.OurSim;
+import br.edu.ufcg.lsd.oursim.entities.Grid;
 import br.edu.ufcg.lsd.oursim.entities.Machine;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.io.input.Input;
@@ -15,6 +16,7 @@ import br.edu.ufcg.lsd.oursim.io.input.InputAbstract;
 import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
 import br.edu.ufcg.lsd.oursim.io.input.workload.WorkloadAbstract;
+import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityImp;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 
 public class OurGridReplicationSchedulerTest extends AbstractOurSimAPITest {
@@ -83,7 +85,8 @@ public class OurGridReplicationSchedulerTest extends AbstractOurSimAPITest {
 
 		JobSchedulerPolicy jobScheduler = new OurGridReplicationScheduler(peers, REPLICATION_LEVEL);
 
-		oursim = new OurSim(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
+		oursim = new OurSim(EventQueue.getInstance(), new Grid(peers), jobScheduler, workload, availability);
+		oursim.setActiveEntity(new ActiveEntityImp());
 		oursim.start();
 
 		// um dos jobs não vai ser completado por indisponiblidade de máquina.

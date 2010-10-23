@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.entities.Job;
@@ -19,7 +17,7 @@ import br.edu.ufcg.lsd.oursim.entities.Task;
  * @since 18/05/2010
  * 
  */
-public final class PrintOutput extends OutputAdapter {
+public final class PrintOutputAndFilterRemoteWorkload extends OutputAdapter {
 
 	private static final String MISSING_VALUE = "NA";
 
@@ -59,17 +57,19 @@ public final class PrintOutput extends OutputAdapter {
 	 */
 	private PrintStream out;
 
+	private PrintStream out2;
+
 	private boolean showProgress;
 
 	/**
 	 * An default constructor. Using this constructor the results will be
 	 * printed out in the default output.
 	 */
-	public PrintOutput() {
+	public PrintOutputAndFilterRemoteWorkload() {
 		this.out = System.out;
 	}
 
-	public PrintOutput(File file) throws IOException {
+	public PrintOutputAndFilterRemoteWorkload(File file) throws IOException {
 		this(file, false);
 	}
 
@@ -81,9 +81,11 @@ public final class PrintOutput extends OutputAdapter {
 	 *            The name of the file where the results will be printed out.
 	 * @throws FileNotFoundException
 	 */
-	public PrintOutput(File file, boolean showProgress) throws IOException {
+	public PrintOutputAndFilterRemoteWorkload(File file, boolean showProgress) throws IOException {
 		this.showProgress = showProgress;
 		this.out = new PrintStream(file);
+		this.out2 = new PrintStream(new File(file.getParentFile(),file.getName()+"_spot_workload.txt"));
+		this.out2.println("submissionTime jobId numberOfTasks avgRuntime tasks userId peerId");
 		this.out.println(HEADER);
 	}
 
@@ -188,11 +190,13 @@ public final class PrintOutput extends OutputAdapter {
 		long makeSpan = job.getMakeSpan();
 		long remoteMakeSpan = 0;
 //		double cost = job.getCost();
+//		StringBuilder tasks = new StringBuilder("[");
 		StringBuilder tasks = new StringBuilder();
 		StringBuilder remoteTasks = new StringBuilder();
 		String sep = "";
 		String sep2 = "";
 		int remTasksSize = 0;
+		StringBuilder sb2 = new StringBuilder();
 
 		Long remoteTasksRuntimeSum = 0l;
 		for (Task task : job.getTasks()) {
@@ -207,6 +211,17 @@ public final class PrintOutput extends OutputAdapter {
 			sep = ";";
 		}
 	
+		if (remTasksSize >0) {
+			//submissionTime, jobId, numberOfTasks, avgRuntime, tasks, userId, peerId
+			sb2.append(submissionTime).append(" ")
+			.append(jobId).append(" ")
+			.append(remTasksSize).append(" ")
+			.append(Math.round(remoteTasksRuntimeSum/(1.0*remTasksSize))).append(" ")
+			.append(remoteTasks).append(" ")
+			.append(job.getUserId()).append(" ")
+			.append(job.getSourcePeer().getName()).append(" ");
+			this.out2.println(sb2);
+		}
 //		tasks.append("]");
 		String size = job.getTasks().size()+"";
 		String tasksStr = tasks.toString();

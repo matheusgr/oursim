@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import br.edu.ufcg.lsd.oursim.AbstractOurSimAPITest;
 import br.edu.ufcg.lsd.oursim.OurSim;
+import br.edu.ufcg.lsd.oursim.entities.Grid;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.io.input.Input;
@@ -15,6 +16,7 @@ import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.io.input.availability.DedicatedResourcesAvailabilityCharacterization;
 import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
 import br.edu.ufcg.lsd.oursim.io.input.workload.WorkloadAbstract;
+import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityImp;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 
 public class OurGridPersistentSchedulerTest extends AbstractOurSimAPITest {
@@ -42,7 +44,8 @@ public class OurGridPersistentSchedulerTest extends AbstractOurSimAPITest {
 		Input<AvailabilityRecord> availability = new DedicatedResourcesAvailabilityCharacterization(peers, JOB_SUBMISSION_TIME, JOB_LENGTH + 1);
 
 		JobSchedulerPolicy jobScheduler = new OurGridPersistentScheduler(peers);
-		oursim = new OurSim(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
+		oursim = new OurSim(EventQueue.getInstance(), new Grid(peers), jobScheduler, workload, availability);
+		oursim.setActiveEntity(new ActiveEntityImp());
 		oursim.start();
 
 		int totalDeTasks = TOTAL_OF_JOBS * NUMBER_OF_TASKS_BY_JOB;
@@ -125,7 +128,8 @@ public class OurGridPersistentSchedulerTest extends AbstractOurSimAPITest {
 
 		JobSchedulerPolicy jobScheduler = new OurGridPersistentScheduler(peers);
 
-		oursim = new OurSim(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
+		oursim = new OurSim(EventQueue.getInstance(), new Grid(peers), jobScheduler, workload, availability);
+		oursim.setActiveEntity(new ActiveEntityImp());
 		oursim.start();
 
 		int totalDeJobs = (int) (TOTAL_OF_JOBS * 1.5);

@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+import br.edu.ufcg.lsd.oursim.entities.Grid;
 import br.edu.ufcg.lsd.oursim.entities.Machine;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.entities.Processor;
@@ -31,30 +32,30 @@ import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 
 public class SystemConfigurationCommandParser {
 
-	public static Map<String, Peer> readPeersDescription(File siteDescription, int numberOfResourcesByPeer, ResourceSharingPolicy sharingPolicy)
+	public static Grid readPeersDescription(File siteDescription, int numberOfResourcesByPeer, ResourceSharingPolicy sharingPolicy)
 			throws FileNotFoundException {
-		Map<String, Peer> peers = new HashMap<String, Peer>();
+		Grid grid = new Grid();
 		Scanner sc = new Scanner(siteDescription);
 		sc.nextLine(); // skip header
 		while (sc.hasNextLine()) {
 			Scanner scLine = new Scanner(sc.nextLine());
 			String peerName = scLine.next();
 			int peerSize = scLine.nextInt();
-			if (!peers.containsKey(peerName)) {
+			if (!grid.containsPeer(peerName)) {
 				Peer peer = (numberOfResourcesByPeer > 0) ? new Peer(peerName, numberOfResourcesByPeer, sharingPolicy) : new Peer(peerName, sharingPolicy);
-				peers.put(peer.getName(), peer);
 				if (numberOfResourcesByPeer == 0) {
 					for (int i = 0; i < peerSize; i++) {
-						String machineFullName = peer.getName() + ".m_" + i;
+//						String machineFullName = peer.getName() + ".m_" + i;
+						String machineFullName = peer.getMachineName(i);
 						peer.addMachine(new Machine(machineFullName, Processor.EC2_COMPUTE_UNIT.getSpeed()));
 					}
 				}
-				peers.put(peer.getName(), peer);
+				grid.addPeer(peer);
 			} else {
 				showMessageAndExit("Já foi adicionado um peer com esse nome: " + peerName);
 			}
 		}
-		return peers;
+		return grid;
 	}
 
 	@Deprecated

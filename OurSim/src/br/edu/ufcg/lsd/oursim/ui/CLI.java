@@ -22,11 +22,12 @@ import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.parseCommandLine;
 import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.prepareOutputAccounting;
 import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.showMessageAndExit;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -38,6 +39,7 @@ import org.apache.commons.lang.time.StopWatch;
 
 import br.edu.ufcg.lsd.oursim.OurSim;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
+import br.edu.ufcg.lsd.oursim.entities.Grid;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.io.input.Input;
 import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityCharacterization;
@@ -51,7 +53,9 @@ import br.edu.ufcg.lsd.oursim.io.input.workload.OnDemandGWANorduGridWorkload;
 import br.edu.ufcg.lsd.oursim.io.input.workload.OnDemandGWANorduGridWorkloadWithFilter;
 import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
 import br.edu.ufcg.lsd.oursim.io.output.ComputingElementEventCounter;
+import br.edu.ufcg.lsd.oursim.io.output.Output;
 import br.edu.ufcg.lsd.oursim.io.output.PrintOutput;
+import br.edu.ufcg.lsd.oursim.io.output.RemoteWorkloadExtractorOutput;
 import br.edu.ufcg.lsd.oursim.policy.FifoSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
 import br.edu.ufcg.lsd.oursim.policy.NoFSharingPolicy;
@@ -126,66 +130,86 @@ public class CLI {
 
 		CommandLine cmd = parseCommandLine(args, prepareOptions(), HELP, USAGE, EXECUTION_LINE);
 
-		PrintOutput printOutput = new PrintOutput((File) cmd.getOptionObject(OUTPUT), false);
+		File outputFile = (File) cmd.getOptionObject(OUTPUT);
+		PrintOutput printOutput = new PrintOutput(outputFile, false);
 		JobEventDispatcher.getInstance().addListener(printOutput);
+		Output remoteWorkloadExtractor = new RemoteWorkloadExtractorOutput(new File(outputFile.getName() + "_spot_workload.txt"));
+		JobEventDispatcher.getInstance().addListener(remoteWorkloadExtractor);
 
 		ComputingElementEventCounter computingElementEventCounter = prepareOutputAccounting(cmd, cmd.hasOption(VERBOSE));
 
 		ResourceSharingPolicy sharingPolicy = cmd.hasOption(NOF) ? NoFSharingPolicy.getInstance() : FifoSharingPolicy.getInstance();
 
-		Map<String, Peer> peersMap = prepareGrid(cmd, sharingPolicy);
+		Grid grid = prepareGrid(cmd, sharingPolicy);
 
-		Input<? extends AvailabilityRecord> availability = defineAvailability(cmd, peersMap);
+		BufferedWriter bw = null;
+		if (cmd.hasOption(UTILIZATION)) {
+			bw = createBufferedWriter((File) cmd.getOptionObject(UTILIZATION));
+			grid.setUtilizationBuffer(bw);
+		}
+
+		Input<? extends AvailabilityRecord> availability = defineAvailability(cmd, grid.getMapOfPeers());
 
 		long timeOfFirstSubmission = cmd.getOptionValue(WORKLOAD_TYPE).equals("gwa") ? GWAFormat
 				.extractSubmissionTimeFromFirstJob(cmd.getOptionValue(WORKLOAD)) : 0;
-		Workload workload = defineWorkloadType(cmd, cmd.getOptionValue(WORKLOAD), peersMap, timeOfFirstSubmission);
+		Workload workload = defineWorkloadType(cmd, cmd.getOptionValue(WORKLOAD), grid.getMapOfPeers(), timeOfFirstSubmission);
 
-		ArrayList<Peer> peers = new ArrayList<Peer>(peersMap.values());
+		JobSchedulerPolicy jobScheduler = defineScheduler(cmd, grid.getListOfPeers());
 
-		JobSchedulerPolicy jobScheduler = defineScheduler(cmd, peers);
-
-		OurSim oursim = new OurSim(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
+		OurSim oursim = new OurSim(EventQueue.getInstance(), grid, jobScheduler, workload, availability);
 
 		oursim.setActiveEntity(new ActiveEntityImp());
-		if (cmd.hasOption(UTILIZATION)) {
-			oursim.setUtilizationFile((File) cmd.getOptionObject(UTILIZATION));
-		}
+
 		oursim.start();
 
 		printOutput.close();
-
-		long availableTime = 0l;
-		long wastedTime = 0l;
-		long usefulTime = 0l;
-
-		for (Peer peer : peers) {
-			availableTime += peer.getAmountOfAvailableTime();
-			wastedTime += peer.getAmountOfWastedTime();
-			usefulTime += peer.getAmountOfUsefulTime();
-		}
 
 		FileWriter fw = new FileWriter(cmd.getOptionValue(OUTPUT), true);
 		stopWatch.stop();
 		fw.write("# Simulation                  duration:" + stopWatch + ".\n");
 
-		double utilization= (usefulTime / (availableTime * 1.0));
-		double realUtilization = ((usefulTime + wastedTime) / (availableTime * 1.0));
-		
-		int numberOfResourcesByPeer = Integer.parseInt(cmd.getOptionValue(NUM_RESOURCES_BY_PEER, "0"));
-		fw.write(formatSummaryStatistics(computingElementEventCounter,numberOfResourcesByPeer,utilization,realUtilization, stopWatch.getTime()) + "\n");
+		double utilization = grid.getUtilization();
+		double realUtilization = grid.getTrueUtilization();
 
-		System.out.println(getSummaryStatistics(computingElementEventCounter,numberOfResourcesByPeer,utilization,realUtilization, stopWatch.getTime()));
+		int numberOfResourcesByPeer = Integer.parseInt(cmd.getOptionValue(NUM_RESOURCES_BY_PEER, "0"));
+		fw.write(formatSummaryStatistics(computingElementEventCounter, numberOfResourcesByPeer, utilization, realUtilization, stopWatch.getTime()) + "\n");
+
+		System.out.println(getSummaryStatistics(computingElementEventCounter, numberOfResourcesByPeer, utilization, realUtilization, stopWatch.getTime()));
 
 		fw.close();
+		if (cmd.hasOption(UTILIZATION)) {
+			closeBufferedWriter(bw);
+		}
 
 	}
 
-	private static Map<String, Peer> prepareGrid(CommandLine cmd, ResourceSharingPolicy sharingPolicy) throws FileNotFoundException {
+	private static BufferedWriter createBufferedWriter(File utilizationFile) {
+		try {
+			if (utilizationFile != null) {
+				return new BufferedWriter(new FileWriter(utilizationFile));
+			}
+			return null;
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static void closeBufferedWriter(BufferedWriter bw) {
+		try {
+			if (bw != null) {
+				bw.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static Grid prepareGrid(CommandLine cmd, ResourceSharingPolicy sharingPolicy) throws FileNotFoundException {
 		int numberOfResourcesByPeer = Integer.parseInt(cmd.getOptionValue(NUM_RESOURCES_BY_PEER, "0"));
 		File peerDescriptionFile = (File) cmd.getOptionObject(PEERS_DESCRIPTION);
-		Map<String, Peer> peersMap = SystemConfigurationCommandParser.readPeersDescription(peerDescriptionFile, numberOfResourcesByPeer, sharingPolicy);
-		return peersMap;
+		Grid grid = SystemConfigurationCommandParser.readPeersDescription(peerDescriptionFile, numberOfResourcesByPeer, sharingPolicy);
+		return grid;
 	}
 
 	private static Workload defineWorkloadType(CommandLine cmd, String workloadFilePath, Map<String, Peer> peersMap, long timeOfFirstSubmission)
@@ -229,7 +253,7 @@ public class CLI {
 		return availability;
 	}
 
-	private static JobSchedulerPolicy defineScheduler(CommandLine cmd, ArrayList<Peer> peers) {
+	private static JobSchedulerPolicy defineScheduler(CommandLine cmd, List<Peer> peers) {
 		JobSchedulerPolicy jobScheduler = null;
 		if (cmd.hasOption(SCHEDULER)) {
 			String scheduler = cmd.getOptionValue(SCHEDULER);

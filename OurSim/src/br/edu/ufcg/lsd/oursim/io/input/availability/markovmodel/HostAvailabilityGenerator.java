@@ -42,6 +42,7 @@ public abstract class HostAvailabilityGenerator {
 			ObservationDiscrete observation = mg.observation();
 			StateModel stateModel = (StateModel) observation.value;
 			Long duracao = stateModel.getDuration();
+			System.out.println(machineName+" : "+time+" : " +stateModel.getType()+" : " +duracao);
 			if (recordAll || stateModel.isAvailability()) {
 //				sb.append(machineName).append(TAB)
 //				  .append(time).append(TAB)

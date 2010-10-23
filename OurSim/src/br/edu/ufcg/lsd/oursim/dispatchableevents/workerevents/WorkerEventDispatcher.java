@@ -144,6 +144,7 @@ public class WorkerEventDispatcher extends EventDispatcher<String, WorkerEventLi
 					assert false;
 				}
 			}
+			//XXX: se ninguem aceitar o evento, então há problema!
 		}
 	}
 }

@@ -96,16 +96,29 @@ public class MarkovModelAvailabilityCharacterization implements Input<Availabili
 	}
 
 	private void generateAvailabilityForNextInvocations(Machine machine, MarkovGenerator<ObservationDiscrete> markovGenerator) {
-		Long duration;
+		Long avDuration;
+		Long naDuration;
+		// a duração do período de disponibilidade
+		StateModel stateModel = null;
 		do {
 			ObservationDiscrete observation = markovGenerator.observation();
-			StateModel stateModel = (StateModel) observation.value;
-			duration = stateModel.getDuration();
-		} while (duration == 0);
+			stateModel = (StateModel) observation.value;
+			avDuration = stateModel.getDuration();
+		} while (avDuration == 0 || !stateModel.isAvailability());
+		assert stateModel.isAvailability() : stateModel;
+
 		long time = machine2Time.get(machine);
-		AvailabilityRecord availabilityRecord = new AvailabilityRecord(machine.getName(), time, duration);
+		AvailabilityRecord availabilityRecord = new AvailabilityRecord(machine.getName(), time, avDuration);
 		this.nextAvailabilityRecords.add(availabilityRecord);
-		this.machine2Time.put(machine, time + duration);
+
+		// agora a duração do período de INdisponibilidade
+		do {
+			ObservationDiscrete observation = markovGenerator.observation();
+			stateModel = (StateModel) observation.value;
+			naDuration = stateModel.getDuration();
+		} while (naDuration == 0 || stateModel.isAvailability());
+		assert !stateModel.isAvailability() : stateModel;
+		this.machine2Time.put(machine, time + avDuration + naDuration);
 	}
 
 	public void stop() {

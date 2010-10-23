@@ -15,10 +15,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import br.edu.ufcg.lsd.oursim.OurSim;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventListener;
+import br.edu.ufcg.lsd.oursim.entities.Grid;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
@@ -161,7 +161,7 @@ public class SimulationBase {
 		TestOutput to = new TestOutput(100, 100, 100, 100);
 		JobEventDispatcher.getInstance().addListener(to);
 		JobSchedulerPolicy jobScheduler = new OurGridPersistentScheduler(peers);
-		new OurSim(EventQueue.getInstance(), peers, jobScheduler, workload).start();
+		new OurSim(EventQueue.getInstance(), new Grid(peers), jobScheduler, workload).start();
 		to.verify();
 	}
 

@@ -132,6 +132,7 @@ public final class EventQueue implements Closeable {
 				e.printStackTrace();
 			}
 		}
+//		System.out.println("add["+getCurrentTime()+"]: " +event.getTime() +" : " +event.getType() + ":" + event);
 		pq.add(event);
 	}
 
@@ -174,7 +175,9 @@ public final class EventQueue implements Closeable {
 			this.currentTime = pq.peek().getTime();
 		}
 		// System.out.println(pq.size());
-		return pq.poll();
+		TimedEvent polledEvent = pq.poll();
+//		System.out.println("poll: " +polledEvent.getTime() +" : " +polledEvent.getType() + ":" + polledEvent);
+		return polledEvent;
 	}
 
 	/**

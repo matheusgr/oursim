@@ -3,8 +3,8 @@ package br.edu.ufcg.lsd.oursim.policy.ranking;
 import java.util.Collections;
 import java.util.List;
 
-import br.edu.ufcg.lsd.oursim.OurSimMainSpikeSolution;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
+import br.edu.ufcg.lsd.oursim.util.OurSimMainSpikeSolution;
 
 /**
  * 

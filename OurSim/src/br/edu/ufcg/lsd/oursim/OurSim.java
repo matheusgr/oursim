@@ -1,16 +1,15 @@
 package br.edu.ufcg.lsd.oursim;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventDispatcher;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventFilter;
+import br.edu.ufcg.lsd.oursim.entities.Grid;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.io.input.Input;
@@ -39,8 +38,9 @@ public class OurSim {
 
 	/**
 	 * the peers that comprise the grid.
+	 * 
 	 */
-	private List<Peer> peers;
+	private Grid grid;
 
 	/**
 	 * the scheduler of the jobs.
@@ -58,8 +58,6 @@ public class OurSim {
 	 */
 	private Input<? extends AvailabilityRecord> availabilityCharacterization;
 
-	private File utilizationFile = null;
-
 	/**
 	 * An convenient constructor to simulations that deals <b>only</b> with
 	 * dedicated resources.
@@ -73,8 +71,8 @@ public class OurSim {
 	 * @param workload
 	 *            the workload to be processed by the resources of the peers.
 	 */
-	public OurSim(EventQueue queue, List<Peer> peers, JobSchedulerPolicy jobScheduler, Workload workload) {
-		this(queue, peers, jobScheduler, workload, new DedicatedResourcesAvailabilityCharacterization(peers));
+	public OurSim(EventQueue queue, Grid grid, JobSchedulerPolicy jobScheduler, Workload workload) {
+		this(queue, grid, jobScheduler, workload, new DedicatedResourcesAvailabilityCharacterization(grid.getListOfPeers()));
 	}
 
 	/**
@@ -93,10 +91,10 @@ public class OurSim {
 	 *            the characterization of the availability of all resources
 	 *            belonging to the peers.
 	 */
-	public OurSim(EventQueue queue, List<Peer> peers, JobSchedulerPolicy jobScheduler, Workload workload,
+	public OurSim(EventQueue queue, Grid grid, JobSchedulerPolicy jobScheduler, Workload workload,
 			Input<? extends AvailabilityRecord> availabilityCharacterization) {
 		this.eventQueue = queue;
-		this.peers = peers;
+		this.grid = grid;
 		this.jobScheduler = jobScheduler;
 		this.workload = workload;
 		this.availabilityCharacterization = availabilityCharacterization;
@@ -106,13 +104,13 @@ public class OurSim {
 	 * Starts the simulation.
 	 */
 	public void start() {
-		prepareListeners(peers, jobScheduler);
+		prepareListeners(grid.getListOfPeers(), jobScheduler);
 
 		// shares the eventQueue with the scheduler
 		this.jobScheduler.setEventQueue(this.activeEntity.getEventQueue());
 
 		// setUP the peers to the simulation
-		for (Peer peer : peers) {
+		for (Peer peer : grid.getListOfPeers()) {
 			// shares the eventQueue with the peers.
 			peer.setEventQueue(this.activeEntity.getEventQueue());
 		}
@@ -122,7 +120,7 @@ public class OurSim {
 
 		run(this.activeEntity.getEventQueue(), jobScheduler, workload, availabilityCharacterization);
 
-		clearListeners(peers, jobScheduler);
+		clearListeners(grid.getListOfPeers(), jobScheduler);
 	}
 
 	/**
@@ -139,11 +137,11 @@ public class OurSim {
 	 */
 	private void run(EventQueue queue, JobSchedulerPolicy jobScheduler, Workload workload, Input<? extends AvailabilityRecord> availability) {
 
-		BufferedWriter bw = createBufferedWriter(utilizationFile);
-
 		do {
 
-			accountForUtilization(queue, bw, peers);
+			if (queue.peek() != null) {
+				grid.accountForUtilization(queue.getCurrentTime(), jobScheduler.getQueueSize());
+			}
 
 			this.addFutureEvents(workload, availability);
 
@@ -160,44 +158,6 @@ public class OurSim {
 			jobScheduler.schedule();
 		} while (queue.peek() != null || workload.peek() != null || availability.peek() != null);
 
-		closeBufferedWriter(bw);
-	}
-
-	private static void accountForUtilization(EventQueue queue, BufferedWriter bw, List<Peer> peers) {
-		try {
-			if (queue.peek() != null && bw != null) {
-				double utilization = 0;
-				for (Peer peer : peers) {
-					utilization += peer.getUtilization();
-				}
-				utilization = utilization / (peers.size() * 1.0);
-				bw.append(queue.peek().getTime() + ":" + utilization).append("\n");
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private static BufferedWriter createBufferedWriter(File utilizationFile) {
-		try {
-			if (utilizationFile != null) {
-				return new BufferedWriter(new FileWriter(utilizationFile));
-			}
-			return null;
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}
-	}
-
-	private static void closeBufferedWriter(BufferedWriter bw) {
-		try {
-			if (bw != null) {
-				bw.close();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	/**
@@ -227,8 +187,11 @@ public class OurSim {
 	 */
 	private void addFutureWorkerEventsToEventQueue(Input<? extends AvailabilityRecord> availability) {
 		long nextAvRecordTime = (availability.peek() != null) ? availability.peek().getTime() : -1;
+		Set<String> machinesNames = new HashSet<String>();
 		while (availability.peek() != null && availability.peek().getTime() == nextAvRecordTime) {
 			AvailabilityRecord av = availability.poll();
+			boolean hasAdded = machinesNames.add(av.getMachineName());
+			assert hasAdded: av.getMachineName() +" : " +machinesNames;
 			this.activeEntity.addAvailabilityRecordEvent(av.getTime(), av);
 			// this.addWorkerAvailableEvent(av.getTime(), av.getMachineName(),
 			// av.getDuration());
@@ -316,10 +279,6 @@ public class OurSim {
 	public void setActiveEntity(ActiveEntity activeEntity) {
 		this.activeEntity = activeEntity;
 		this.activeEntity.setEventQueue(eventQueue);
-	}
-
-	public void setUtilizationFile(File utilizationFile) {
-		this.utilizationFile = utilizationFile;
 	}
 
 }
