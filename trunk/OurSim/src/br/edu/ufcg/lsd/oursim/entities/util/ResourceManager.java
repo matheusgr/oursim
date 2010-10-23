@@ -79,15 +79,10 @@ public class ResourceManager {
 	}
 
 	public void makeResourceUnavailable(String machineName) {
-		
 		assert this.allocated.containsKey(machineName) || this.free.containsKey(machineName);
-
 		Machine resource = this.allocated.containsKey(machineName) ? this.allocated.remove(machineName) : this.free.remove(machineName);
-
 		assert resource.getName().equals(machineName) : resource.getName() + " == " + machineName;
-
 		this.unavailable.put(resource.getName(), resource);
-	
 	}
 
 	public void makeResourceAvailable(String machineName) {

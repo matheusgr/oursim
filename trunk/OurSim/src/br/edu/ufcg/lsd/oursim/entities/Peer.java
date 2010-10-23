@@ -20,7 +20,6 @@ import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.ranking.PeerRankingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.ranking.TaskPreemptionRankingPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityImp;
-import br.edu.ufcg.lsd.oursim.util.TimeUtil;
 
 /**
  * 
@@ -173,7 +172,7 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 	 *            the mips rating of the machine to be added.
 	 */
 	private final void addMachine(long nodeMIPSRating) {
-		addMachine(new Machine("m_" + nextMachineId, nodeMIPSRating));
+		addMachine(new Machine(getMachineName(nextMachineId), nodeMIPSRating));
 		nextMachineId++;
 	}
 
@@ -363,11 +362,21 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 		return this.resourceManager.getNumberOfAvailableResources();
 	}
 
+	public final int getNumberOfUnavailableResources() {
+		return this.resourceManager.getNumberOfUnavailableResources();
+	}
+
 	/**
 	 * @return the percentage of machines that are executing tasks.
 	 */
 	public final double getUtilization() {
-		return ((double) (this.getNumberOfMachines() - this.getNumberOfAvailableResources())) / this.getNumberOfMachines();
+		// return ((double) (this.getNumberOfMachines() -
+		// this.getNumberOfAvailableResources())) / this.getNumberOfMachines();
+		if (this.resourceManager.getNumberOfAvailableResources() == 0) {
+			return 1;
+		}
+		return ((double) this.resourceManager.getNumberOfAllocatedResources())
+				/ (this.resourceManager.getNumberOfAllocatedResources() + this.resourceManager.getNumberOfAvailableResources());
 	}
 
 	/**
@@ -404,7 +413,6 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 	@Override
 	public final void workerUnavailable(Event<String> workerEvent) {
 		String machineName = workerEvent.getSource();
-
 		if (this.resourceManager.isAllocated(machineName)) {
 			Machine resource = this.resourceManager.getResource(machineName);
 			Task task = this.taskManager.getTask(resource);
@@ -413,15 +421,16 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 			// allocated e sim em free pois o preempt
 			// efetivamente libera o recurso.
 		}
+		
 		this.resourceManager.makeResourceUnavailable(machineName);
 
 		assert this.amountOfAvailableTime.containsKey(machineName) : machineName;
 
 		Long cum = this.amountOfAvailableTime.get(machineName);
 		long timeElapsed = workerEvent.getTime() - this.timeOfLastWorkAvailableEvent.get(machineName);
-//		if (timeElapsed > 5 * TimeUtil.ONE_MINUTE) {
-			this.amountOfAvailableTime.put(machineName, cum + timeElapsed);
-//		}
+		// if (timeElapsed > 5 * TimeUtil.ONE_MINUTE) {
+		this.amountOfAvailableTime.put(machineName, cum + timeElapsed);
+		// }
 	}
 
 	@Override
@@ -506,6 +515,10 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 			amount += entry.getValue();
 		}
 		return amount;
+	}
+
+	public String getMachineName(long id) {
+		return getName() + ".m_" + id;
 	}
 
 }

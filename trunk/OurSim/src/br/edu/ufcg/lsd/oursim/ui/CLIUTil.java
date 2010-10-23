@@ -80,40 +80,7 @@ public class CLIUTil {
 												+ computingElementEventCounter.getTotalCostOfAllPreemptedJobs()).replace(",", ".")).append(" ").append(
 						nMachines).append(" ").append(utilization).append(" ").append(realUtilization).append(" ").append(simulationDuration);
 
-		// System.out.println(sb.toString());
-
 		return sb.toString();
-		// System.out.println("submitted finished preempted notStarted success
-		// finishedCost preemptedCost totalCost");
-		// System.out.print(computingElementEventCounter.getNumberOfSubmittedJobs());
-		// System.out.print(" ");
-		// System.out.print(computingElementEventCounter.getNumberOfFinishedJobs());
-		// System.out.print(" ");
-		// System.out.print(computingElementEventCounter.getNumberOfPreemptionsForAllJobs());
-		// System.out.print(" ");
-		// // submitted - (finished + preempted)
-		// int notStarted =
-		// computingElementEventCounter.getNumberOfSubmittedJobs()
-		// - (computingElementEventCounter.getNumberOfFinishedJobs() +
-		// computingElementEventCounter.getNumberOfPreemptionsForAllJobs());
-		// System.out.print(notStarted);
-		// System.out.print(" ");
-		// System.out.print(dft.format(computingElementEventCounter.getNumberOfFinishedJobs()
-		// / (computingElementEventCounter.getNumberOfSubmittedJobs() * 1.0))
-		// .replace(",", "."));
-		// System.out.print(" ");
-		// System.out.print(dft.format(computingElementEventCounter.getTotalCostOfAllFinishedJobs()).replace(",",
-		// "."));
-		// System.out.print(" ");
-		// System.out.print(dft.format(computingElementEventCounter.getTotalCostOfAllPreemptedJobs()).replace(",",
-		// "."));
-		// System.out.print(" ");
-		// System.out
-		// .print(dft.format(computingElementEventCounter.getTotalCostOfAllFinishedJobs()
-		// + computingElementEventCounter.getTotalCostOfAllPreemptedJobs())
-		// .replace(",", "."));
-		// System.out.print("\n");
-
 	}
 
 	public static String formatSummaryStatistics(ComputingElementEventCounter computingElementEventCounter, int nMachines, double utilization,
@@ -181,68 +148,49 @@ public class CLIUTil {
 		System.exit(1);
 	}
 
-	// options.addOption(AVAILABILITY, "availability", true, "Arquivo com a
-	// caracterização da disponibilidade para todos os recursos.");
-	// options.addOption(WORKLOAD, "workload", true, "Arquivo com o workload no
-	// format GWA (Grid Workload Archive).");
-	// options.addOption(WORKLOAD_TYPE, "workload_type", true, "The type of
-	// workload to read the workload file.");
-	// options.addOption(MACHINES_DESCRIPTION, "machinesdescription", true,
-	// "Arquivo com a descrição das máquinas presentes em cada peer.");
-	// options.addOption(SCHEDULER, "scheduler", true, "Indica qual scheduler
-	// deverá ser usado.");
-	// options.addOption(REPLIES, "replies", true, "O número de réplicas para
-	// cada task.");
-	// options.addOption(OUTPUT, "output", true, "O nome do arquivo em que o
-	// output da simulação será gravado.");
-	// options.addOption(NUM_RESOURCES_BY_PEER, "nresources", true, "O número de
-	// réplicas para cada task.");
-	// options.addOption(NUM_PEERS, "npeers", true, "O número de peers do
-	// grid.");
-	// options.addOption(PEERS_DESCRIPTION, "peers_description", true, "Arquivo
-	// descrevendo os peers.");
-	// options.addOption(NODE_MIPS_RATING, "speed", true, "A velocidade de cada
-	// máquina.");
-	// options.addOption(NOF, "nof", false, "Utiliza a Rede de Favores (NoF).");
-	// options.addOption(DEDICATED_RESOURCES, "dedicated", false, "Indica que os
-	// recursos são todos dedicados.");
-	// options.addOption(SYNTHETIC_AVAILABILITY, "synthetic_availability",
-	// false, "Indica que a disponibilidade dos recursos deve ser gerada
-	// sinteticamente.");
-
-	// long durationOfWorkloadInSeconds =
-	// cmd.getOptionValue(WORKLOAD_TYPE).equals("gwa") ?
-	// GWAFormat.extractDurationInSecondsOfWorkload(cmd
-	// .getOptionValue(WORKLOAD)) : Long.MAX_VALUE;
-	// // adiciona um dia além da duração do workload
-	// durationOfWorkloadInSeconds = TimeUtil.ONE_MONTH + TimeUtil.ONE_DAY;
-
-	// long timeOfFirstSubmission =
-	// cmd.getOptionValue(WORKLOAD_TYPE).equals("gwa") ? GWAFormat
-	// .extractSubmissionTimeFromFirstJob(cmd.getOptionValue(WORKLOAD)) : 0;
-
 	public static void main(String[] args) throws IOException {
+		String setUp = "cd /tmp && mkdir -p playpen/oursim && scp cororoca:~/workspace/OurSim/dist/oursim.zip . && unzip -o oursim.zip -d playpen/oursim && scp cororoca:~/workspace/SpotInstancesSimulator/dist/spotsim.zip . && unzip -o spotsim.zip -d playpen/oursim && cd playpen/oursim;";
+		String tearDown = "";
+		String cmd = "";
+		cmd += setUp;
 		String java = " $JAVACALL ";
-		int nSites = 10;
-		String cmd = "JAVACALL='java -Xms500M -Xmx1500M -XX:-UseGCOverheadLimit -jar';";
-		cmd += "SPT=resources/eu-west-1.linux.m1.small.csv;";
-		cmd += "ISD=resources/iosup_site_description.txt;";
-		String spt = " $SPT ";
-		String isd = " $ISD ";
-		String sep = "";
-		for (int nRes = 1; nRes < 21; nRes++) {
-			cmd += sep + java + "oursim.jar -w resources/iosup_workload_7_dias_" + nSites
-					+ "_sites.txt -s persistent -pd "+isd+" -wt iosup -nr " + nRes + " -synthetic_av 2678400 -o oursim-trace-"
-					+ nRes + "_7_dias_" + nSites + "_sites.txt";
+		cmd += "JAVACALL='java -Xms500M -Xmx1500M -XX:-UseGCOverheadLimit -jar'";
+		cmd += ";SPT=resources/eu-west-1.linux.m1.small.csv";
+		// int[] nSitesV = new int[] { 10, 100, 1000, 10000 };
+		int[] nSitesV = new int[] { 50 };
+		for (int nSites : nSitesV) {
+			int spotLimit = 100;
+			cmd += ";ISD=resources/iosup_site_description_" + nSites + "_sites.txt;";
+			String spt = " $SPT ";
+			String isd = " $ISD ";
+			String sep = "";
+			int nRes = 25;
+			cmd += sep + java + "oursim.jar -w resources/iosup_workload_7_dias_" + nSites + "_sites.txt -s persistent -pd " + isd + " -wt iosup -nr " + nRes
+					+ " -synthetic_av 2678400 -o oursim-trace-" + nRes + "_7_dias_" + nSites + "_sites.txt";
 			sep = " && ";
 			cmd += sep + "sort -g oursim-trace-" + nRes + "_7_dias_" + nSites + "_sites.txt_spot_workload.txt > " + "oursim-trace-" + nRes + "_7_dias_"
 					+ nSites + "_sites.txt_spot_workload_sorted.txt ";
 			sep = " && ";
-			cmd += sep + java + "spotsim.jar -spot -l 20 -bid max -w " + "oursim-trace-" + nRes + "_7_dias_" + nSites
-					+ "_sites.txt_spot_workload_sorted.txt -av " + spt + " -o spot-trace-" + nRes + "_7_dias_" + nSites + "_sites.txt";
+			cmd += sep + java + "spotsim.jar -spot -l " + spotLimit + " -bid max -w " + "oursim-trace-" + nRes + "_7_dias_" + nSites
+					+ "_sites.txt_spot_workload_sorted.txt -av " + spt + " -o spot-trace-" + nRes + "_7_dias_" + nSites + "_sites_" + spotLimit
+					+ "_spotLimit.txt";
 			sep = " && ";
+
+			StringBuilder sb = new StringBuilder("#site	num_cpus\n");
+			for (int i = 1; i <= nSites; i++) {
+				sb.append(i).append(" ").append(nRes).append("\n");
+			}
+			FileUtils.writeStringToFile(new File("resources/iosup_site_description_" + nSites + "_sites.txt"), sb.toString());
+
+			tearDown = " && scp oursim-trace-25_7_dias_" + nSites + "_sites.txt oursim-trace-25_7_dias_" + nSites
+					+ "_sites.txt_spot_workload_sorted.txt spot-trace-25_7_dias_" + nSites
+					+ "_sites_100_spotLimit.txt cororoca:/local/edigley/traces/oursim/trace_media_15s_100_peers";
 		}
+
+		cmd += tearDown;
+
 		FileUtils.writeStringToFile(new File("cmd.txt"), cmd);
+
 		System.out.println(cmd);
 	}
 

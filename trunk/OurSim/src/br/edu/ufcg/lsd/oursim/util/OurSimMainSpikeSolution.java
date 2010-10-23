@@ -1,4 +1,4 @@
-package br.edu.ufcg.lsd.oursim;
+package br.edu.ufcg.lsd.oursim.util;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -168,7 +168,7 @@ public final class OurSimMainSpikeSolution {
 
 		JobSchedulerPolicy jobScheduler = new OurGridScheduler(peers);
 
-		new OurSim(EventQueue.getInstance(), peers, jobScheduler, workload, availability).start();
+//		new OurSim(EventQueue.getInstance(), peers, jobScheduler, workload, availability).start();
 
 		System.out.println("# Total of  finished  jobs: " + jobEventCounter.getNumberOfFinishedJobs());
 		System.out.println("# Total of preempted  jobs: " + jobEventCounter.getNumberOfPreemptionsForAllJobs());

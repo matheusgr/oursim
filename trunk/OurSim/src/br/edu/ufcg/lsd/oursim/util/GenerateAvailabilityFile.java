@@ -1,4 +1,4 @@
-package br.edu.ufcg.lsd.oursim;
+package br.edu.ufcg.lsd.oursim.util;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -28,7 +28,7 @@ public class GenerateAvailabilityFile {
 			bw.append(HostAvailabilityGenerator.EOL);
 
 			for (int i = 0; i < quantMachines; i++) {
-				HostAvailabilityGenerator ma = new HostAvailabilityGeneratorImp("m_" + i, periodoDeObservacaoEmHoras, bw, false);
+				HostAvailabilityGenerator ma = new HostAvailabilityGeneratorImp("m_" + i, periodoDeObservacaoEmHoras, bw, true);
 				ma.generateAvailabilityObservations();
 			}
 
@@ -75,9 +75,10 @@ public class GenerateAvailabilityFile {
 		int periodoDeObservacaoEmHoras = 26000;
 		//resources/trace_mutka_18750-machines_25920-hours.txt
 		//demorou 2:20:26.550
-		String outputFileName = String.format("resources/trace_mutka_%s-machines_%s-hours.txt", quantMachines, periodoDeObservacaoEmHoras);
+		String outputFileName = String.format("resources/trace_mutka_%s-machines_%s-hours_bla.txt", quantMachines, periodoDeObservacaoEmHoras);
 
-		generateAvailabilityFile(quantMachines, periodoDeObservacaoEmHoras, outputFileName);
+//		generateAvailabilityFile(quantMachines, periodoDeObservacaoEmHoras, outputFileName);
+		generateAvailabilityFile(1, 5, outputFileName);
 
 		// for (int i = 0; i < 75; i++) {
 		// generateMachinesDescription(quantMachines, "peer_" + i +

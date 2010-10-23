@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 
-import br.edu.ufcg.lsd.oursim.OurSimMainSpikeSolution;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
+import br.edu.ufcg.lsd.oursim.util.OurSimMainSpikeSolution;
 
 /**
  * 

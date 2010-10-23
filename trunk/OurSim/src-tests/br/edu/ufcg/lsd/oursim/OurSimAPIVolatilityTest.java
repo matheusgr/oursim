@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 
+import br.edu.ufcg.lsd.oursim.entities.Grid;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Machine;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
@@ -17,6 +18,7 @@ import br.edu.ufcg.lsd.oursim.io.input.workload.WorkloadAbstract;
 import br.edu.ufcg.lsd.oursim.policy.FifoSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
 import br.edu.ufcg.lsd.oursim.policy.OurGridPersistentScheduler;
+import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityImp;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 
 public class OurSimAPIVolatilityTest extends AbstractOurSimAPITest {
@@ -112,7 +114,10 @@ public class OurSimAPIVolatilityTest extends AbstractOurSimAPITest {
 
 		JobSchedulerPolicy jobScheduler = new OurGridPersistentScheduler(peers);
 
-		oursim = new OurSim(EventQueue.getInstance(), peers, jobScheduler, workload, availability);
+		Grid grid = new Grid(peers);
+		
+		oursim = new OurSim(EventQueue.getInstance(), grid, jobScheduler, workload, availability);
+		oursim.setActiveEntity(new ActiveEntityImp());
 		oursim.start();
 
 		// um dos jobs não vai ser completado por indisponiblidade de máquina.

@@ -25,8 +25,8 @@ import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityImp;
 public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp implements JobSchedulerPolicy {
 
 	/**
-	 * The jobs that have been submitted to this scheduler.
-	 * TODO talvez esse atributo seja um disperdício de memória.
+	 * The jobs that have been submitted to this scheduler. TODO talvez esse
+	 * atributo seja um disperdício de memória.
 	 */
 	private Set<Job> submittedJobs;
 
@@ -37,7 +37,7 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 	private Set<Task> submittedTasks;
 
 	private Set<Task> runningTasks;
-	
+
 	/**
 	 * All the peers that participate of the grid.
 	 */
@@ -74,10 +74,10 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 	}
 
 	@Override
-	public boolean isFinished(){
+	public boolean isFinished() {
 		return this.submittedTasks.isEmpty() && this.runningTasks.isEmpty();
 	}
-	
+
 	@Override
 	public void addJob(Job job) {
 		assert !job.getTasks().isEmpty();
@@ -96,6 +96,11 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 		}
 	}
 
+	@Override
+	public int getQueueSize() {
+		return submittedTasks.size();
+	}
+
 	protected final void addFutureJobEventsToEventQueue() {
 		long nextSubmissionTime = (workload.peek() != null) ? workload.peek().getSubmissionTime() : -1;
 		while (workload.peek() != null && workload.peek().getSubmissionTime() == nextSubmissionTime) {
@@ -112,7 +117,7 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 	protected Set<Task> getSubmittedTasks() {
 		return submittedTasks;
 	}
-	
+
 	public Set<Task> getRunningTasks() {
 		return runningTasks;
 	}
@@ -120,7 +125,7 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 	protected List<Peer> getPeers() {
 		return peers;
 	}
-	
+
 	// B-- beginning of implementation of JobEventListener
 
 	@Override
@@ -166,7 +171,7 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 	@Override
 	public void taskPreempted(Event<Task> taskEvent) {
 		Task task = taskEvent.getSource();
-		this.runningTasks.remove(task);		
+		this.runningTasks.remove(task);
 	}
 
 	@Override
