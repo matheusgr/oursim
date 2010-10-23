@@ -1,12 +1,15 @@
 package br.edu.ufcg.lsd.spotinstancessimulator.simulationevents;
 
-import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import br.edu.ufcg.lsd.oursim.entities.Job;
+import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntity;
-import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityAbstract;
+import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityImp;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.SubmitJobEvent;
+import br.edu.ufcg.lsd.oursim.util.TimeUtil;
 import br.edu.ufcg.lsd.spotinstancessimulator.entities.BidValue;
 import br.edu.ufcg.lsd.spotinstancessimulator.io.input.SpotPrice;
 
@@ -18,15 +21,26 @@ import br.edu.ufcg.lsd.spotinstancessimulator.io.input.SpotPrice;
  * @since 01/06/2010
  * 
  */
-public class SpotInstancesActiveEntity extends ActiveEntityAbstract {
+public class SpotInstancesActiveEntity extends ActiveEntityImp {
 
+	private Map<Task, FullHourCompletedEvent> task2FullHour = new HashMap<Task, FullHourCompletedEvent>();
+	
 	public void addNewSpotPriceEvent(SpotPrice spotPrice) {
 		this.getEventQueue().addEvent(new NewSpotPriceEvent(spotPrice));
 	}
 
 	public void addFullHourCompletedEvent(BidValue bidValue) {
-		long oneHourFromNow = getCurrentTime() + (60 * 60);
-		this.getEventQueue().addEvent(new FullHourCompletedEvent(oneHourFromNow, bidValue));
+		long oneHourFromNow = getCurrentTime() + TimeUtil.ONE_HOUR;
+		FullHourCompletedEvent fullHourCompletedEvent = new FullHourCompletedEvent(oneHourFromNow, bidValue);
+		this.getEventQueue().addEvent(fullHourCompletedEvent);
+		this.task2FullHour.put(bidValue.getTask(), fullHourCompletedEvent);
+	}
+
+	public void addComplementaryHourCompletedEvent(BidValue bidValue,BidValue oldBidValue) {
+		long oneHourFromComplementary = task2FullHour.get(oldBidValue.getTask()).getTime();
+		FullHourCompletedEvent fullHourCompletedEvent = new FullHourCompletedEvent(oneHourFromComplementary, bidValue);
+		this.getEventQueue().addEvent(fullHourCompletedEvent);
+		this.task2FullHour.put(bidValue.getTask(), fullHourCompletedEvent);
 	}
 
 	@Override
