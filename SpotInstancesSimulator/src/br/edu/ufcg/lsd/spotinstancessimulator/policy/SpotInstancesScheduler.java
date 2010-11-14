@@ -1,7 +1,9 @@
 package br.edu.ufcg.lsd.spotinstancessimulator.policy;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -205,6 +207,11 @@ public class SpotInstancesScheduler extends SpotInstancesActiveEntity implements
 	@Override
 	public int getQueueSize() {
 		return -1;
+	}
+
+	@Override
+	public int getNumberOfRunningTasks() {
+		return allocatedMachines.size();
 	}
 
 	// E-- end of implementation of SpotPriceEventListener

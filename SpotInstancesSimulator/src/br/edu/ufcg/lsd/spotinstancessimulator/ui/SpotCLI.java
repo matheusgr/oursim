@@ -30,6 +30,7 @@ import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.parseCommandLine;
 import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.prepareOutputAccounting;
 import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.showMessageAndExit;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -57,7 +58,10 @@ import br.edu.ufcg.lsd.oursim.io.output.ComputingElementEventCounter;
 import br.edu.ufcg.lsd.oursim.io.output.PrintOutput;
 import br.edu.ufcg.lsd.oursim.policy.FifoSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
+import br.edu.ufcg.lsd.oursim.policy.NoFSharingPolicy;
+import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
+import br.edu.ufcg.lsd.oursim.ui.SystemConfigurationCommandParser;
 import br.edu.ufcg.lsd.oursim.util.GWAFormat;
 import br.edu.ufcg.lsd.spotinstancessimulator.dispatchableevents.spotinstances.SpotPriceEventDispatcher;
 import br.edu.ufcg.lsd.spotinstancessimulator.entities.EC2Instance;
@@ -85,6 +89,12 @@ public class SpotCLI {
 
 	public static final String LIMIT = "l";
 
+	public static final String UTILIZATION = "u";
+
+	public static final String MACHINES_DESCRIPTION = "md";
+
+	public static final String PEERS_DESCRIPTION = "pd";
+
 	public static void main(String[] args) throws Exception {
 
 		StopWatch stopWatch = new StopWatch();
@@ -101,24 +111,28 @@ public class SpotCLI {
 		Input<? extends AvailabilityRecord> availability = null;
 		Workload workload = null;
 		JobSchedulerPolicy jobScheduler = null;
-		Map<String, Peer> peersMap = null;
+//		Map<String, Peer> peersMap = null;
 
+		Grid grid = prepareGrid(cmd);
+		
 		if (cmd.hasOption(SPOT_INSTANCES)) {
-			peersMap = GWAFormat.extractPeersFromGWAFile(cmd.getOptionValue(WORKLOAD), 0, FifoSharingPolicy.getInstance());
+//			peersMap = GWAFormat.extractPeersFromGWAFile(cmd.getOptionValue(WORKLOAD), 0, FifoSharingPolicy.getInstance());
 			String spotTraceFilePath = cmd.getOptionValue(AVAILABILITY);
 			long timeOfFirstSpotPrice = SpotInstaceTraceFormat.extractTimeFromFirstSpotPrice(spotTraceFilePath);
 			availability = new SpotPriceFluctuation(spotTraceFilePath, timeOfFirstSpotPrice);
-			workload = defineWorkloadToSpotInstances(cmd, cmd.getOptionValue(WORKLOAD), workload, peersMap, spotTraceFilePath, BID_VALUE);
+			workload = defineWorkloadToSpotInstances(cmd, cmd.getOptionValue(WORKLOAD), workload, grid.getMapOfPeers(), spotTraceFilePath, BID_VALUE);
 		} else {
 			showMessageAndExit("Essa interface é só para spot instances.");
 		}
 
-		ArrayList<Peer> peers = new ArrayList<Peer>(peersMap.values());
-
 		jobScheduler = createSpotInstancesScheduler(cmd, INSTANCE_TYPE, INSTANCE_REGION, INSTANCE_SO, AVAILABILITY);
 
-		Grid grid = new Grid(peers);
-		
+		BufferedWriter bw = null;
+		if (cmd.hasOption(UTILIZATION)) {
+			bw = createBufferedWriter((File) cmd.getOptionObject(UTILIZATION));
+			grid.setUtilizationBuffer(bw);
+		}
+
 		oursim = new OurSim(EventQueue.getInstance(), grid, jobScheduler, workload, availability);
 
 		oursim.setActiveEntity(new SpotInstancesActiveEntity());
@@ -131,16 +145,29 @@ public class SpotCLI {
 		stopWatch.stop();
 		fw.write("# Simulation                  duration:" + stopWatch + ".\n");
 
-		fw.write(formatSummaryStatistics(computingElementEventCounter,-1,-1,-1,stopWatch.getTime()) + ".\n");
+		fw.write(formatSummaryStatistics(computingElementEventCounter, -1, -1, -1, stopWatch.getTime()) + ".\n");
 
-		System.out.println(getSummaryStatistics(computingElementEventCounter,-1,-1,-1,stopWatch.getTime()));
+		System.out.println(getSummaryStatistics(computingElementEventCounter, -1, -1, -1, stopWatch.getTime()));
 
 		fw.close();
+
+		if (cmd.hasOption(UTILIZATION)) {
+			closeBufferedWriter(bw);
+		}
+
 		JobEventDispatcher.getInstance().removeListener(printOutput);
 		JobEventDispatcher.getInstance().removeListener(computingElementEventCounter);
 		TaskEventDispatcher.getInstance().removeListener(computingElementEventCounter);
 		EventQueue.getInstance().clear();
 
+	}
+
+	private static Grid prepareGrid(CommandLine cmd) throws FileNotFoundException {
+		Grid grid = null;
+		File peerDescriptionFile = (File) cmd.getOptionObject(PEERS_DESCRIPTION);
+		File machinesDescriptionFile = (File) cmd.getOptionObject(MACHINES_DESCRIPTION);
+		grid = SystemConfigurationCommandParser.readPeersDescription(peerDescriptionFile, machinesDescriptionFile, FifoSharingPolicy.getInstance());
+		return grid;
 	}
 
 	static Workload defineWorkloadToSpotInstances(CommandLine cmd, String workloadFilePath, Workload workload, Map<String, Peer> peersMap,
@@ -226,14 +253,25 @@ public class SpotCLI {
 		Option availability = new Option(AVAILABILITY, "availability", true, "Arquivo com a caracterização da disponibilidade para todos os recursos.");
 		Option workload = new Option(WORKLOAD, "workload", true, "Arquivo com o workload no format GWA (Grid Workload Archive).");
 		Option output = new Option(OUTPUT, "output", true, "O nome do arquivo em que o output da simulação será gravado.");
+		Option utilization = new Option(UTILIZATION, "utilization", true, "Arquivo em que será registrada a utilização da grade.");
+		Option machinesDescription = new Option(MACHINES_DESCRIPTION, "machinesdescription", true, "Descrição das máquinas presentes em cada peer.");
+		Option peersDescription = new Option(PEERS_DESCRIPTION, "peers_description", true, "Arquivo descrevendo os peers.");
 
 		workload.setRequired(true);
 		output.setRequired(true);
+		peersDescription.setRequired(true);
+		machinesDescription.setRequired(true);
 
 		workload.setType(File.class);
 		availability.setType(File.class);
 		output.setType(File.class);
+		utilization.setType(File.class);
+		peersDescription.setType(File.class);
+		machinesDescription.setType(File.class);
 
+		options.addOption(peersDescription);
+		options.addOption(machinesDescription);
+		options.addOption(utilization);
 		options.addOption(availability);
 		options.addOption(workload);
 		options.addOption(output);
@@ -244,6 +282,28 @@ public class SpotCLI {
 		options.addOption(BID_VALUE, "bid_value", true, "Valor do bid para alocação de instâncias no modelo amazon spot instances..");
 		options.addOption(LIMIT, "limit", true, "Número máximo de instâncias simultâneas que podem ser alocadas por usuário.");
 		return options;
+	}
+
+	private static BufferedWriter createBufferedWriter(File utilizationFile) {
+		try {
+			if (utilizationFile != null) {
+				return new BufferedWriter(new FileWriter(utilizationFile));
+			}
+			return null;
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static void closeBufferedWriter(BufferedWriter bw) {
+		try {
+			if (bw != null) {
+				bw.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
