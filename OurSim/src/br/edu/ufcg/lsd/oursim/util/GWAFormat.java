@@ -90,7 +90,7 @@ public final class GWAFormat {
 			while (sc.hasNextLine()) {
 				Scanner scLine = new Scanner(sc.nextLine());
 				// skip the 5 firsts tokens. The site's
-				// token is the 17th in the gwa format.
+				// token is the 6th in the gwa format.
 				for (int i = 0; i < 6; i++) {
 					scLine.next();
 					

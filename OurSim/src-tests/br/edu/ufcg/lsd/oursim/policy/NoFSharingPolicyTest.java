@@ -11,10 +11,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import br.edu.ufcg.lsd.oursim.entities.Job;
+import br.edu.ufcg.lsd.oursim.entities.Machine;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
+import br.edu.ufcg.lsd.oursim.entities.Processor;
 import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.entities.TaskExecution;
-import br.edu.ufcg.lsd.oursim.policy.NoFSharingPolicy;
 
 public class NoFSharingPolicyTest {
 
@@ -149,7 +150,8 @@ public class NoFSharingPolicyTest {
 		Job job = new Job(0, 10, p1);
 
 		Task task = new Task(4, "", 10, 0, job);
-		task.setTaskExecution(new TaskExecution(task,null,0));
+		Machine m = new Machine("m_1",Processor.EC2_COMPUTE_UNIT.getSpeed());
+		task.setTaskExecution(new TaskExecution(task,m.getDefaultProcessor(),0));
 		task.setStartTime(0);
 		task.finish(10);
 
@@ -192,7 +194,8 @@ public class NoFSharingPolicyTest {
 		Job job = new Job(0, 10, p1);
 
 		Task task = new Task(4, "", 10, 0, job);
-		task.setTaskExecution(new TaskExecution(task,null,10));
+		Machine m = new Machine("m_1",Processor.EC2_COMPUTE_UNIT.getSpeed());
+		task.setTaskExecution(new TaskExecution(task,m.getDefaultProcessor(),10));
 		task.setStartTime(0);
 		task.finish(10);
 

@@ -60,4 +60,6 @@ public interface JobSchedulerPolicy extends JobEventListener, TaskEventListener,
 	
 	int getQueueSize();
 
+	int getNumberOfRunningTasks();
+
 }

@@ -18,9 +18,17 @@ public class TaskExecution {
 	public TaskExecution(Task task, Processor processor, long startTime) {
 		this.task = task;
 		this.processor = processor;
-		this.size = Processor.EC2_COMPUTE_UNIT.calculateNumberOfInstructionsProcessed(this.task.getDuration());
+		// this.size =
+		// Processor.EC2_COMPUTE_UNIT.calculateNumberOfInstructionsProcessed(this.task.getDuration());
+		this.size = convertTaskDurationToNumberOfInstruction(task);
 		this.remainingSize = size;
 		this.previousTime = startTime;
+	}
+
+	private long convertTaskDurationToNumberOfInstruction(Task task) {
+		Peer sourcePeer = task.getSourcePeer();
+		Processor referenceProcessor = sourcePeer.getReferenceProcessor();
+		return referenceProcessor.calculateNumberOfInstructionsProcessed(this.task.getDuration());
 	}
 
 	/**
@@ -44,7 +52,15 @@ public class TaskExecution {
 	}
 
 	public Long getRemainingTimeToFinish() {
-		return processor.calculateTimeToExecute(remainingSize);
+		if (remainingSize > 0) {
+			return processor.calculateTimeToExecute(remainingSize);
+		} else {
+			return 0L;
+		}
+	}
+
+	public Long getEstimatedFinishTime() {
+		return previousTime + getRemainingTimeToFinish();
 	}
 
 	public void setProcessor(Processor processor) {

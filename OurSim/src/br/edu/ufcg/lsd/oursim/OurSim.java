@@ -1,8 +1,6 @@
 package br.edu.ufcg.lsd.oursim;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
@@ -139,10 +137,6 @@ public class OurSim {
 
 		do {
 
-			if (queue.peek() != null) {
-				grid.accountForUtilization(queue.getCurrentTime(), jobScheduler.getQueueSize());
-			}
-
 			this.addFutureEvents(workload, availability);
 
 			long currentTime = (queue.peek() != null) ? queue.peek().getTime() : -1;
@@ -156,6 +150,11 @@ public class OurSim {
 			// after the invocation of the actions of all events in current
 			// time, the scheduler must be invoked
 			jobScheduler.schedule();
+
+			if (queue.peek() != null) {
+				grid.accountForUtilization(queue.getCurrentTime(), jobScheduler.getNumberOfRunningTasks(), jobScheduler.getQueueSize());
+			}
+
 		} while (queue.peek() != null || workload.peek() != null || availability.peek() != null);
 
 	}
@@ -187,14 +186,9 @@ public class OurSim {
 	 */
 	private void addFutureWorkerEventsToEventQueue(Input<? extends AvailabilityRecord> availability) {
 		long nextAvRecordTime = (availability.peek() != null) ? availability.peek().getTime() : -1;
-		Set<String> machinesNames = new HashSet<String>();
 		while (availability.peek() != null && availability.peek().getTime() == nextAvRecordTime) {
 			AvailabilityRecord av = availability.poll();
-			boolean hasAdded = machinesNames.add(av.getMachineName());
-			assert hasAdded: av.getMachineName() +" : " +machinesNames;
 			this.activeEntity.addAvailabilityRecordEvent(av.getTime(), av);
-			// this.addWorkerAvailableEvent(av.getTime(), av.getMachineName(),
-			// av.getDuration());
 		}
 	}
 

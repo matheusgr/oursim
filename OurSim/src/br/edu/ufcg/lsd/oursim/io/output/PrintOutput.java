@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.entities.Job;
@@ -52,7 +50,8 @@ public final class PrintOutput extends OutputAdapter {
 								.concat("remoteResources").concat(SEP)
 								.concat("remoteRate").concat(SEP)
 								.concat("nsl").concat(SEP)
-								.concat("userId");
+								.concat("userId").concat(SEP)
+								.concat("peerId");;
 
 	/**
 	 * the stream where the results will be printed out.
@@ -235,7 +234,8 @@ public final class PrintOutput extends OutputAdapter {
 		.append(job.numberOfRemoteResourcesUsed()).append(SEP)
 		.append(job.numberOfRemoteResourcesUsed()/(job.getTasks().size()*1.0)).append(SEP)
 		.append(job.getNSL()).append(SEP)
-		.append(job.getUserId());
+		.append(job.getUserId()).append(SEP)
+		.append(job.getSourcePeer().getName());
 		this.out.println(sb);
 	}
 

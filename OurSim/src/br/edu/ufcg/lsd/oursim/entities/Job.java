@@ -289,8 +289,8 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		long lastFinishTime = Long.MIN_VALUE;
 		// TODO verificar se isFinished() antes
 		for (Task task : tasks) {
-			if (task.isFinished() || task.isAnyReplyFinished()) {
-				lastFinishTime = Math.max(lastFinishTime, task.getAnyReplyFinishTime());
+			if (task.isFinished() || task.isAnyReplicaFinished()) {
+				lastFinishTime = Math.max(lastFinishTime, task.getAnyReplicaFinishTime());
 			} else {
 				return null;
 			}

@@ -20,7 +20,7 @@ import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.showMessageAndExit;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -31,6 +31,42 @@ import br.edu.ufcg.lsd.oursim.entities.Processor;
 import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 
 public class SystemConfigurationCommandParser {
+
+	public static Grid readPeersDescription(File siteDescription, File machinesDescription, ResourceSharingPolicy sharingPolicy) throws FileNotFoundException {
+		Grid grid = new Grid();
+		Scanner scPeers = new Scanner(siteDescription);
+		scPeers.nextLine(); // skip header
+		while (scPeers.hasNextLine()) {
+			Scanner scLine = new Scanner(scPeers.nextLine());
+			String peerName = scLine.next();
+			if (!grid.containsPeer(peerName)) {
+				grid.addPeer(new Peer(peerName, sharingPolicy));
+			} else {
+				showMessageAndExit("Já foi adicionado um peer com esse nome: " + peerName);
+			}
+		}
+
+		Scanner scMachines = new Scanner(machinesDescription);
+		scMachines.nextLine(); // skip header
+		while (scMachines.hasNextLine()) {
+			Scanner scLine = new Scanner(scMachines.nextLine());
+			scLine.useLocale(Locale.US);
+			String machineName = scLine.next();
+			Double machineSpeed = scLine.nextDouble();
+			String sourcePeerName = scLine.next();
+			if (grid.containsPeer(sourcePeerName)) {
+				if (!grid.getPeer(sourcePeerName).hasMachine(machineName)) {
+					grid.getPeer(sourcePeerName).addMachine(new Machine(machineName, Processor.convertGHz2Mips(machineSpeed)));
+				} else {
+					showMessageAndExit("Já existe uma máquina com o mesmo nome: " + machineName);
+				}
+			} else {
+				showMessageAndExit("A máquina " + machineName + " pertence a um Peer que não existe: " + sourcePeerName);
+			}
+		}
+		return grid;
+
+	}
 
 	public static Grid readPeersDescription(File siteDescription, int numberOfResourcesByPeer, ResourceSharingPolicy sharingPolicy)
 			throws FileNotFoundException {
@@ -45,7 +81,7 @@ public class SystemConfigurationCommandParser {
 				Peer peer = (numberOfResourcesByPeer > 0) ? new Peer(peerName, numberOfResourcesByPeer, sharingPolicy) : new Peer(peerName, sharingPolicy);
 				if (numberOfResourcesByPeer == 0) {
 					for (int i = 0; i < peerSize; i++) {
-//						String machineFullName = peer.getName() + ".m_" + i;
+						// String machineFullName = peer.getName() + ".m_" + i;
 						String machineFullName = peer.getMachineName(i);
 						peer.addMachine(new Machine(machineFullName, Processor.EC2_COMPUTE_UNIT.getSpeed()));
 					}

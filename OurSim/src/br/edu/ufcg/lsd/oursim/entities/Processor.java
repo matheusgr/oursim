@@ -15,9 +15,37 @@ public class Processor {
 	 * EC2 Compute Unit (ECU) – One EC2 Compute Unit (ECU) provides the
 	 * equivalent CPU capacity of a 1.0-1.2 GHz 2007 Opteron or 2007 Xeon
 	 * processor.
-	 */
-	public static Processor EC2_COMPUTE_UNIT = new Processor(0, 3000);
+	 * 
+	 * <pre>
+	 * 
+		This is really simple, yet Amazon manages to totally obfuscate it. Yes, a compute unit refers to one core. Here's what you actually get:
+		
+		Small: 50% time-share of 1 core at ~2.4GHz (effectively ~1.2GHz)
+		Large: 2 cores at ~2.4GHz
+		XLarge: 4 cores at ~2.4GHz
+		High Med: 2 cores at ~3GHz
+		High XL: 8 cores at ~3GHz
+		
+		
+		Pentium 4 EE: 7500 to 11000 MIPS
+		
+		Original Pentium: Variants
 
+    * 60 MHz with 100 MIPS (70.4 SPECint92, 55.1 SPECfp92 on Xpress 256 KB L2)
+    * 66 MHz with 112 MIPS (77.9 SPECint92, 63.6 SPECfp92 on Xpress 256 KB L2)
+
+Results on a 2.4 GHz Core 2 Duo (1 CPU 2007) vary from 9.7 MWIPS using BASIC Interpreter, 59 MWIPS via BASIC Compiler, 347 MWIPS using 1987 Fortran, 1,534 MWIPS through HTML/Java to 2,403 MWIPS using a modern C/C++ compiler.
+		
+	 * </pre>
+	 */
+//	public static Processor EC2_COMPUTE_UNIT = new Processor(0, 1000000);
+	public static Processor EC2_COMPUTE_UNIT = new Processor(0, convertGHz2Mips(1.0));
+
+	public static long convertGHz2Mips(double nGHz) {
+		long oneGHzInMips = 3000;
+		return Math.round(nGHz * oneGHzInMips);
+	}
+	
 	/**
 	 * the identifier of this processor.
 	 */

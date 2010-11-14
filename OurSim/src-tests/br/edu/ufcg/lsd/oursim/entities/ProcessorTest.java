@@ -18,7 +18,8 @@ public class ProcessorTest {
 
 	@Test
 	public void testConvertDurationToMI() {
-		assertEquals(90000, Processor.EC2_COMPUTE_UNIT.calculateNumberOfInstructionsProcessed(30));
+		Machine m = new Machine("m_1",3000);
+		assertEquals(90000, m.getDefaultProcessor().calculateNumberOfInstructionsProcessed(30));
 	}
 
 }

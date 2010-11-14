@@ -46,8 +46,10 @@ import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityCharacterization
 import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.io.input.availability.DedicatedResourcesAvailabilityCharacterization;
 import br.edu.ufcg.lsd.oursim.io.input.availability.MarkovModelAvailabilityCharacterization;
+import br.edu.ufcg.lsd.oursim.io.input.availability.OurGridAvailabilityCharacterization;
 import br.edu.ufcg.lsd.oursim.io.input.workload.IosupWorkload;
 import br.edu.ufcg.lsd.oursim.io.input.workload.MarcusWorkload;
+import br.edu.ufcg.lsd.oursim.io.input.workload.MarcusWorkload2;
 import br.edu.ufcg.lsd.oursim.io.input.workload.OnDemandBoTGWANorduGridWorkload;
 import br.edu.ufcg.lsd.oursim.io.input.workload.OnDemandGWANorduGridWorkload;
 import br.edu.ufcg.lsd.oursim.io.input.workload.OnDemandGWANorduGridWorkloadWithFilter;
@@ -103,6 +105,8 @@ public class CLI {
 
 	public static final String UTILIZATION = "u";
 
+	public static final String WORKER_EVENTS = "we";
+
 	public static final String HELP = "help";
 
 	public static final String USAGE = "usage";
@@ -136,11 +140,7 @@ public class CLI {
 		Output remoteWorkloadExtractor = new RemoteWorkloadExtractorOutput(new File(outputFile.getName() + "_spot_workload.txt"));
 		JobEventDispatcher.getInstance().addListener(remoteWorkloadExtractor);
 
-		ComputingElementEventCounter computingElementEventCounter = prepareOutputAccounting(cmd, cmd.hasOption(VERBOSE));
-
-		ResourceSharingPolicy sharingPolicy = cmd.hasOption(NOF) ? NoFSharingPolicy.getInstance() : FifoSharingPolicy.getInstance();
-
-		Grid grid = prepareGrid(cmd, sharingPolicy);
+		Grid grid = prepareGrid(cmd);
 
 		BufferedWriter bw = null;
 		if (cmd.hasOption(UTILIZATION)) {
@@ -148,7 +148,14 @@ public class CLI {
 			grid.setUtilizationBuffer(bw);
 		}
 
-		Input<? extends AvailabilityRecord> availability = defineAvailability(cmd, grid.getMapOfPeers());
+		BufferedWriter bw2 = null;
+		if (cmd.hasOption(WORKER_EVENTS)) {
+			bw2 = createBufferedWriter((File) cmd.getOptionObject(WORKER_EVENTS));
+		}
+
+		ComputingElementEventCounter computingElementEventCounter = prepareOutputAccounting(cmd, cmd.hasOption(VERBOSE));
+
+		Input<? extends AvailabilityRecord> availability = defineAvailability(cmd, grid.getMapOfPeers(), bw2);
 
 		long timeOfFirstSubmission = cmd.getOptionValue(WORKLOAD_TYPE).equals("gwa") ? GWAFormat
 				.extractSubmissionTimeFromFirstJob(cmd.getOptionValue(WORKLOAD)) : 0;
@@ -177,8 +184,13 @@ public class CLI {
 		System.out.println(getSummaryStatistics(computingElementEventCounter, numberOfResourcesByPeer, utilization, realUtilization, stopWatch.getTime()));
 
 		fw.close();
+
 		if (cmd.hasOption(UTILIZATION)) {
 			closeBufferedWriter(bw);
+		}
+
+		if (cmd.hasOption(WORKER_EVENTS)) {
+			closeBufferedWriter(bw2);
 		}
 
 	}
@@ -205,10 +217,17 @@ public class CLI {
 		}
 	}
 
-	private static Grid prepareGrid(CommandLine cmd, ResourceSharingPolicy sharingPolicy) throws FileNotFoundException {
-		int numberOfResourcesByPeer = Integer.parseInt(cmd.getOptionValue(NUM_RESOURCES_BY_PEER, "0"));
+	private static Grid prepareGrid(CommandLine cmd) throws FileNotFoundException {
+		Grid grid = null;
+		ResourceSharingPolicy sharingPolicy = cmd.hasOption(NOF) ? NoFSharingPolicy.getInstance() : FifoSharingPolicy.getInstance();
 		File peerDescriptionFile = (File) cmd.getOptionObject(PEERS_DESCRIPTION);
-		Grid grid = SystemConfigurationCommandParser.readPeersDescription(peerDescriptionFile, numberOfResourcesByPeer, sharingPolicy);
+		if (cmd.hasOption(MACHINES_DESCRIPTION)) {
+			File machinesDescriptionFile = (File) cmd.getOptionObject(MACHINES_DESCRIPTION);
+			grid = SystemConfigurationCommandParser.readPeersDescription(peerDescriptionFile, machinesDescriptionFile, sharingPolicy);
+		} else {
+			int numberOfResourcesByPeer = Integer.parseInt(cmd.getOptionValue(NUM_RESOURCES_BY_PEER, "0"));
+			grid = SystemConfigurationCommandParser.readPeersDescription(peerDescriptionFile, numberOfResourcesByPeer, sharingPolicy);
+		}
 		return grid;
 	}
 
@@ -221,9 +240,11 @@ public class CLI {
 				workload = new OnDemandBoTGWANorduGridWorkload(workloadFilePath, peersMap, timeOfFirstSubmission);
 			} else if (type.equals("filter")) {
 				workload = new OnDemandGWANorduGridWorkloadWithFilter(workloadFilePath, peersMap, timeOfFirstSubmission);
-			} else if (type.equals("marcus")) {
+			} else if (type.equals("marcus_old")) {
 				workload = new MarcusWorkload(workloadFilePath, peersMap, TimeUtil.ONE_MONTH);
 				JobEventDispatcher.getInstance().addListener((MarcusWorkload) workload);
+			} else if (type.equals("marcus")) {
+				workload = new MarcusWorkload2(workloadFilePath, peersMap, TimeUtil.ONE_MONTH);
 			} else if (type.equals("iosup")) {
 				workload = new IosupWorkload(workloadFilePath, peersMap, 0);
 			}
@@ -234,7 +255,7 @@ public class CLI {
 		return workload;
 	}
 
-	private static Input<AvailabilityRecord> defineAvailability(CommandLine cmd, Map<String, Peer> peersMap) throws FileNotFoundException {
+	private static Input<AvailabilityRecord> defineAvailability(CommandLine cmd, Map<String, Peer> peersMap, BufferedWriter bw2) throws FileNotFoundException {
 		Input<AvailabilityRecord> availability = null;
 		if (cmd.hasOption(DEDICATED_RESOURCES)) {
 			availability = new DedicatedResourcesAvailabilityCharacterization(peersMap.values());
@@ -243,7 +264,18 @@ public class CLI {
 			availability = new AvailabilityCharacterization(cmd.getOptionValue(AVAILABILITY), startingTime, true);
 		} else if (cmd.hasOption(SYNTHETIC_AVAILABILITY)) {
 			long availabilityThreshold = ((Number) cmd.getOptionObject(SYNTHETIC_AVAILABILITY)).longValue();
-			availability = new MarkovModelAvailabilityCharacterization(peersMap, availabilityThreshold, 0);
+			String avType = cmd.getOptionValues(SYNTHETIC_AVAILABILITY).length == 2 ? cmd.getOptionValues(SYNTHETIC_AVAILABILITY)[1] : "";
+			if (avType.equals("mutka")) {
+				availability = new MarkovModelAvailabilityCharacterization(peersMap, availabilityThreshold, 0);
+				if (cmd.hasOption(WORKER_EVENTS)) {
+					((MarkovModelAvailabilityCharacterization) availability).setBuffer(bw2);
+				}
+			} else {
+				availability = new OurGridAvailabilityCharacterization(peersMap, availabilityThreshold, 0);
+				if (cmd.hasOption(WORKER_EVENTS)) {
+					((OurGridAvailabilityCharacterization) availability).setBuffer(bw2);
+				}
+			}
 		}
 
 		if (availability == null) {
@@ -282,6 +314,7 @@ public class CLI {
 		Option syntAvail = new Option(SYNTHETIC_AVAILABILITY, "synthetic_availability", true, "Disponibilidade dos recursos deve ser gerada sinteticamente.");
 		Option workload = new Option(WORKLOAD, "workload", true, "Arquivo com o workload no format GWA (Grid Workload Archive).");
 		Option utilization = new Option(UTILIZATION, "utilization", true, "Arquivo em que será registrada a utilização da grade.");
+		Option workerEvents = new Option(WORKER_EVENTS, "worker_events", true, "Arquivo em que será registrada a os eventos de disponibilidade.");
 		Option workloadType = new Option(WORKLOAD_TYPE, "workload_type", true, "The type of workload to read the workload file.");
 		Option machinesDescription = new Option(MACHINES_DESCRIPTION, "machinesdescription", true, "Descrição das máquinas presentes em cada peer.");
 		Option speedOption = new Option(NODE_MIPS_RATING, "speed", true, "A velocidade de cada máquina.");
@@ -301,6 +334,7 @@ public class CLI {
 		machinesDescription.setType(File.class);
 		availability.setType(File.class);
 		utilization.setType(File.class);
+		workerEvents.setType(File.class);
 		output.setType(File.class);
 		numResByPeer.setType(Number.class);
 		numPeers.setType(Number.class);
@@ -308,6 +342,7 @@ public class CLI {
 		syntAvail.setType(Number.class);
 
 		scheduler.setArgs(2);
+		availability.setArgs(2);
 
 		OptionGroup availGroup = new OptionGroup();
 		availGroup.addOption(availability);
@@ -327,6 +362,7 @@ public class CLI {
 		options.addOption(speedOption);
 		options.addOption(nofOption);
 		options.addOption(utilization);
+		options.addOption(workerEvents);
 
 		options.addOption(VERBOSE, "verbose", false, "Informa todos os eventos importantes.");
 		options.addOption(HELP, false, "Comando de ajuda.");

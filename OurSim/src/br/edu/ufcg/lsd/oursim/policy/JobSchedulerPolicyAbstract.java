@@ -100,6 +100,11 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 	public int getQueueSize() {
 		return submittedTasks.size();
 	}
+	
+	@Override
+	public int getNumberOfRunningTasks() {
+		return runningTasks.size();
+	}
 
 	protected final void addFutureJobEventsToEventQueue() {
 		long nextSubmissionTime = (workload.peek() != null) ? workload.peek().getSubmissionTime() : -1;
@@ -176,6 +181,8 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 
 	@Override
 	public void taskCancelled(Event<Task> taskEvent) {
+		Task task = taskEvent.getSource();
+		this.runningTasks.remove(task);
 	}
 
 	// E-- end of implementation of TaskEventListener

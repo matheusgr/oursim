@@ -7,8 +7,6 @@ import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.entities.Task;
-import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
-import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.FinishJobEvent;
 
 /**
  * 
@@ -63,26 +61,23 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 
 	@Override
 	public final void addJob(Job job) {
+		assert !job.getTasks().isEmpty();
 		job.setReplicationLevel(this.replicationLevel);
-		super.addJob(job);
-	}
+		this.getSubmittedJobs().add(job);
+		for (Task task : job.getTasks()) {
+			this.getSubmittedTasks().add(task);
+		}
+		for (Task task : job.getTasks()) {
+			addReplies(task);
+		}
 
-	@Override
-	public final void taskSubmitted(Event<Task> taskEvent) {
-		// Task task = taskEvent.getSource();
-		// this.getSubmittedTasks().add(task);
-		super.taskSubmitted(taskEvent);
-		addReplies(taskEvent.getSource());
 	}
 
 	@Override
 	public final void taskFinished(Event<Task> taskEvent) {
 		super.taskFinished(taskEvent);
-		stopRemainingReplies(taskEvent.getSource());
+		stopRemainingReplicas(taskEvent.getSource());
 		taskEvent.getSource().finishSourceTask();
-//		if (taskEvent.getSource().getSourceJob().isFinished()) {
-//			getEventQueue().addEvent(new FinishJobEvent(EventQueue.getInstance().getCurrentTime(), taskEvent.getSource().getSourceJob()));
-//		}
 	}
 
 	private void addReplies(Task task) {
@@ -91,33 +86,34 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 		}
 	}
 
-	private void stopRemainingReplies(Task task) {
+	private void stopRemainingReplicas(Task task) {
 
-		for (Task reply : task.getReplies()) {
+		for (Task replica : task.getReplicas()) {
 			// para as replicas que ainda estiverem rodando
-			if (reply.isRunning()) {
-				if (reply.getEstimatedFinishTime() > task.getFinishTime()) {
+			if (replica.isRunning()) {
+				if (replica.getEstimatedFinishTime() > task.getFinishTime()) {
 					// ocorria problema quando a task tinha acabado de iniciar
-					assert this.getRunningTasks().contains(reply) || reply.getStartTime() == getCurrentTime() : getCurrentTime() + ": " + reply;
-					assert !reply.isFinished();
-					reply.getTargetPeer().cancelTask(reply);
-					this.getRunningTasks().remove(reply);
+					assert this.getRunningTasks().contains(replica) || replica.getStartTime() == getCurrentTime() : getCurrentTime() + ": " + replica;
+					assert !replica.isFinished();
+					replica.getTargetPeer().cancelTask(replica);
+					this.getRunningTasks().remove(replica);
 				} else {
-					reply.getTargetPeer().cancelTask(reply);
-					this.getRunningTasks().remove(reply);
+					replica.getTargetPeer().cancelTask(replica);
+					this.getRunningTasks().remove(replica);
 				}
-			} else if (this.getSubmittedTasks().contains(reply)) {// está
+			} else if (this.getSubmittedTasks().contains(replica)) {// está
 				// aguardando
-				reply.cancel();
-				this.getSubmittedTasks().remove(reply);
-			} else if (reply.wasPreempted()) {
+				replica.cancel();
+				this.getSubmittedTasks().remove(replica);
+			} else if (replica.wasPreempted()) {
 			} else {
-				assert !this.getSubmittedTasks().contains(reply);
-				assert !this.getRunningTasks().contains(reply);
-				assert !reply.isCancelled();
-				assert false : "situação não esperada: " + reply;
+				assert !this.getSubmittedTasks().contains(replica);
+				assert !this.getRunningTasks().contains(replica);
+				assert !replica.isCancelled();
+				assert false : "situação não esperada: " + replica;
 			}
 		}
+
 	}
 
 }
