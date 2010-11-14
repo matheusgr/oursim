@@ -46,6 +46,7 @@ public class OurGridPersistentScheduler extends JobSchedulerPolicyAbstract {
 
 	@Override
 	public final void taskPreempted(Event<Task> taskEvent) {
+		super.taskPreempted(taskEvent);
 		Task task = taskEvent.getSource();
 		this.rescheduleTask(task);
 	}

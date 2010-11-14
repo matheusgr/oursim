@@ -1,6 +1,8 @@
 package br.edu.ufcg.lsd.oursim.io.input.availability;
 
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -49,6 +51,17 @@ public class MarkovModelAvailabilityCharacterization implements Input<Availabili
 		}
 	}
 
+	private BufferedWriter bw = null;
+
+	public void setBuffer(BufferedWriter utilizationBuffer) {
+		this.bw = utilizationBuffer;
+		try {
+			this.bw.append("time:event:machine:duration\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	@Override
 	public void close() {
 	}
@@ -90,6 +103,14 @@ public class MarkovModelAvailabilityCharacterization implements Input<Availabili
 					generateAvailabilityForNextInvocations(machine, markovGenerator);
 				}
 			}
+		}
+
+		try {
+			if (bw != null) {
+				bw.append(polledAV.getTime() + ":AV:" + polledAV.getMachineName() + ":" + polledAV.getDuration()).append("\n");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
 		return polledAV;

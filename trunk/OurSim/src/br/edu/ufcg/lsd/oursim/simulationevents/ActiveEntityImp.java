@@ -103,7 +103,7 @@ public class ActiveEntityImp implements ActiveEntity {
 
 	@Override
 	public void addFinishTaskEvent(long finishTime, Task task) {
-		assert finishTime > this.getCurrentTime();
+		assert finishTime > this.getCurrentTime():finishTime +" > "+ this.getCurrentTime();
 		FinishTaskEvent finishTaskEvent = new FinishTaskEvent(finishTime, task);
 		this.getEventQueue().addEvent(finishTaskEvent);
 	}

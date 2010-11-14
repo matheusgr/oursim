@@ -58,6 +58,8 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 
 	private final TaskManager taskManager;
 
+	private Machine referenceMachine;
+
 	// private long amountOfAvailableTime = 0;
 	private Map<String, Long> amountOfAvailableTime;
 	private Map<String, Long> amountOfWastedTime;
@@ -421,7 +423,7 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 			// allocated e sim em free pois o preempt
 			// efetivamente libera o recurso.
 		}
-		
+
 		this.resourceManager.makeResourceUnavailable(machineName);
 
 		assert this.amountOfAvailableTime.containsKey(machineName) : machineName;
@@ -519,6 +521,19 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 
 	public String getMachineName(long id) {
 		return getName() + ".m_" + id;
+	}
+
+	public Processor getReferenceProcessor() {
+		if (referenceMachine == null) {
+			long sumOfSpeeds = 0;
+			for (Machine machine : machines) {
+				sumOfSpeeds += machine.getDefaultProcessor().getSpeed();
+			}
+			assert sumOfSpeeds > 0 : sumOfSpeeds + " > 0";
+			long avgSpeed = Math.round(sumOfSpeeds / (1.0 * machines.size()));
+			referenceMachine = new Machine(getName() + "_referenceMachine", avgSpeed);
+		}
+		return referenceMachine.getDefaultProcessor();
 	}
 
 }

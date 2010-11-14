@@ -153,6 +153,7 @@ public class MarcusWorkload extends JobEventListenerAdapter implements Workload 
 	}
 
 	private static Job createJob(String line, Map<String, Peer> peers, long firstJobThinkTime) {
+		// taskId, jobId, thinkTime, runtime, userId, siteId
 		Scanner scLine = new Scanner(line);
 		long taskID = scLine.nextLong();
 		long jobID = scLine.nextLong();

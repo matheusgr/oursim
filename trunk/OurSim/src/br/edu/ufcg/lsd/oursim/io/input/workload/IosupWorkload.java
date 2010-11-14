@@ -8,9 +8,6 @@ import java.util.Scanner;
 
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
-import br.edu.ufcg.lsd.oursim.entities.Task;
-import br.edu.ufcg.lsd.oursim.util.GWAFormat;
-import br.edu.ufcg.lsd.oursim.util.TimeUtil;
 
 /**
  * 
@@ -56,7 +53,7 @@ public class IosupWorkload implements Workload {
 	}
 
 	private static Job createJob(String line, Map<String, Peer> peers, long startingTime) {
-		// "time" "jobId" "jobSize" "runtime" "tasks" "user"
+		// "time" "jobId" "jobSize" "runtime" "tasks" "user" "peer"
 		Scanner scLine = new Scanner(line);
 		long time = scLine.nextLong();
 		long jobID = scLine.nextLong();

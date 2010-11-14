@@ -91,17 +91,27 @@ public class Grid {
 		return peers.values();
 	}
 
-	public void accountForUtilization(long currentTime, int numberOfEnqueuedTasks) {
+	long lastTime = 0;
+
+	public void accountForUtilization(long currentTime, int numberOfRunningTasks, int numberOfEnqueuedTasks) {
 		try {
-			if (bw != null) {
+			if (bw != null && currentTime > lastTime) {
 				double utilization = 0;
+				double contention;
 				int numberOfAvailableResources = 0;
 				for (Peer peer : peers.values()) {
 					utilization += peer.getUtilization();
 					numberOfAvailableResources += (peer.getNumberOfMachines() - peer.getNumberOfUnavailableResources());
 				}
 				utilization = utilization / (peers.size() * 1.0);
-				bw.append(currentTime + ":" + utilization + ":" + numberOfEnqueuedTasks + ":" + numberOfAvailableResources).append("\n");
+				if (numberOfAvailableResources > 0) {
+					contention = (numberOfRunningTasks + numberOfEnqueuedTasks) / (numberOfAvailableResources * 1.0);
+				} else {
+					contention = 1;
+				}
+				// time:utilization:contention:numberOfEnqueuedTasks:numberOfAvailableResources
+				bw.append(currentTime + ":" + utilization + ":" + contention + ":" + numberOfEnqueuedTasks + ":" + numberOfAvailableResources).append("\n");
+				lastTime = currentTime;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -112,6 +122,15 @@ public class Grid {
 
 	public void setUtilizationBuffer(BufferedWriter utilizationBuffer) {
 		this.bw = utilizationBuffer;
+		try {
+			this.bw.append("time:utilization:contention:numberOfEnqueuedTasks:numberOfAvailableResources\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public Peer getPeer(String peerName) {
+		return this.peers.get(peerName);
 	}
 
 }

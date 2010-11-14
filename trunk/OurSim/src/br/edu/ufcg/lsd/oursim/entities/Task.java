@@ -90,11 +90,11 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	private int numberOfpreemptions;
 
 	/**
-	 * all the replies of this tasks, including itself
+	 * all the replicas of this tasks, including itself
 	 */
-	private Set<Task> replies = new HashSet<Task>();
+	private Set<Task> replicas = new HashSet<Task>();
 
-	private long replyId;
+	private long replicaId;
 
 	private boolean cancelled = false;
 
@@ -113,8 +113,8 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 		this.sourceJob = sourceJob;
 
 		// toda task também é uma réplica de si mesma.
-		this.replies.add(this);
-		this.replyId = SOURCE_TASK_REPLY_ID;
+		this.replicas.add(this);
+		this.replicaId = SOURCE_TASK_REPLY_ID;
 	}
 
 	/**
@@ -210,7 +210,7 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 
 	@Override
 	public void finish(long time) {
-		assert this.finishTime == null || isAnyReplyFinished();
+		assert this.finishTime == null || isAnyReplicaFinished();
 		assert this.startTime != null;
 		this.hasLocallyRunned = this.sourceJob.getSourcePeer().hasMachine(this.taskExecution.getMachine().getName());
 		this.finishTime = time;
@@ -252,7 +252,8 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 		assert startTime != null;
 		assert taskExecution != null;
 		if (startTime != null) {
-			return this.getStartTime() + taskExecution.getRemainingTimeToFinish();
+//			return this.getStartTime() + taskExecution.getRemainingTimeToFinish();
+			return taskExecution.getEstimatedFinishTime();
 		} else {
 			return null;
 		}
@@ -315,14 +316,14 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 			e.printStackTrace();
 			return null;
 		}
-		theClone.replyId = this.replies.size();
-		this.replies.add(theClone);
-		theClone.replies = this.replies;
+		theClone.replicaId = this.replicas.size();
+		this.replicas.add(theClone);
+		theClone.replicas = this.replicas;
 		return theClone;
 	}
 
-	public boolean isAnyReplyFinished() {
-		for (Task reply : getReplies()) {
+	public boolean isAnyReplicaFinished() {
+		for (Task reply : getReplicas()) {
 			if (reply.isFinished()) {
 				return true;
 			}
@@ -330,8 +331,8 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 		return false;
 	}
 
-	public Long getAnyReplyFinishTime() {
-		for (Task reply : replies) {
+	public Long getAnyReplicaFinishTime() {
+		for (Task reply : replicas) {
 			if (reply.isFinished()) {
 				return reply.getFinishTime();
 			}
@@ -343,30 +344,30 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 		return this.numberOfpreemptions > 0;
 	}
 
-	public boolean isAllRepliesFailed() {
+	public boolean isAllReplicasFailed() {
 		boolean hasAllReplyFailed = true;
-		for (Task reply : replies) {
+		for (Task reply : replicas) {
 			hasAllReplyFailed &= reply.wasPreempted();
 		}
 		return hasAllReplyFailed;
 	}
 
-	public Set<Task> getReplies() {
-		assert replies.contains(this);
-		Set<Task> onlyTheReplies = new HashSet<Task>(replies);
-		onlyTheReplies.remove(this);
-		assert !onlyTheReplies.contains(this);
-		return onlyTheReplies;
+	public Set<Task> getReplicas() {
+		assert replicas.contains(this);
+		Set<Task> onlyTheReplicas = new HashSet<Task>(replicas);
+		onlyTheReplicas.remove(this);
+		assert !onlyTheReplicas.contains(this);
+		return onlyTheReplicas;
 	}
 
-	public Set<Task> getActiveReplies() {
-		Set<Task> onlyTheActiveReplies = new HashSet<Task>();
-		for (Task reply : getReplies()) {
-			if (reply.isActive()) {
-				onlyTheActiveReplies.add(reply);
+	public Set<Task> getActiveReplicas() {
+		Set<Task> onlyTheActiveReplicas = new HashSet<Task>();
+		for (Task replica : getReplicas()) {
+			if (replica.isActive()) {
+				onlyTheActiveReplicas.add(replica);
 			}
 		}
-		return onlyTheActiveReplies;
+		return onlyTheActiveReplicas;
 	}
 
 	private boolean isActive() {
@@ -374,19 +375,19 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 		return this.isRunning() || (!this.isFinished() && !this.wasPreempted() && !this.isCancelled());
 	}
 
-	public long getReplyId() {
-		return replyId;
+	public long getReplicaId() {
+		return replicaId;
 	}
 
 	public void finishSourceTask() {
 		assert this.startTime != null;
 		assert this.finishTime != null;
-		for (Task reply : replies) {
-			if (reply.getReplyId() == SOURCE_TASK_REPLY_ID) {
-				reply.finishTime = this.finishTime;
-				reply.startTime = this.startTime;
-				reply.cancelled = false;
-				reply.targetPeer = this.targetPeer;
+		for (Task replica : replicas) {
+			if (replica.getReplicaId() == SOURCE_TASK_REPLY_ID) {
+				replica.finishTime = this.finishTime;
+				replica.startTime = this.startTime;
+				replica.cancelled = false;
+				replica.targetPeer = this.targetPeer;
 			}
 		}
 	}
@@ -408,7 +409,7 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("id", id).append("sourceJob", sourceJob.getId()).append("sourcePeer",
 				getSourcePeer().getName()).append("duration", duration).append("submissionTime", submissionTime).append("startTime", startTime).append(
 				"finishTime", finishTime).append("targetPeer", targetPeer != null ? targetPeer.getName() : "").append("numberOfpreemptions",
-				numberOfpreemptions).append("executable", executable).append("replyId", replyId).append("cancelled", cancelled).toString();
+				numberOfpreemptions).append("executable", executable).append("replicaId", replicaId).append("cancelled", cancelled).toString();
 	}
 
 	public double getBidValue() {

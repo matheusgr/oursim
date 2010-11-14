@@ -1,6 +1,8 @@
 package br.edu.ufcg.lsd.oursim.ui;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 
@@ -20,6 +22,7 @@ import br.edu.ufcg.lsd.oursim.io.output.JobPrintOutput;
 import br.edu.ufcg.lsd.oursim.io.output.TaskPrintOutput;
 import br.edu.ufcg.lsd.oursim.io.output.WorkerEventsPrintOutput;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
+import br.edu.ufcg.lsd.oursim.util.ArrayBuilder;
 
 public class CLIUTil {
 
@@ -112,7 +115,9 @@ public class CLIUTil {
 		if (verbose) {
 			JobEventDispatcher.getInstance().addListener(new JobPrintOutput());
 			TaskEventDispatcher.getInstance().addListener(new TaskPrintOutput());
-			WorkerEventDispatcher.getInstance().addListener(new WorkerEventsPrintOutput());
+			WorkerEventsPrintOutput workerEventsPrintOutput = new WorkerEventsPrintOutput();
+			// workerEventsPrintOutput.setBuffer(bw);
+			WorkerEventDispatcher.getInstance().addListener(workerEventsPrintOutput);
 			EventQueue.LOG = true;
 			EventQueue.LOG_FILEPATH = "events_oursim.txt";
 		}
@@ -146,52 +151,6 @@ public class CLIUTil {
 			return;
 		}
 		System.exit(1);
-	}
-
-	public static void main(String[] args) throws IOException {
-		String setUp = "cd /tmp && mkdir -p playpen/oursim && scp cororoca:~/workspace/OurSim/dist/oursim.zip . && unzip -o oursim.zip -d playpen/oursim && scp cororoca:~/workspace/SpotInstancesSimulator/dist/spotsim.zip . && unzip -o spotsim.zip -d playpen/oursim && cd playpen/oursim;";
-		String tearDown = "";
-		String cmd = "";
-		cmd += setUp;
-		String java = " $JAVACALL ";
-		cmd += "JAVACALL='java -Xms500M -Xmx1500M -XX:-UseGCOverheadLimit -jar'";
-		cmd += ";SPT=resources/eu-west-1.linux.m1.small.csv";
-		// int[] nSitesV = new int[] { 10, 100, 1000, 10000 };
-		int[] nSitesV = new int[] { 50 };
-		for (int nSites : nSitesV) {
-			int spotLimit = 100;
-			cmd += ";ISD=resources/iosup_site_description_" + nSites + "_sites.txt;";
-			String spt = " $SPT ";
-			String isd = " $ISD ";
-			String sep = "";
-			int nRes = 25;
-			cmd += sep + java + "oursim.jar -w resources/iosup_workload_7_dias_" + nSites + "_sites.txt -s persistent -pd " + isd + " -wt iosup -nr " + nRes
-					+ " -synthetic_av 2678400 -o oursim-trace-" + nRes + "_7_dias_" + nSites + "_sites.txt";
-			sep = " && ";
-			cmd += sep + "sort -g oursim-trace-" + nRes + "_7_dias_" + nSites + "_sites.txt_spot_workload.txt > " + "oursim-trace-" + nRes + "_7_dias_"
-					+ nSites + "_sites.txt_spot_workload_sorted.txt ";
-			sep = " && ";
-			cmd += sep + java + "spotsim.jar -spot -l " + spotLimit + " -bid max -w " + "oursim-trace-" + nRes + "_7_dias_" + nSites
-					+ "_sites.txt_spot_workload_sorted.txt -av " + spt + " -o spot-trace-" + nRes + "_7_dias_" + nSites + "_sites_" + spotLimit
-					+ "_spotLimit.txt";
-			sep = " && ";
-
-			StringBuilder sb = new StringBuilder("#site	num_cpus\n");
-			for (int i = 1; i <= nSites; i++) {
-				sb.append(i).append(" ").append(nRes).append("\n");
-			}
-			FileUtils.writeStringToFile(new File("resources/iosup_site_description_" + nSites + "_sites.txt"), sb.toString());
-
-			tearDown = " && scp oursim-trace-25_7_dias_" + nSites + "_sites.txt oursim-trace-25_7_dias_" + nSites
-					+ "_sites.txt_spot_workload_sorted.txt spot-trace-25_7_dias_" + nSites
-					+ "_sites_100_spotLimit.txt cororoca:/local/edigley/traces/oursim/trace_media_15s_100_peers";
-		}
-
-		cmd += tearDown;
-
-		FileUtils.writeStringToFile(new File("cmd.txt"), cmd);
-
-		System.out.println(cmd);
 	}
 
 }
