@@ -1,5 +1,6 @@
 package br.edu.ufcg.lsd.oursim.policy;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 	/**
 	 * the level of replication of the tasks that comprise this job. A <i>value</i>
 	 * less than or equal 1 means no replication. A <i>value</i> greater than 1
-	 * means that <i>value</i> replies will be created for each task.
+	 * means that <i>value</i> replicas will be created for each task.
 	 */
 	private int replicationLevel;
 
@@ -51,7 +52,8 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 			for (Peer provider : this.getPeers()) {
 				boolean isTaskRunning = provider.executeTask(task);
 				if (isTaskRunning) {
-					this.addStartedTaskEvent(task);
+					// System.out.println("Is Running: " + task.getStartTime() +
+					// " : " + task.getId() + " : " + task.getReplicaId());
 					iterator.remove();
 					break;
 				}
@@ -63,13 +65,15 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 	public final void addJob(Job job) {
 		assert !job.getTasks().isEmpty();
 		job.setReplicationLevel(this.replicationLevel);
-		this.getSubmittedJobs().add(job);
+		// this.getSubmittedJobs().add(job);
+
+		// adiciona a matriz das tasks
 		for (Task task : job.getTasks()) {
 			this.getSubmittedTasks().add(task);
 		}
-		for (Task task : job.getTasks()) {
-			addReplies(task);
-		}
+
+		// adiciona (replicationLevel-1) réplicas -> a matriz já foi adicionada
+		addReplicas(job.getTasks(), job.getReplicationLevel() - 1);
 
 	}
 
@@ -80,9 +84,17 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 		taskEvent.getSource().finishSourceTask();
 	}
 
-	private void addReplies(Task task) {
-		for (int i = 0; i < task.getSourceJob().getReplicationLevel() - 1; i++) {
-			this.getSubmittedTasks().add(task.clone());
+	@Override
+	public final void taskPreempted(Event<Task> taskEvent) {
+		super.taskPreempted(taskEvent);
+		this.getSubmittedTasks().add(taskEvent.getSource());
+	}
+
+	private void addReplicas(Collection<Task> tasks, int numberOfReplicas) {
+		for (int i = 0; i < numberOfReplicas; i++) {
+			for (Task task : tasks) {
+				this.getSubmittedTasks().add(task.clone());
+			}
 		}
 	}
 
@@ -91,26 +103,32 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 		for (Task replica : task.getReplicas()) {
 			// para as replicas que ainda estiverem rodando
 			if (replica.isRunning()) {
+				assert this.getRunningTasks().contains(replica) : replica;
 				if (replica.getEstimatedFinishTime() > task.getFinishTime()) {
 					// ocorria problema quando a task tinha acabado de iniciar
 					assert this.getRunningTasks().contains(replica) || replica.getStartTime() == getCurrentTime() : getCurrentTime() + ": " + replica;
 					assert !replica.isFinished();
 					replica.getTargetPeer().cancelTask(replica);
-					this.getRunningTasks().remove(replica);
+				} else if (replica.getEstimatedFinishTime() == task.getFinishTime()) {
+					// Pode estar no caso "=" o warning apresentado
+					replica.getTargetPeer().cancelTask(replica);
 				} else {
 					replica.getTargetPeer().cancelTask(replica);
-					this.getRunningTasks().remove(replica);
 				}
-			} else if (this.getSubmittedTasks().contains(replica)) {// está
-				// aguardando
-				replica.cancel();
-				this.getSubmittedTasks().remove(replica);
+			} else if (replica.isCancelled()) {
+				assert !this.getRunningTasks().contains(replica) : replica;
+				assert !this.getSubmittedTasks().contains(replica) : replica;
 			} else if (replica.wasPreempted()) {
+				assert this.getSubmittedTasks().contains(replica) : replica;
+				boolean removed = this.getSubmittedTasks().remove(replica);
+				assert removed : replica;
+			} else if (this.getSubmittedTasks().contains(replica)) {// está
+				// aguardando?
+				replica.cancel();
+				boolean removed = this.getSubmittedTasks().remove(replica);
+				assert removed : replica;
 			} else {
-				assert !this.getSubmittedTasks().contains(replica);
-				assert !this.getRunningTasks().contains(replica);
-				assert !replica.isCancelled();
-				assert false : "situação não esperada: " + replica;
+				throw new RuntimeException("situação não esperada: " + replica);
 			}
 		}
 

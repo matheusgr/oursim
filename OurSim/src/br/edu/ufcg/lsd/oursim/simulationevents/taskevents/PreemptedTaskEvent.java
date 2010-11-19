@@ -15,7 +15,9 @@ import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.PreemptedJobEvent;
  */
 public class PreemptedTaskEvent extends TaskTimedEvent {
 
-	public static final int PRIORITY = 2;
+	// public static final int PRIORITY = 2;
+	// public static final int PRIORITY = 4;
+	public static final int PRIORITY = -3;
 
 	/**
 	 * Creates an event indicating that a task has been preempted.
@@ -35,9 +37,11 @@ public class PreemptedTaskEvent extends TaskTimedEvent {
 		if (!task.isCancelled()) {
 			task.preempt(this.time);
 			TaskEventDispatcher.getInstance().dispatchTaskPreempted(task, this.time);
-			// TODO: se for um job de uma task só, avisa que o job foi preemptado
+			// TODO: se for um job de uma task só, avisa que o job foi
+			// preemptado
 			if (task.getSourceJob().getTasks().size() == 1 && task.isAllReplicasFailed()) {
-				//			EventQueue.getInstance().addPreemptedJobEvent(EventQueue.getInstance().getCurrentTime(), task.getSourceJob());
+				// EventQueue.getInstance().addPreemptedJobEvent(EventQueue.getInstance().getCurrentTime(),
+				// task.getSourceJob());
 				EventQueue.getInstance().addEvent(new PreemptedJobEvent(EventQueue.getInstance().getCurrentTime(), task.getSourceJob()));
 			}
 		}

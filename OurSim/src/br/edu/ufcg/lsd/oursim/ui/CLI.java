@@ -39,6 +39,7 @@ import org.apache.commons.lang.time.StopWatch;
 
 import br.edu.ufcg.lsd.oursim.OurSim;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
+import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventDispatcher;
 import br.edu.ufcg.lsd.oursim.entities.Grid;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.io.input.Input;
@@ -58,6 +59,7 @@ import br.edu.ufcg.lsd.oursim.io.output.ComputingElementEventCounter;
 import br.edu.ufcg.lsd.oursim.io.output.Output;
 import br.edu.ufcg.lsd.oursim.io.output.PrintOutput;
 import br.edu.ufcg.lsd.oursim.io.output.RemoteWorkloadExtractorOutput;
+import br.edu.ufcg.lsd.oursim.io.output.TaskPrintOutput;
 import br.edu.ufcg.lsd.oursim.policy.FifoSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
 import br.edu.ufcg.lsd.oursim.policy.NoFSharingPolicy;
@@ -107,6 +109,8 @@ public class CLI {
 
 	public static final String WORKER_EVENTS = "we";
 
+	public static final String TASK_EVENTS = "te";
+
 	public static final String HELP = "help";
 
 	public static final String USAGE = "usage";
@@ -153,6 +157,12 @@ public class CLI {
 			bw2 = createBufferedWriter((File) cmd.getOptionObject(WORKER_EVENTS));
 		}
 
+		TaskPrintOutput taskOutput = null;
+		if (cmd.hasOption(TASK_EVENTS)) {
+			taskOutput = new TaskPrintOutput((File) cmd.getOptionObject(TASK_EVENTS));
+			TaskEventDispatcher.getInstance().addListener(taskOutput);
+		}
+
 		ComputingElementEventCounter computingElementEventCounter = prepareOutputAccounting(cmd, cmd.hasOption(VERBOSE));
 
 		Input<? extends AvailabilityRecord> availability = defineAvailability(cmd, grid.getMapOfPeers(), bw2);
@@ -170,6 +180,12 @@ public class CLI {
 		oursim.start();
 
 		printOutput.close();
+		JobEventDispatcher.getInstance().removeListener(printOutput);
+		JobEventDispatcher.getInstance().removeListener(remoteWorkloadExtractor);
+		if (taskOutput != null) {
+			taskOutput.close();
+			TaskEventDispatcher.getInstance().removeListener(taskOutput);
+		}
 
 		FileWriter fw = new FileWriter(cmd.getOptionValue(OUTPUT), true);
 		stopWatch.stop();
@@ -307,6 +323,13 @@ public class CLI {
 	}
 
 	public static Options prepareOptions() {
+
+		// Para adicionar uma evento:
+		// 1. Defina uma constante com a identificação da opção
+		// 2. Cria a Option referente
+		// 3. Opcionalmente defina o tipo do argumento, quantidade de parâmetros
+		// ou restrições
+		// 4. Adicione a Options
 		Options options = new Options();
 
 		Option availability = new Option(AVAILABILITY, "availability", true, "Arquivo com a caracterização da disponibilidade para todos os recursos.");
@@ -314,7 +337,8 @@ public class CLI {
 		Option syntAvail = new Option(SYNTHETIC_AVAILABILITY, "synthetic_availability", true, "Disponibilidade dos recursos deve ser gerada sinteticamente.");
 		Option workload = new Option(WORKLOAD, "workload", true, "Arquivo com o workload no format GWA (Grid Workload Archive).");
 		Option utilization = new Option(UTILIZATION, "utilization", true, "Arquivo em que será registrada a utilização da grade.");
-		Option workerEvents = new Option(WORKER_EVENTS, "worker_events", true, "Arquivo em que será registrada a os eventos de disponibilidade.");
+		Option workerEvents = new Option(WORKER_EVENTS, "worker_events", true, "Arquivo em que serão registrados os eventos de disponibilidade.");
+		Option taskEvents = new Option(TASK_EVENTS, "task_events", true, "Arquivo em que será registrados os eventos de envolvendo tasks.");
 		Option workloadType = new Option(WORKLOAD_TYPE, "workload_type", true, "The type of workload to read the workload file.");
 		Option machinesDescription = new Option(MACHINES_DESCRIPTION, "machinesdescription", true, "Descrição das máquinas presentes em cada peer.");
 		Option speedOption = new Option(NODE_MIPS_RATING, "speed", true, "A velocidade de cada máquina.");
@@ -335,6 +359,7 @@ public class CLI {
 		availability.setType(File.class);
 		utilization.setType(File.class);
 		workerEvents.setType(File.class);
+		taskEvents.setType(File.class);
 		output.setType(File.class);
 		numResByPeer.setType(Number.class);
 		numPeers.setType(Number.class);
@@ -363,6 +388,7 @@ public class CLI {
 		options.addOption(nofOption);
 		options.addOption(utilization);
 		options.addOption(workerEvents);
+		options.addOption(taskEvents);
 
 		options.addOption(VERBOSE, "verbose", false, "Informa todos os eventos importantes.");
 		options.addOption(HELP, false, "Comando de ajuda.");

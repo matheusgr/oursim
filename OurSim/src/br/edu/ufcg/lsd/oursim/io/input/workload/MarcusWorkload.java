@@ -113,7 +113,8 @@ public class MarcusWorkload extends JobEventListenerAdapter implements Workload 
 		LinkedList<Job> nextJobsFromUser = user2NextJobs.get(job.getUserId());
 		if (!nextJobsFromUser.isEmpty()) {
 			Job theJob = nextJobsFromUser.removeFirst();
-			theJob.setSubmissionTime(job.getFinishTime() + job.getSubmissionTime());
+			//XXX precisa descomentar a linha de baixo para o workload parser funcionar
+//			theJob.setSubmissionTime(job.getFinishTime() + job.getSubmissionTime());
 			// System.out.println(theJob.getSubmissionTime());
 			this.nextJobs.add(theJob);
 		} else {
@@ -121,7 +122,8 @@ public class MarcusWorkload extends JobEventListenerAdapter implements Workload 
 			nextJobsFromUser = user2NextJobs.get(job.getUserId());
 			if (!nextJobsFromUser.isEmpty()) {
 				Job theJob = nextJobsFromUser.removeFirst();
-				theJob.setSubmissionTime(job.getFinishTime() + job.getSubmissionTime());
+				//XXX precisa descomentar a linha de baixo para o workload parser funcionar
+//				theJob.setSubmissionTime(job.getFinishTime() + job.getSubmissionTime());
 				// System.out.println(theJob.getSubmissionTime());
 				this.nextJobs.add(theJob);
 			}

@@ -1,6 +1,5 @@
 package br.edu.ufcg.lsd.oursim.policy;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -28,8 +27,7 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 	 * The jobs that have been submitted to this scheduler. TODO talvez esse
 	 * atributo seja um disperdício de memória.
 	 */
-	private Set<Job> submittedJobs;
-
+	// private Set<Job> submittedJobs;
 	/**
 	 * The tasks of all jobs that have been submitted to this scheduler. The
 	 * schedulling is effectively performed in this collection.
@@ -56,7 +54,7 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 	 */
 	public JobSchedulerPolicyAbstract(List<Peer> peers) {
 		this.peers = peers;
-		this.submittedJobs = new HashSet<Job>();
+		// this.submittedJobs = new HashSet<Job>();
 		this.submittedTasks = new TreeSet<Task>();
 		this.runningTasks = new TreeSet<Task>();
 	}
@@ -81,7 +79,7 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 	@Override
 	public void addJob(Job job) {
 		assert !job.getTasks().isEmpty();
-		this.submittedJobs.add(job);
+		// this.submittedJobs.add(job);
 		for (Task task : job.getTasks()) {
 			this.addSubmitTaskEvent(this.getCurrentTime(), task);
 		}
@@ -100,7 +98,7 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 	public int getQueueSize() {
 		return submittedTasks.size();
 	}
-	
+
 	@Override
 	public int getNumberOfRunningTasks() {
 		return runningTasks.size();
@@ -115,9 +113,9 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 		}
 	}
 
-	protected Set<Job> getSubmittedJobs() {
-		return submittedJobs;
-	}
+	// protected Set<Job> getSubmittedJobs() {
+	// return submittedJobs;
+	// }
 
 	protected Set<Task> getSubmittedTasks() {
 		return submittedTasks;
@@ -164,7 +162,8 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 	public void taskFinished(Event<Task> taskEvent) {
 		Task task = taskEvent.getSource();
 		task.getTargetPeer().finishTask(task);
-		this.runningTasks.remove(task);
+		boolean removed = this.runningTasks.remove(task);
+		assert removed : task;
 	}
 
 	@Override
@@ -176,13 +175,15 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 	@Override
 	public void taskPreempted(Event<Task> taskEvent) {
 		Task task = taskEvent.getSource();
-		this.runningTasks.remove(task);
+		boolean removed = this.runningTasks.remove(task);
+		assert removed : task;
 	}
 
 	@Override
 	public void taskCancelled(Event<Task> taskEvent) {
 		Task task = taskEvent.getSource();
-		this.runningTasks.remove(task);
+		boolean removed = this.runningTasks.remove(task);
+		assert removed : task;
 	}
 
 	// E-- end of implementation of TaskEventListener

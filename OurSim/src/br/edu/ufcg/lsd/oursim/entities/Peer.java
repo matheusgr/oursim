@@ -202,7 +202,7 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 	}
 
 	/**
-	 * Update the status of the all tasks being executed in the machines of this
+	 * Update the status of all tasks being executed in the machines of this
 	 * peer.
 	 * 
 	 * @param currentTime
@@ -277,6 +277,7 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 			task.setTaskExecution(new TaskExecution(task, defaultProcessor, currentTime));
 			task.setStartTime(currentTime);
 			task.setTargetPeer(this);
+			this.addStartedTaskEvent(task);
 			return true;
 		} else {
 			return false;
@@ -336,7 +337,7 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 	}
 
 	public final void cancelTask(Task task) {
-		// assert this.taskManager.isInExecution(task) : task;
+		assert this.taskManager.isInExecution(task) : task;
 
 		if (this.taskManager.isInExecution(task)) {
 			String machineName = this.taskManager.getMachine(task).getName();
@@ -349,8 +350,7 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 			Long cum = this.amountOfWastedTime.get(machineName);
 			this.amountOfWastedTime.put(machineName, cum + wastedTime);
 		} else {
-			// throw new IllegalArgumentException("The task was not being
-			// executed in this peer.");
+			throw new IllegalArgumentException("The task " + task + " was not being executed in this peer.");
 		}
 
 	}
@@ -437,6 +437,7 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 
 	@Override
 	public void workerUp(Event<String> workerEvent) {
+
 	}
 
 	@Override

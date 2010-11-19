@@ -21,7 +21,7 @@ public abstract class ComputableElement {
 	/**
 	 * The instant at which this ComputableElement has been submitted.
 	 */
-	protected long submissionTime;//TODO deve ser final
+	protected final long submissionTime;//TODO deve ser final
 
 	/**
 	 * @param id
@@ -206,9 +206,5 @@ public abstract class ComputableElement {
 	 * @return <code>true</false> if this thread is finished; <code>false</false> otherwise.
 	 */
 	public abstract boolean isFinished();
-
-	public void setSubmissionTime(long submissionTime) {
-		this.submissionTime = submissionTime;
-	}
 
 }
