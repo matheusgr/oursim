@@ -13,7 +13,9 @@ import br.edu.ufcg.lsd.oursim.entities.Task;
  */
 public class StartedTaskEvent extends TaskTimedEvent {
 
-	public static final int PRIORITY = 4;
+//	public static final int PRIORITY = 4;
+//	public static final int PRIORITY = 2;
+	public static final int PRIORITY = -4;
 
 	/**
 	 * Creates an event indicating that a task has been started.
@@ -30,6 +32,8 @@ public class StartedTaskEvent extends TaskTimedEvent {
 		Task task = (Task) source;
 		if (!task.isCancelled()) {
 			TaskEventDispatcher.getInstance().dispatchTaskStarted(task);
+		} else{
+			System.out.println("tava tentando startar uma task já cancelada: " + task);
 		}
 	}
 

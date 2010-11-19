@@ -39,7 +39,9 @@ public class FinishTaskEvent extends TaskTimedEvent {
 				EventQueue.getInstance().addEvent(new FinishJobEvent(EventQueue.getInstance().getCurrentTime(), task.getSourceJob()));
 			}
 			TaskEventDispatcher.getInstance().dispatchTaskFinished(task);
-		} 
+		} else {
+//			System.out.println("tava tentando finalizar uma task já cancelada: " + task);
+		}
 	}
 
 }

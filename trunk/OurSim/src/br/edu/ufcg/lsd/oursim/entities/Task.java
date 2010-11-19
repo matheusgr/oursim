@@ -3,11 +3,10 @@ package br.edu.ufcg.lsd.oursim.entities;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.EqualsBuilder;
 
 /**
  * 
@@ -22,7 +21,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
  */
 public class Task extends ComputableElement implements Comparable<Task>, Cloneable {
 
-	private static final long SOURCE_TASK_REPLY_ID = 0l;
+	private static final long SOURCE_TASK_REPLICA_ID = 0l;
 
 	/**
 	 * The duration in unit of simulation (seconds) of this Task, considered
@@ -92,7 +91,7 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	/**
 	 * all the replicas of this tasks, including itself
 	 */
-	private Set<Task> replicas = new HashSet<Task>();
+	private Set<Task> replicas = new TreeSet<Task>();
 
 	private long replicaId;
 
@@ -114,7 +113,7 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 
 		// toda task também é uma réplica de si mesma.
 		this.replicas.add(this);
-		this.replicaId = SOURCE_TASK_REPLY_ID;
+		this.replicaId = SOURCE_TASK_REPLICA_ID;
 	}
 
 	/**
@@ -252,7 +251,8 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 		assert startTime != null;
 		assert taskExecution != null;
 		if (startTime != null) {
-//			return this.getStartTime() + taskExecution.getRemainingTimeToFinish();
+			// return this.getStartTime() +
+			// taskExecution.getRemainingTimeToFinish();
 			return taskExecution.getEstimatedFinishTime();
 		} else {
 			return null;
@@ -293,7 +293,9 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 				return 2;
 			} else if (id == t.getId()) {
 				// assert false : "\n" + this + "\n" + t;
-				return this.hashCode() == t.hashCode() ? 0 : (this.hashCode() > t.hashCode() ? 1 : -1);
+				// return this.hashCode() == t.hashCode() ? 0 : (this.hashCode()
+				// > t.hashCode() ? 1 : -1);
+				return this.hashCode() == t.hashCode() ? 0 : (this.replicaId > t.getReplicaId() ? 1 : -1);
 			} else {
 				return -2;
 			}
@@ -323,8 +325,8 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	}
 
 	public boolean isAnyReplicaFinished() {
-		for (Task reply : getReplicas()) {
-			if (reply.isFinished()) {
+		for (Task replica : getReplicas()) {
+			if (replica.isFinished()) {
 				return true;
 			}
 		}
@@ -332,9 +334,9 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	}
 
 	public Long getAnyReplicaFinishTime() {
-		for (Task reply : replicas) {
-			if (reply.isFinished()) {
-				return reply.getFinishTime();
+		for (Task replica : replicas) {
+			if (replica.isFinished()) {
+				return replica.getFinishTime();
 			}
 		}
 		return null;
@@ -383,11 +385,13 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 		assert this.startTime != null;
 		assert this.finishTime != null;
 		for (Task replica : replicas) {
-			if (replica.getReplicaId() == SOURCE_TASK_REPLY_ID) {
+			if (replica.getReplicaId() == SOURCE_TASK_REPLICA_ID) {
 				replica.finishTime = this.finishTime;
 				replica.startTime = this.startTime;
 				replica.cancelled = false;
 				replica.targetPeer = this.targetPeer;
+				replica.hasLocallyRunned = this.hasLocallyRunned;
+				break;
 			}
 		}
 	}

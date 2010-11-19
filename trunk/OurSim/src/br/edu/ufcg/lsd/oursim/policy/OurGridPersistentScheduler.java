@@ -36,7 +36,6 @@ public class OurGridPersistentScheduler extends JobSchedulerPolicyAbstract {
 			for (Peer provider : this.getPeers()) {
 				boolean isTaskRunning = provider.executeTask(task);
 				if (isTaskRunning) {
-					this.addStartedTaskEvent(task);
 					iterator.remove();
 					break;
 				}

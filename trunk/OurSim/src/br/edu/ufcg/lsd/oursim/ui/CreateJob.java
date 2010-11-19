@@ -6,71 +6,95 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 
 import br.edu.ufcg.lsd.oursim.util.ArrayBuilder;
+import br.edu.ufcg.lsd.oursim.util.TimeUtil;
 
 public class CreateJob {
 
 	public static void main(String[] args) throws IOException {
-		// scp cororoca:~/workspace/OurSim/cmd.txt .
-		String setUp = "cd /tmp && mkdir -p playpen/oursim && scp cororoca:~/workspace/OurSim/dist/oursim.zip . && unzip -o oursim.zip -d playpen/oursim && scp cororoca:~/workspace/SpotInstancesSimulator/dist/spotsim.zip . && unzip -o spotsim.zip -d playpen/oursim && cd playpen/oursim;";
-		String tearDown = "";
+
+		String setUp = "job : \n\tlabel : oursim \n\n";
 		String tearDownSep = "";
 		String cmd = "";
 		cmd += setUp;
-		String scheduler = "";
+
+		String workloadType = "marcus";
+		String workloadPattern = "resources/%s_workload_7_dias_%s_sites_%s.txt";
+		long avDur = TimeUtil.ONE_WEEK + 10 * TimeUtil.ONE_HOUR;
+		int spotLimit = 100;
+
+		String scheduler;
 		scheduler = "persistent";
-		scheduler = "replication 3";
-		String resultDir = String.format("/local/edigley/traces/oursim/trace_media_15s_%s_heterogeneous_resources",
-				scheduler.startsWith("replication") ? "replication" : "persistent");
+		scheduler = "replication";
+		String nReplicas = scheduler.equals("replication") ? "3" : "";
+
 		String java = " $JAVACALL ";
-		cmd += "JAVACALL='java -Xms500M -Xmx1500M -XX:-UseGCOverheadLimit -jar'";
-		cmd += ";SPT=resources/eu-west-1.linux.m1.small.csv";
-		int[] nSitesV = ArrayBuilder.createVector(2,10);
-		int[] nResV = ArrayBuilder.createVector(10, 50,20);
+		String jvmArgs = "";
+		String jcall = String.format("JAVACALL='java %s -Xms500M -Xmx1500M -XX:-UseGCOverheadLimit -jar'; \\\n", jvmArgs);
+		String sptD = "SPT=resources/eu-west-1.linux.m1.small.csv; \\\n";
+
+		int[] nSitesV = ArrayBuilder.createVector(50);
+		int[] nResV = ArrayBuilder.createVector(50, 50, 25);
+		int[] rodadas = ArrayBuilder.createVector(2, 2, 1);
+
 		ArrayBuilder.print(nSitesV);
 		ArrayBuilder.print(nResV);
-		for (int nSites : nSitesV) {
-			int spotLimit = 100;
-			for (int nRes : nResV) {
-				// int nRes = 25;
-				String isdFilePath = String.format("resources/iosup_site_description_%s_sites.txt", nSites);
-				String mdFilePath = String.format("resources/machines_speeds_%s_sites_%s_machines_by_site.txt", nSites, nRes);
-				String spt = " $SPT ";
-				String isd = " $ISD ";
-				String md = " $MD ";
-				String sep = "";
-				String oursimTracePattern = "oursim-trace-%2$s_7_dias_%1$s_sites.txt";
-				String oursimPattern = "oursim.jar -w resources/iosup_workload_7_dias_%1$s_sites.txt -s %5$s -pd %3$s -wt iosup -nr %2$s -synthetic_av 2678400 -o "
-						+ oursimTracePattern + " -u oursim-trace-utilization-%2$s_7_dias_%1$s_sites.txt -md %4$s";
-				String oursimCMD = String.format(sep + java + oursimPattern, nSites, nRes, isd, md, scheduler);
-				sep = " && ";
+		ArrayBuilder.print(rodadas);
 
-				String spotsimPrePattern = "sort -g " + oursimTracePattern + "_spot_workload.txt > " + oursimTracePattern + "_spot_workload_sorted.txt ";
-				String spotsimPreCMD = String.format(sep + spotsimPrePattern, nSites, nRes);
-				String spotsimTracePattern = "spot-trace-%2$s_7_dias_%1$s_sites_%3$s_spotLimit.txt";
-				String spotsimPattern = "spotsim.jar -spot -l %3$s -bid max -w " + oursimTracePattern + "_spot_workload_sorted.txt -av %4$s -o "
-						+ spotsimTracePattern;
-				String spotsimCMD = String.format(sep + java + spotsimPattern, nSites, nRes, spotLimit, spt);
-				cmd += String.format(";ISD=%s;MD=%s;%s%s%s", isdFilePath, mdFilePath, oursimCMD, spotsimPreCMD, spotsimCMD);
+		for (int rodada : rodadas) {
+			for (int nSites : nSitesV) {
+				for (int nRes : nResV) {
+					// int nRes = 25;
+					String isdFilePath = String.format("resources/iosup_site_description_%s_sites.txt", nSites);
+					String mdFilePath = String.format("resources/machines_speeds_%s_sites_%s_machines_by_site_%s.txt", nSites, nRes, rodada);
+					String spt = " $SPT ";
+					String isd = " $ISD ";
+					String md = " $MD ";
+					String sep = "";
 
-				StringBuilder sb = new StringBuilder("#site	num_cpus\n");
-				for (int i = 1; i <= nSites; i++) {
-					sb.append(i).append(" ").append(nRes).append("\n");
+					String wFile = String.format(workloadPattern, workloadType, nSites, rodada);
+
+					String oursimTrace = String.format("oursim-trace-%s_%s_machines_7_dias_%s_sites_%s.txt", scheduler, nRes, nSites, rodada);
+
+					String uFile = String.format("oursim-trace-utilization-%s_%s_machines_7_dias_%s_sites_%s.txt", scheduler, nRes, nSites, rodada);
+
+					String oursimPattern = "oursim.jar -w %s -wt %s -s %s %s -pd %s -nr %s -synthetic_av %s -o %s -u %s -md %s";
+					String oursimCMD = String.format(sep + java + oursimPattern, wFile, workloadType, scheduler, nReplicas, isd, nRes, avDur, oursimTrace,
+							uFile, md);
+					sep = " && ";
+
+					String preSpotWorkload = oursimTrace + "_spot_workload.txt";
+					String spotWorkload = oursimTrace + "_spot_workload_sorted.txt";
+					String spotsimPrePattern = "sort -g %s > %s ";
+					String spotsimPreCMD = String.format(sep + spotsimPrePattern, preSpotWorkload, spotWorkload);
+
+					String spotsimTrace = String.format("spot-trace-%s_%s_machines_7_dias_%s_sites_%s_spotLimit_%s.txt", scheduler, nRes, nSites, spotLimit,
+							rodada);
+
+					String uSpotFile = String.format("spot-trace-utilization-%s_%s_machines_7_dias_%s_sites_%s.txt", scheduler, nRes, nSites, rodada);
+
+					String spotsimPattern = "spotsim.jar -spot -l %s -bid max -w %s -av %s -o %s -u %s -pd %s -md %s";
+					String spotsimCMD = String.format(sep + java + spotsimPattern, spotLimit, spotWorkload, spt, spotsimTrace, uSpotFile, isd, md);
+
+					cmd += "\ttask : \n";
+					cmd += "\t\tinit : put /local/edigley/workspace/OurSim/dist/oursim.zip oursim.zip \n";
+					cmd += "\t\tremote : ";
+					cmd += String.format(tearDownSep + "ISD=%s; MD=%s; %s%s%s\n", isdFilePath, mdFilePath, oursimCMD, spotsimPreCMD, spotsimCMD);
+
+					cmd += "\t\tfinal : ";
+					String getPattern = "\t\t\tget %1$s /local/edigley/traces/oursim/19_11_2010/%1$s \n";
+					cmd += String.format(getPattern, oursimTrace);
+					cmd += String.format(getPattern, spotWorkload);
+					cmd += String.format(getPattern, spotsimTrace);
+					cmd += String.format(getPattern, uFile);
+					cmd += String.format(getPattern, uSpotFile);
+					cmd += "\n";
+
 				}
-				FileUtils.writeStringToFile(new File(isdFilePath), sb.toString());
-
-				String tearDownPattern = "scp " + oursimTracePattern + " " + oursimTracePattern + "_spot_workload_sorted.txt " + spotsimTracePattern
-						+ " oursim-trace-utilization-%2$s_7_dias_%1$s_sites.txt cororoca:%4$s ";
-				tearDown += tearDownSep + String.format(tearDownPattern, nSites, nRes, spotLimit, resultDir);
-				tearDownSep = " && ";
 			}
-			// scp cororoca:~/workspace/OurSim/cmd.txt .
 		}
 
-		cmd += " && " + tearDown;
+		FileUtils.writeStringToFile(new File("oursim.jdf"), cmd);
 
-		FileUtils.writeStringToFile(new File("cmd.txt"), cmd);
-
-		// System.out.println(cmd);
 	}
-	
+
 }

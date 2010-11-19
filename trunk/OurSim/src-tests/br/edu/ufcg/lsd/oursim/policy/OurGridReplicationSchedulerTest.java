@@ -95,7 +95,7 @@ public class OurGridReplicationSchedulerTest extends AbstractOurSimAPITest {
 		assertEquals(numberOfFinishedJobs, this.jobEventCounter.getNumberOfFinishedJobs());
 		assertEquals(1, this.jobEventCounter.getNumberOfPreemptionsForAllJobs());
 		assertEquals(numberOfFinishedTasks, this.taskEventCounter.getNumberOfFinishedTasks());
-		// TODO tem que considerar que há tantos cancelmentos quanto preempcoes
+		// TODO tem que considerar que há tantos cancelamentos quanto preempcoes
 //		assertEquals(11,
 //		this.taskEventCounter.getNumberOfPreemptionsForAllTasks());
 

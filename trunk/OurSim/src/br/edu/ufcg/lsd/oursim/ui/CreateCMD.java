@@ -19,25 +19,25 @@ public class CreateCMD {
 
 		String workloadType = "marcus";
 		String workloadPattern = "resources/%s_workload_7_dias_%s_sites_%s.txt";
-		String resultDir = "/local/edigley/traces/oursim/13_11_2010";
-		long avDur = TimeUtil.ONE_WEEK + 4 * TimeUtil.ONE_HOUR;
+		String resultDir = "/local/edigley/traces/oursim/19_11_2010";
+		long avDur = TimeUtil.ONE_WEEK + 10 * TimeUtil.ONE_HOUR;
 		int spotLimit = 100;
 
 		String scheduler;
-		String nReplicas;
-		scheduler = "persistent";
-		nReplicas = "";
 		scheduler = "replication";
-		nReplicas = "3";
+		scheduler = "persistent";
+		String nReplicas = scheduler.equals("replication") ? "3" : "";
 
 		String java = " $JAVACALL ";
-		cmd += "JAVACALL='java -Xms500M -Xmx1500M -XX:-UseGCOverheadLimit -jar'; \\\n";
+		String jvmArgs = "";
+		cmd += String.format("JAVACALL='java %s -Xms500M -Xmx1500M -XX:-UseGCOverheadLimit -jar'; \\\n", jvmArgs);
 		cmd += "SPT=resources/eu-west-1.linux.m1.small.csv; \\\n";
 
-		int[] nSitesV = ArrayBuilder.createVector(25, 100, 25);
+		int[] nSitesV = ArrayBuilder.createVector(1000);
 		int[] nResV = ArrayBuilder.createVector(25, 50, 25);
-		int[] rodadas = ArrayBuilder.createVector(4);
+		int[] rodadas = ArrayBuilder.createVector(1, 1, 1);
 
+		System.out.println(scheduler);
 		ArrayBuilder.print(nSitesV);
 		ArrayBuilder.print(nResV);
 		ArrayBuilder.print(rodadas);

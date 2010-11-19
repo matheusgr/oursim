@@ -25,6 +25,9 @@ public interface WorkerEventListener extends EventListener {
 
 	void workerDown(Event<String> workerEvent);
 
+	/**
+	 * @param workerEvent
+	 */
 	void workerAvailable(Event<String> workerEvent);
 
 	void workerUnavailable(Event<String> workerEvent);

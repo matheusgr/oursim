@@ -202,6 +202,9 @@ public final class PrintOutput extends OutputAdapter {
 				remTasksSize++;
 				sep2 = ";";
 				remoteMakeSpan = Math.max(remoteMakeSpan, task.getMakeSpan());
+				if (task.getMakeSpan()>job.getMakeSpan()) {
+					System.out.println(task);
+				}
 			}
 			sep = ";";
 		}

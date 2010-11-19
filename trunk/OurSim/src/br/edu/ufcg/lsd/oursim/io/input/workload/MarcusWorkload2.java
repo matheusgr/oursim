@@ -93,7 +93,7 @@ public class MarcusWorkload2 implements Workload {
 		String siteID = scLine.next();
 		assert peers.containsKey(siteID) : siteID + " -> " + line;
 		Job job = new Job(jobID, time, peers.get(siteID));
-		job.addTask(new Task(taskID, "", runTime, 0, null));
+		job.addTask(new Task(taskID, "", runTime, time, null));
 		job.setUserId(userID);
 		return job;
 	}

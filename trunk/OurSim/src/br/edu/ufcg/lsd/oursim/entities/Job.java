@@ -384,12 +384,12 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		this.userId = userId;
 	}
 
-	public void setSubmissionTime(long submissionTime) {
-		super.setSubmissionTime(submissionTime);
-		for (Task task : tasks) {
-			task.setSubmissionTime(submissionTime);
-		}
-	}
+//	public void setSubmissionTime(long submissionTime) {
+//		super.setSubmissionTime(submissionTime);
+//		for (Task task : tasks) {
+//			task.setSubmissionTime(submissionTime);
+//		}
+//	}
 
 	public long getThinkTime() {
 		return thinkTime;
