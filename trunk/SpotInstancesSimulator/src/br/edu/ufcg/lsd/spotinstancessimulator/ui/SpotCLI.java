@@ -36,7 +36,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,11 +57,8 @@ import br.edu.ufcg.lsd.oursim.io.output.ComputingElementEventCounter;
 import br.edu.ufcg.lsd.oursim.io.output.PrintOutput;
 import br.edu.ufcg.lsd.oursim.policy.FifoSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
-import br.edu.ufcg.lsd.oursim.policy.NoFSharingPolicy;
-import br.edu.ufcg.lsd.oursim.policy.ResourceSharingPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 import br.edu.ufcg.lsd.oursim.ui.SystemConfigurationCommandParser;
-import br.edu.ufcg.lsd.oursim.util.GWAFormat;
 import br.edu.ufcg.lsd.spotinstancessimulator.dispatchableevents.spotinstances.SpotPriceEventDispatcher;
 import br.edu.ufcg.lsd.spotinstancessimulator.entities.EC2Instance;
 import br.edu.ufcg.lsd.spotinstancessimulator.entities.EC2InstanceBadge;
@@ -70,8 +66,8 @@ import br.edu.ufcg.lsd.spotinstancessimulator.io.input.SpotPrice;
 import br.edu.ufcg.lsd.spotinstancessimulator.io.input.SpotPriceFluctuation;
 import br.edu.ufcg.lsd.spotinstancessimulator.io.input.workload.IosupWorkloadWithBidValue;
 import br.edu.ufcg.lsd.spotinstancessimulator.parser.Ec2InstanceParser;
+import br.edu.ufcg.lsd.spotinstancessimulator.policy.SpotInstancesMultiCoreSchedulerLimited;
 import br.edu.ufcg.lsd.spotinstancessimulator.policy.SpotInstancesScheduler;
-import br.edu.ufcg.lsd.spotinstancessimulator.policy.SpotInstancesSchedulerLimited;
 import br.edu.ufcg.lsd.spotinstancessimulator.simulationevents.SpotInstancesActiveEntity;
 import br.edu.ufcg.lsd.spotinstancessimulator.util.SpotInstaceTraceFormat;
 
@@ -90,6 +86,8 @@ public class SpotCLI {
 	public static final String LIMIT = "l";
 
 	public static final String UTILIZATION = "u";
+
+	public static final String SPOT_MACHINES_SPEED = "speed";
 
 	public static final String MACHINES_DESCRIPTION = "md";
 
@@ -111,12 +109,14 @@ public class SpotCLI {
 		Input<? extends AvailabilityRecord> availability = null;
 		Workload workload = null;
 		JobSchedulerPolicy jobScheduler = null;
-//		Map<String, Peer> peersMap = null;
+		// Map<String, Peer> peersMap = null;
 
 		Grid grid = prepareGrid(cmd);
-		
+
 		if (cmd.hasOption(SPOT_INSTANCES)) {
-//			peersMap = GWAFormat.extractPeersFromGWAFile(cmd.getOptionValue(WORKLOAD), 0, FifoSharingPolicy.getInstance());
+			// peersMap =
+			// GWAFormat.extractPeersFromGWAFile(cmd.getOptionValue(WORKLOAD),
+			// 0, FifoSharingPolicy.getInstance());
 			String spotTraceFilePath = cmd.getOptionValue(AVAILABILITY);
 			long timeOfFirstSpotPrice = SpotInstaceTraceFormat.extractTimeFromFirstSpotPrice(spotTraceFilePath);
 			availability = new SpotPriceFluctuation(spotTraceFilePath, timeOfFirstSpotPrice);
@@ -229,7 +229,8 @@ public class SpotCLI {
 		// jobScheduler = new SpotInstancesScheduler(spotInstancesPeer,
 		// initialSpotPrice, ec2Instance.speed);
 		int limit = Integer.parseInt(cmd.getOptionValue(LIMIT));
-		jobScheduler = new SpotInstancesSchedulerLimited(spotInstancesPeer, initialSpotPrice, ec2Instance.speed, limit);
+		long speed = ec2Instance.speedByCore;
+		jobScheduler = new SpotInstancesMultiCoreSchedulerLimited(spotInstancesPeer, initialSpotPrice, ec2Instance, limit);
 		SpotPriceEventDispatcher.getInstance().addListener((SpotInstancesScheduler) jobScheduler);
 		return jobScheduler;
 	}
@@ -280,6 +281,8 @@ public class SpotCLI {
 		options.addOption(INSTANCE_REGION, "instance_region", true, "Região a qual a instância pertence.");
 		options.addOption(INSTANCE_SO, "instance_so", true, "Sistema operacional da instância a ser simulada.");
 		options.addOption(BID_VALUE, "bid_value", true, "Valor do bid para alocação de instâncias no modelo amazon spot instances..");
+		// options.addOption(SPOT_MACHINES_SPEED, "machines_speed", true,
+		// "Velocidade das máquinas spot instance.");
 		options.addOption(LIMIT, "limit", true, "Número máximo de instâncias simultâneas que podem ser alocadas por usuário.");
 		return options;
 	}

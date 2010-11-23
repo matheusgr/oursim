@@ -14,6 +14,10 @@ public class EC2Instance {
 
 	public long speed;
 
+	public int numCores;
+
+	public long speedByCore;
+
 	public double storage;
 
 	public String arch;

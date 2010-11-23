@@ -1,13 +1,12 @@
 package br.edu.ufcg.lsd.spotinstancessimulator.policy;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
+import br.edu.ufcg.lsd.oursim.dispatchableevents.EventListener;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Machine;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
@@ -216,4 +215,8 @@ public class SpotInstancesScheduler extends SpotInstancesActiveEntity implements
 
 	// E-- end of implementation of SpotPriceEventListener
 
+	@Override
+	public int compareTo(EventListener o) {
+		return this.hashCode() - o.hashCode();
+	}
 }
