@@ -42,6 +42,27 @@ public class Ec2InstanceParser {
 		double numberOfECUPerCore = Double.parseDouble(payload.substring(indexOfX+1, payload.length()));
 		return Math.round((numberOfCores * numberOfECUPerCore) * Processor.EC2_COMPUTE_UNIT.getSpeed());
 	}
+
+	private static int getNumberOfCores(String field) {
+		//6.5-ECU[2x3.25]
+		int begin = field.indexOf("[") + 1;
+		int end = field.lastIndexOf("]");
+		String payload = field.substring(begin, end);
+		int indexOfX = payload.indexOf("x");
+		int numberOfCores = Integer.parseInt(payload.substring(0, indexOfX));
+		return numberOfCores;
+	}
+
+	private static long getSpeedByCore(String field) {
+		//6.5-ECU[2x3.25]
+		int begin = field.indexOf("[") + 1;
+		int end = field.lastIndexOf("]");
+		String payload = field.substring(begin, end);
+		int indexOfX = payload.indexOf("x");
+		int numberOfCores = Integer.parseInt(payload.substring(0, indexOfX));
+		double numberOfECUPerCore = Double.parseDouble(payload.substring(indexOfX+1, payload.length()));
+		return Math.round(numberOfECUPerCore * Processor.EC2_COMPUTE_UNIT.getSpeed());	
+	}
   
 } 
 PARSER_END(Ec2InstanceParser)
@@ -139,6 +160,8 @@ EC2Instance instance() :
 //		for (EC2InstanceBadge badge: badges){//		}
 		retorno.badges = badges;
 		retorno.speed =	parseSpeed(speedField);
+		retorno.numCores =	getNumberOfCores(speedField);
+		retorno.speedByCore =	getSpeedByCore(speedField);
 		retorno.arch = ""+arch;
 			
 		instances.add(retorno);  

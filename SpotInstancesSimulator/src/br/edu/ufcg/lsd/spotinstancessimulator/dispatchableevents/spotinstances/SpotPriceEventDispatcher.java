@@ -49,11 +49,11 @@ public class SpotPriceEventDispatcher extends EventDispatcher<SpotValue, SpotPri
 	 * @param time
 	 */
 	public void dispatchNewSpotPrice(SpotValue spotValue) {
-		dispatch(null, new Event<SpotValue>(spotValue));
+		dispatch(null, new Event<SpotValue>(spotValue.getTime(), spotValue));
 	}
 
 	public void dispatchFullHourCompleted(SpotValue spotValue) {
-		Event<SpotValue> spotValueEvent = new Event<SpotValue>(spotValue);
+		Event<SpotValue> spotValueEvent = new Event<SpotValue>(spotValue.getTime(), spotValue);
 		for (SpotPriceEventListener listener : this.getListeners()) {
 			if (this.getListenerToFilter().get(listener).accept(spotValueEvent)) {
 				listener.fullHourCompleted(spotValueEvent);

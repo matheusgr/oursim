@@ -1,7 +1,7 @@
 package br.edu.ufcg.lsd.spotinstancessimulator.entities;
 
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
 public class EC2InstanceBadge {
 

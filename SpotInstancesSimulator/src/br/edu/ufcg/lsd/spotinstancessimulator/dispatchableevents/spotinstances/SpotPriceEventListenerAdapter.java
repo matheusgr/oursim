@@ -12,7 +12,7 @@ import br.edu.ufcg.lsd.spotinstancessimulator.entities.SpotValue;
  * @since 28/07/2010
  * 
  */
-public abstract class SpotPriceEventListenerAdapter implements SpotPriceEventListener, EventListenerAdapter {
+public abstract class SpotPriceEventListenerAdapter extends EventListenerAdapter implements SpotPriceEventListener {
 
 	@Override
 	public void fullHourCompleted(Event<SpotValue> spotPriceEvent) {

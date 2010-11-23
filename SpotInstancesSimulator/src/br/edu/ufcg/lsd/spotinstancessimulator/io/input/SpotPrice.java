@@ -23,6 +23,10 @@ public class SpotPrice extends AvailabilityRecord implements SpotValue {
 		this.dateTime = dateTime;
 	}
 
+	public SpotPrice(String instanceType, long time, double price) {
+		this(instanceType, time, price, 0);
+	}
+
 	public SpotPrice(String instanceType, long time, double price, long simulationStartingTime) {
 		super(instanceType, time - simulationStartingTime, Long.MAX_VALUE);
 		assert simulationStartingTime >= 0;

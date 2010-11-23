@@ -24,7 +24,7 @@ import br.edu.ufcg.lsd.spotinstancessimulator.io.input.SpotPrice;
 public class SpotInstancesActiveEntity extends ActiveEntityImp {
 
 	private Map<Task, FullHourCompletedEvent> task2FullHour = new HashMap<Task, FullHourCompletedEvent>();
-	
+
 	public void addNewSpotPriceEvent(SpotPrice spotPrice) {
 		this.getEventQueue().addEvent(new NewSpotPriceEvent(spotPrice));
 	}
@@ -33,14 +33,19 @@ public class SpotInstancesActiveEntity extends ActiveEntityImp {
 		long oneHourFromNow = getCurrentTime() + TimeUtil.ONE_HOUR;
 		FullHourCompletedEvent fullHourCompletedEvent = new FullHourCompletedEvent(oneHourFromNow, bidValue);
 		this.getEventQueue().addEvent(fullHourCompletedEvent);
+		bidValue.setTime(oneHourFromNow);
 		this.task2FullHour.put(bidValue.getTask(), fullHourCompletedEvent);
 	}
 
-	public void addComplementaryHourCompletedEvent(BidValue bidValue,BidValue oldBidValue) {
-		long oneHourFromComplementary = task2FullHour.get(oldBidValue.getTask()).getTime();
-		FullHourCompletedEvent fullHourCompletedEvent = new FullHourCompletedEvent(oneHourFromComplementary, bidValue);
-		this.getEventQueue().addEvent(fullHourCompletedEvent);
-		this.task2FullHour.put(bidValue.getTask(), fullHourCompletedEvent);
+	public void addComplementaryHourCompletedEvent(BidValue bidValue, BidValue oldBidValue) {
+		// long oneHourFromComplementary =
+		// task2FullHour.get(oldBidValue.getTask()).getTime();
+		// FullHourCompletedEvent fullHourCompletedEvent = new
+		// FullHourCompletedEvent(oneHourFromComplementary, bidValue);
+		// this.getEventQueue().addEvent(fullHourCompletedEvent);
+		// this.task2FullHour.put(bidValue.getTask(), fullHourCompletedEvent);
+
+//		this.addFullHourCompletedEvent(oldBidValue);
 	}
 
 	@Override
@@ -58,21 +63,21 @@ public class SpotInstancesActiveEntity extends ActiveEntityImp {
 		this.getEventQueue().addEvent(new SubmitJobEvent(submitTime, job));
 	}
 
-//	public static void main(String[] args) {
-//		AvailabilityRecord av = new AvailabilityRecord("", 1324l, 25);
-//		SpotPrice sp = new SpotPrice("", new Date(), 123d); 
-//		
-//		System.out.println(sp instanceof AvailabilityRecord);
-//		System.out.println(AvailabilityRecord.class.isInstance(sp));
-//		
-//		System.out.println(av.getClass().getCanonicalName().equals(AvailabilityRecord.class.getCanonicalName()));
-//		System.out.println(av.getClass() == AvailabilityRecord.class);
-//		
-//		System.out.println(sp.getClass().getCanonicalName().equals(AvailabilityRecord.class.getCanonicalName()));
-//		System.out.println(sp.getClass() == AvailabilityRecord.class);
-//		
-//		System.out.println(sp.getClass().getCanonicalName().equals(SpotPrice.class.getCanonicalName()));
-//		System.out.println(sp.getClass() == SpotPrice.class);
-//	}
+	// public static void main(String[] args) {
+	// AvailabilityRecord av = new AvailabilityRecord("", 1324l, 25);
+	// SpotPrice sp = new SpotPrice("", new Date(), 123d);
+	//		
+	// System.out.println(sp instanceof AvailabilityRecord);
+	// System.out.println(AvailabilityRecord.class.isInstance(sp));
+	//		
+	// System.out.println(av.getClass().getCanonicalName().equals(AvailabilityRecord.class.getCanonicalName()));
+	// System.out.println(av.getClass() == AvailabilityRecord.class);
+	//		
+	// System.out.println(sp.getClass().getCanonicalName().equals(AvailabilityRecord.class.getCanonicalName()));
+	// System.out.println(sp.getClass() == AvailabilityRecord.class);
+	//		
+	// System.out.println(sp.getClass().getCanonicalName().equals(SpotPrice.class.getCanonicalName()));
+	// System.out.println(sp.getClass() == SpotPrice.class);
+	// }
 
 }
