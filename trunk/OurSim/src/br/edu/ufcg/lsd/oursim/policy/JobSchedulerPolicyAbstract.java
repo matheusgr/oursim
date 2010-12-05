@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
+import br.edu.ufcg.lsd.oursim.dispatchableevents.EventListener;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.entities.Task;
@@ -64,11 +65,11 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 	 * Performs a rescheduling of the task. The task already has been schedulled
 	 * but it was preempted by some reason.
 	 * 
-	 * @param task
+	 * @param Task
 	 *            The task to be rescheduled.
 	 */
-	protected void rescheduleTask(Task task) {
-		this.addSubmitTaskEvent(getCurrentTime(), task);
+	protected void rescheduleTask(Task Task) {
+		this.addSubmitTaskEvent(getCurrentTime(), Task);
 	}
 
 	@Override
@@ -80,8 +81,8 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 	public void addJob(Job job) {
 		assert !job.getTasks().isEmpty();
 		// this.submittedJobs.add(job);
-		for (Task task : job.getTasks()) {
-			this.addSubmitTaskEvent(this.getCurrentTime(), task);
+		for (Task Task : job.getTasks()) {
+			this.addSubmitTaskEvent(this.getCurrentTime(), Task);
 		}
 	}
 
@@ -154,36 +155,36 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 
 	@Override
 	public void taskStarted(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		this.runningTasks.add(task);
+		Task Task = taskEvent.getSource();
+		this.runningTasks.add(Task);
 	}
 
 	@Override
 	public void taskFinished(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		task.getTargetPeer().finishTask(task);
-		boolean removed = this.runningTasks.remove(task);
-		assert removed : task;
+		Task Task = taskEvent.getSource();
+		Task.getTargetPeer().finishTask(Task);
+		boolean removed = this.runningTasks.remove(Task);
+		assert removed : Task;
 	}
 
 	@Override
 	public void taskSubmitted(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		this.submittedTasks.add(task);
+		Task Task = taskEvent.getSource();
+		this.submittedTasks.add(Task);
 	}
 
 	@Override
 	public void taskPreempted(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		boolean removed = this.runningTasks.remove(task);
-		assert removed : task;
+		Task Task = taskEvent.getSource();
+		boolean removed = this.runningTasks.remove(Task);
+		assert removed : Task;
 	}
 
 	@Override
 	public void taskCancelled(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		boolean removed = this.runningTasks.remove(task);
-		assert removed : task;
+		Task Task = taskEvent.getSource();
+		boolean removed = this.runningTasks.remove(Task);
+		assert removed : Task;
 	}
 
 	// E-- end of implementation of TaskEventListener
@@ -216,4 +217,9 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 	}
 
 	// E-- end of implementation of SpotPriceEventListener
+
+	@Override
+	public int compareTo(EventListener o) {
+		return this.hashCode() - o.hashCode();
+	}
 }

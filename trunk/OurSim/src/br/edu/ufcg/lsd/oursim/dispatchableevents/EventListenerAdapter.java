@@ -9,6 +9,11 @@ package br.edu.ufcg.lsd.oursim.dispatchableevents;
  * @since 19/05/2010
  * @see {@link EventListener}
  */
-public interface EventListenerAdapter extends EventListener {
+public abstract class EventListenerAdapter implements EventListener {
+
+	@Override
+	public int compareTo(EventListener o) {
+		return this.hashCode() - o.hashCode();
+	}
 
 }

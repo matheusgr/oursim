@@ -12,7 +12,7 @@ import br.edu.ufcg.lsd.oursim.entities.Task;
  * @since 19/05/2010
  * 
  */
-public abstract class TaskEventListenerAdapter implements TaskEventListener, EventListenerAdapter {
+public abstract class TaskEventListenerAdapter extends EventListenerAdapter implements TaskEventListener {
 
 	@Override
 	public void taskFinished(Event<Task> taskEvent) {

@@ -79,40 +79,40 @@ public interface ActiveEntity {
 	 * 
 	 * @param submitTime
 	 *            the time at which the job has been submitted.
-	 * @param task
+	 * @param Task
 	 *            the task that has been submitted.
 	 */
-	void addSubmitTaskEvent(long submitTime, Task task);
+	void addSubmitTaskEvent(long submitTime, Task Task);
 
 	/**
 	 * Adds an event indicating that a task has been started.
 	 * 
-	 * @param task
+	 * @param Task
 	 *            the task that has been started.
 	 */
-	void addStartedTaskEvent(Task task);
+	void addStartedTaskEvent(Task Task);
 
 	/**
 	 * Adds an event indicating that a task has been preempted.
 	 * 
 	 * @param preemptionTime
 	 *            the time at which the task has been preempted.
-	 * @param task
+	 * @param Task
 	 *            the task that has been preempted.
 	 */
-	void addPreemptedTaskEvent(long preemptionTime, Task task);
+	void addPreemptedTaskEvent(long preemptionTime, Task Task);
 	
-	void addPreemptedTaskEvent(Task task);
+	void addPreemptedTaskEvent(Task Task);
 
 	/**
 	 * Adds an event indicating that a task has been finished.
 	 * 
 	 * @param finishTime
 	 *            the time at which the task has been finished.
-	 * @param task
+	 * @param Task
 	 *            the task that has been finished.
 	 */
-	void addFinishTaskEvent(long finishTime, Task task);
+	void addFinishTaskEvent(long finishTime, Task Task);
 
 	/**
 	 * Adds an event indicating that a worker has become available. It's
@@ -128,9 +128,9 @@ public interface ActiveEntity {
 	 */
 	void addWorkerAvailableEvent(long time, String machineName, long duration);
 
-	void addCancelledTaskEvent(Task task);
+	void addCancelledTaskEvent(Task Task);
 
-	void addCancelledTaskEvent(long preemptionTime, Task task);
+	void addCancelledTaskEvent(long preemptionTime, Task Task);
 
 	void addAvailabilityRecordEvent(long time, AvailabilityRecord avRecord);
 

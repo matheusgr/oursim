@@ -23,10 +23,12 @@ import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.prepareOutputAccounting;
 import static br.edu.ufcg.lsd.oursim.ui.CLIUTil.showMessageAndExit;
 
 import java.io.BufferedWriter;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -58,7 +60,7 @@ import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
 import br.edu.ufcg.lsd.oursim.io.output.ComputingElementEventCounter;
 import br.edu.ufcg.lsd.oursim.io.output.Output;
 import br.edu.ufcg.lsd.oursim.io.output.PrintOutput;
-import br.edu.ufcg.lsd.oursim.io.output.RemoteWorkloadExtractorOutput;
+import br.edu.ufcg.lsd.oursim.io.output.RemoteTasksExtractorOutput;
 import br.edu.ufcg.lsd.oursim.io.output.TaskPrintOutput;
 import br.edu.ufcg.lsd.oursim.policy.FifoSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
@@ -135,37 +137,25 @@ public class CLI {
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
+		List<Closeable> closeables = new ArrayList<Closeable>();
 
 		CommandLine cmd = parseCommandLine(args, prepareOptions(), HELP, USAGE, EXECUTION_LINE);
 
 		File outputFile = (File) cmd.getOptionObject(OUTPUT);
 		PrintOutput printOutput = new PrintOutput(outputFile, false);
 		JobEventDispatcher.getInstance().addListener(printOutput);
-		Output remoteWorkloadExtractor = new RemoteWorkloadExtractorOutput(new File(outputFile.getName() + "_spot_workload.txt"));
+		closeables.add(printOutput);
+		Output remoteWorkloadExtractor = new RemoteTasksExtractorOutput(new File(outputFile.getName() + "_spot_workload.txt"));
+		closeables.add(remoteWorkloadExtractor);
 		JobEventDispatcher.getInstance().addListener(remoteWorkloadExtractor);
 
 		Grid grid = prepareGrid(cmd);
 
-		BufferedWriter bw = null;
-		if (cmd.hasOption(UTILIZATION)) {
-			bw = createBufferedWriter((File) cmd.getOptionObject(UTILIZATION));
-			grid.setUtilizationBuffer(bw);
-		}
-
-		BufferedWriter bw2 = null;
-		if (cmd.hasOption(WORKER_EVENTS)) {
-			bw2 = createBufferedWriter((File) cmd.getOptionObject(WORKER_EVENTS));
-		}
-
-		TaskPrintOutput taskOutput = null;
-		if (cmd.hasOption(TASK_EVENTS)) {
-			taskOutput = new TaskPrintOutput((File) cmd.getOptionObject(TASK_EVENTS));
-			TaskEventDispatcher.getInstance().addListener(taskOutput);
-		}
+		prepareOptionalOutputFiles(cmd, grid, closeables);
 
 		ComputingElementEventCounter computingElementEventCounter = prepareOutputAccounting(cmd, cmd.hasOption(VERBOSE));
 
-		Input<? extends AvailabilityRecord> availability = defineAvailability(cmd, grid.getMapOfPeers(), bw2);
+		Input<? extends AvailabilityRecord> availability = defineAvailability(cmd, grid.getMapOfPeers());
 
 		long timeOfFirstSubmission = cmd.getOptionValue(WORKLOAD_TYPE).equals("gwa") ? GWAFormat
 				.extractSubmissionTimeFromFirstJob(cmd.getOptionValue(WORKLOAD)) : 0;
@@ -179,15 +169,13 @@ public class CLI {
 
 		oursim.start();
 
-		printOutput.close();
-		JobEventDispatcher.getInstance().removeListener(printOutput);
-		JobEventDispatcher.getInstance().removeListener(remoteWorkloadExtractor);
-		if (taskOutput != null) {
-			taskOutput.close();
-			TaskEventDispatcher.getInstance().removeListener(taskOutput);
+		for (Closeable c : closeables) {
+			c.close();
 		}
 
+		// adiciona métricas resumos no fim do arquivo
 		FileWriter fw = new FileWriter(cmd.getOptionValue(OUTPUT), true);
+		closeables.add(fw);
 		stopWatch.stop();
 		fw.write("# Simulation                  duration:" + stopWatch + ".\n");
 
@@ -195,41 +183,44 @@ public class CLI {
 		double realUtilization = grid.getTrueUtilization();
 
 		int numberOfResourcesByPeer = Integer.parseInt(cmd.getOptionValue(NUM_RESOURCES_BY_PEER, "0"));
-		fw.write(formatSummaryStatistics(computingElementEventCounter, numberOfResourcesByPeer, utilization, realUtilization, stopWatch.getTime()) + "\n");
-
-		System.out.println(getSummaryStatistics(computingElementEventCounter, numberOfResourcesByPeer, utilization, realUtilization, stopWatch.getTime()));
-
+		fw.write(formatSummaryStatistics(computingElementEventCounter, "NA", "NA", false, grid.getPeers().size(), numberOfResourcesByPeer, utilization,
+				realUtilization, stopWatch.getTime())
+				+ "\n");
 		fw.close();
 
-		if (cmd.hasOption(UTILIZATION)) {
-			closeBufferedWriter(bw);
-		}
-
-		if (cmd.hasOption(WORKER_EVENTS)) {
-			closeBufferedWriter(bw2);
-		}
+		System.out.println(getSummaryStatistics(computingElementEventCounter, "NA", "NA", false, grid.getPeers().size(), numberOfResourcesByPeer, utilization,
+				realUtilization, stopWatch.getTime()));
 
 	}
 
-	private static BufferedWriter createBufferedWriter(File utilizationFile) {
+	private static void prepareOptionalOutputFiles(CommandLine cmd, Grid grid, List<Closeable> closeables) throws IOException {
+		if (cmd.hasOption(UTILIZATION)) {
+			BufferedWriter bw = createBufferedWriter((File) cmd.getOptionObject(UTILIZATION));
+			grid.setUtilizationBuffer(bw);
+			closeables.add(bw);
+		}
+
+		if (cmd.hasOption(WORKER_EVENTS)) {
+			BufferedWriter bw2 = createBufferedWriter((File) cmd.getOptionObject(WORKER_EVENTS));
+			closeables.add(bw2);
+		}
+
+		if (cmd.hasOption(TASK_EVENTS)) {
+			TaskPrintOutput taskOutput = new TaskPrintOutput((File) cmd.getOptionObject(TASK_EVENTS));
+			TaskEventDispatcher.getInstance().addListener(taskOutput);
+			closeables.add(taskOutput);
+		}
+	}
+
+	private static BufferedWriter createBufferedWriter(File file) {
 		try {
-			if (utilizationFile != null) {
-				return new BufferedWriter(new FileWriter(utilizationFile));
+			if (file != null) {
+				return new BufferedWriter(new FileWriter(file));
 			}
 			return null;
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
-		}
-	}
-
-	private static void closeBufferedWriter(BufferedWriter bw) {
-		try {
-			if (bw != null) {
-				bw.close();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -271,7 +262,7 @@ public class CLI {
 		return workload;
 	}
 
-	private static Input<AvailabilityRecord> defineAvailability(CommandLine cmd, Map<String, Peer> peersMap, BufferedWriter bw2) throws FileNotFoundException {
+	private static Input<AvailabilityRecord> defineAvailability(CommandLine cmd, Map<String, Peer> peersMap) throws FileNotFoundException {
 		Input<AvailabilityRecord> availability = null;
 		if (cmd.hasOption(DEDICATED_RESOURCES)) {
 			availability = new DedicatedResourcesAvailabilityCharacterization(peersMap.values());
@@ -283,14 +274,8 @@ public class CLI {
 			String avType = cmd.getOptionValues(SYNTHETIC_AVAILABILITY).length == 2 ? cmd.getOptionValues(SYNTHETIC_AVAILABILITY)[1] : "";
 			if (avType.equals("mutka")) {
 				availability = new MarkovModelAvailabilityCharacterization(peersMap, availabilityThreshold, 0);
-				if (cmd.hasOption(WORKER_EVENTS)) {
-					((MarkovModelAvailabilityCharacterization) availability).setBuffer(bw2);
-				}
 			} else {
 				availability = new OurGridAvailabilityCharacterization(peersMap, availabilityThreshold, 0);
-				if (cmd.hasOption(WORKER_EVENTS)) {
-					((OurGridAvailabilityCharacterization) availability).setBuffer(bw2);
-				}
 			}
 		}
 

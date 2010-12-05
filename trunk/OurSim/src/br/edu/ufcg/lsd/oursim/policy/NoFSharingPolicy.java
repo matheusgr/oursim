@@ -82,13 +82,13 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 			long mostRecentlyStartTime = -1;
 			Peer p = peer1;
 
-			for (Task task : runningTasks) {
-				if (task.getSourcePeer() == peer1 && task.getStartTime() > mostRecentlyStartTime) {
+			for (Task Task : runningTasks) {
+				if (Task.getSourcePeer() == peer1 && Task.getStartTime() > mostRecentlyStartTime) {
 					p = peer1;
-					mostRecentlyStartTime = task.getStartTime();
-				} else if (task.getSourcePeer() == peer2 && task.getStartTime() > mostRecentlyStartTime) {
+					mostRecentlyStartTime = Task.getStartTime();
+				} else if (Task.getSourcePeer() == peer2 && Task.getStartTime() > mostRecentlyStartTime) {
 					p = peer2;
-					mostRecentlyStartTime = task.getStartTime();
+					mostRecentlyStartTime = Task.getStartTime();
 				}
 			}
 			return p == peer1 ? 1 : -1;
@@ -119,27 +119,27 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 	}
 
 	@Override
-	public void increaseBalance(Peer source, Peer target, Task task) {
+	public void increaseBalance(Peer source, Peer target, Task Task) {
 		assert target != source;
-		if (task.isFinished()) {
-			updateBalance(source, target, task.getRunningTime());
+		if (Task.isFinished()) {
+			updateBalance(source, target, Task.getRunningTime());
 		}
 
 	}
 
 	@Override
-	public void decreaseBalance(Peer source, Peer target, Task task) {
-		if (task.isFinished()) {
-			updateBalance(source, target, -task.getRunningTime());
+	public void decreaseBalance(Peer source, Peer target, Task Task) {
+		if (Task.isFinished()) {
+			updateBalance(source, target, -Task.getRunningTime());
 		}
 	}
 
 	@Override
-	public void updateMutualBalance(Peer provider, Peer consumer, Task task) {
+	public void updateMutualBalance(Peer provider, Peer consumer, Task Task) {
 		// Don't update the balance to itself
 		if (provider != consumer) {
-			decreaseBalance(provider, consumer, task);
-			increaseBalance(consumer, provider, task);
+			decreaseBalance(provider, consumer, Task);
+			increaseBalance(consumer, provider, Task);
 		}
 	}
 

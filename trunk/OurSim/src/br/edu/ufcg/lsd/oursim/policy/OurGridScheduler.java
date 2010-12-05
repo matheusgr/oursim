@@ -30,12 +30,12 @@ public class OurGridScheduler extends JobSchedulerPolicyAbstract {
 	@Override
 	public final void schedule() {
 		for (Iterator<Task> iterator = this.getSubmittedTasks().iterator(); iterator.hasNext();) {
-			Task task = iterator.next();
-			task.getSourcePeer().prioritizePeersToConsume(this.getPeers());
+			Task Task = iterator.next();
+			Task.getSourcePeer().prioritizePeersToConsume(this.getPeers());
 			for (Peer provider : this.getPeers()) {
-				boolean isTaskRunning = provider.executeTask(task);
+				boolean isTaskRunning = provider.executeTask(Task);
 				if (isTaskRunning) {
-					this.addStartedTaskEvent(task);
+					this.addStartedTaskEvent(Task);
 					iterator.remove();
 					break;
 				}

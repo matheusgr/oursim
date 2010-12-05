@@ -20,20 +20,20 @@ public class StartedTaskEvent extends TaskTimedEvent {
 	/**
 	 * Creates an event indicating that a task has been started.
 	 * 
-	 * @param task
+	 * @param Task
 	 *            the task that has been started.
 	 */
-	public StartedTaskEvent(Task task) {
-		super(task.getStartTime(), PRIORITY, task);
+	public StartedTaskEvent(Task Task) {
+		super(Task.getStartTime(), PRIORITY, Task);
 	}
 
 	@Override
 	protected void doAction() {
-		Task task = (Task) source;
-		if (!task.isCancelled()) {
-			TaskEventDispatcher.getInstance().dispatchTaskStarted(task);
+		Task Task = (Task) source;
+		if (!Task.isCancelled()) {
+			TaskEventDispatcher.getInstance().dispatchTaskStarted(Task);
 		} else{
-			System.out.println("tava tentando startar uma task já cancelada: " + task);
+			System.out.println("tava tentando startar uma task já cancelada: " + Task);
 		}
 	}
 

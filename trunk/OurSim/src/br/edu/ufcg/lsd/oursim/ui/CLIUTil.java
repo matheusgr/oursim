@@ -1,9 +1,5 @@
 package br.edu.ufcg.lsd.oursim.ui;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.text.DecimalFormat;
 
 import org.apache.commons.cli.CommandLine;
@@ -12,17 +8,15 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
-import org.apache.commons.io.FileUtils;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventDispatcher;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
 import br.edu.ufcg.lsd.oursim.io.output.ComputingElementEventCounter;
-import br.edu.ufcg.lsd.oursim.io.output.JobPrintOutput;
+import br.edu.ufcg.lsd.oursim.io.output.PrintOutput;
 import br.edu.ufcg.lsd.oursim.io.output.TaskPrintOutput;
-import br.edu.ufcg.lsd.oursim.io.output.WorkerEventsPrintOutput;
+import br.edu.ufcg.lsd.oursim.io.output.WorkerPrintOutput;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
-import br.edu.ufcg.lsd.oursim.util.ArrayBuilder;
 
 public class CLIUTil {
 
@@ -59,53 +53,82 @@ public class CLIUTil {
 		System.exit(1);
 	}
 
-	public static String getSummaryStatistics(ComputingElementEventCounter computingElementEventCounter, int nMachines, double utilization,
-			double realUtilization, long simulationDuration) {
+	public static String getSummaryStatistics(ComputingElementEventCounter c, String instance, String group, boolean groupedCloudUser, int nPeers,
+			int nMachines, double utilization, double realUtilization, long simulationDuration) {
 
-		DecimalFormat dft = new DecimalFormat("000.00");
+		DecimalFormat dft = new DecimalFormat("###0.0000");
 
 		// submitted - (finished + preempted)
-		int notStarted = computingElementEventCounter.getNumberOfSubmittedJobs()
-				- (computingElementEventCounter.getNumberOfFinishedJobs() + computingElementEventCounter.getNumberOfPreemptionsForAllJobs());
+		int notStarted = c.getNumberOfSubmittedJobs() - (c.getNumberOfFinishedJobs() + c.getNumberOfPreemptionsForAllJobs());
 
 		StringBuilder sb = new StringBuilder(
-				"# submitted finished preempted notStarted success finishedCost preemptedCost totalCost nMachines utilization realUtilization simulationDuration"
+				"# submitted finished preempted notStarted submittedTasks finishedTasks success sumOfJobsMakespan sumOfTasksMakespan finishedCost preemptedCost totalCost costByTask nPeers nMachines instance group groupedCloudUser utilization realUtilization simulationDuration"
 						+ "\n");
-		sb.append("# " + computingElementEventCounter.getNumberOfSubmittedJobs()).append(" ").append(computingElementEventCounter.getNumberOfFinishedJobs())
-				.append(" ").append(computingElementEventCounter.getNumberOfPreemptionsForAllJobs()).append(" ").append(notStarted).append(" ").append(
-						dft.format(computingElementEventCounter.getNumberOfFinishedJobs() / (computingElementEventCounter.getNumberOfSubmittedJobs() * 1.0))
-								.replace(",", ".")).append(" ").append(
-						dft.format(computingElementEventCounter.getTotalCostOfAllFinishedJobs()).replace(",", ".")).append(" ").append(
-						dft.format(computingElementEventCounter.getTotalCostOfAllPreemptedJobs()).replace(",", ".")).append(" ").append(
-						dft
-								.format(
-										computingElementEventCounter.getTotalCostOfAllFinishedJobs()
-												+ computingElementEventCounter.getTotalCostOfAllPreemptedJobs()).replace(",", ".")).append(" ").append(
-						nMachines).append(" ").append(utilization).append(" ").append(realUtilization).append(" ").append(simulationDuration);
+		double totalCost = c.getTotalCostOfAllFinishedJobs() + c.getTotalCostOfAllPreemptedJobs();
+		sb.append("# " +
+
+		c.getNumberOfSubmittedJobs()).append(" ")
+
+		.append(c.getNumberOfFinishedJobs()).append(" ")
+
+		.append(c.getNumberOfPreemptionsForAllJobs()).append(" ")
+
+		.append(notStarted).append(" ")
+
+		.append(c.getNumberOfSubmittedTasks()).append(" ")
+
+		.append(c.getNumberOfFinishedTasks()).append(" ")
+
+		.append(dft.format(c.getNumberOfFinishedJobs() / (c.getNumberOfSubmittedJobs() * 1.0)).replace(",", ".")).append(" ")
+
+		.append(c.getSumOfJobsMakespan()).append(" ")
+
+		.append(c.getSumOfTasksMakespan()).append(" ")
+
+		.append(dft.format(c.getTotalCostOfAllFinishedJobs()).replace(",", ".")).append(" ")
+
+		.append(dft.format(c.getTotalCostOfAllPreemptedJobs()).replace(",", ".")).append(" ")
+
+		.append(dft.format(totalCost).replace(",", ".")).append(" ")
+
+		.append(dft.format(totalCost / (c.getNumberOfFinishedTasks() * 1.0)).replace(",", ".")).append(" ")
+
+		.append(nPeers).append(" ")
+
+		.append(nMachines).append(" ")
+
+		.append(instance).append(" ")
+
+		.append(group).append(" ")
+
+		.append(String.valueOf(groupedCloudUser).toUpperCase()).append(" ")
+
+		.append(utilization).append(" ")
+
+		.append(realUtilization).append(" ")
+
+		.append(simulationDuration);
 
 		return sb.toString();
 	}
 
-	public static String formatSummaryStatistics(ComputingElementEventCounter computingElementEventCounter, int nMachines, double utilization,
-			double realUtilization, long simulationDuration) {
+	public static String formatSummaryStatistics(ComputingElementEventCounter c, String instance, String group, boolean groupedCloudUser, int nPeers,
+			int nMachines, double utilization, double realUtilization, long simulationDuration) {
 
 		DecimalFormat dft = new DecimalFormat("000.00");
 
 		String resume = "";
 
-		resume += "# Total of submitted            jobs: " + computingElementEventCounter.getNumberOfSubmittedJobs() + ".\n";
-		resume += "# Total of finished             jobs: " + computingElementEventCounter.getNumberOfFinishedJobs() + ".\n";
-		resume += "# Total of preemptions for all  jobs: " + computingElementEventCounter.getNumberOfPreemptionsForAllJobs() + ".\n";
-		resume += "# Total of finished            tasks: " + computingElementEventCounter.getNumberOfFinishedTasks() + ".\n";
-		resume += "# Total of preemptions for all tasks: " + computingElementEventCounter.getNumberOfPreemptionsForAllTasks() + ".\n";
-		resume += "# Total cost of all finished    jobs: " + dft.format(computingElementEventCounter.getTotalCostOfAllFinishedJobs()) + ".\n";
-		resume += "# Total cost of all preempted   jobs: " + dft.format(computingElementEventCounter.getTotalCostOfAllPreemptedJobs()) + ".\n";
-		resume += "# Total cost of all             jobs: "
-				+ dft.format(computingElementEventCounter.getTotalCostOfAllFinishedJobs() + computingElementEventCounter.getTotalCostOfAllPreemptedJobs())
-				+ ".\n";
+		resume += "# Total of submitted            jobs: " + c.getNumberOfSubmittedJobs() + ".\n";
+		resume += "# Total of finished             jobs: " + c.getNumberOfFinishedJobs() + ".\n";
+		resume += "# Total of preemptions for all  jobs: " + c.getNumberOfPreemptionsForAllJobs() + ".\n";
+		resume += "# Total of finished            tasks: " + c.getNumberOfFinishedTasks() + ".\n";
+		resume += "# Total of preemptions for all tasks: " + c.getNumberOfPreemptionsForAllTasks() + ".\n";
+		resume += "# Total cost of all finished    jobs: " + dft.format(c.getTotalCostOfAllFinishedJobs()) + ".\n";
+		resume += "# Total cost of all preempted   jobs: " + dft.format(c.getTotalCostOfAllPreemptedJobs()) + ".\n";
+		resume += "# Total cost of all             jobs: " + dft.format(c.getTotalCostOfAllFinishedJobs() + c.getTotalCostOfAllPreemptedJobs()) + ".\n";
 		resume += "# Total of                    events: " + EventQueue.totalNumberOfEvents + ".\n";
-		resume += getSummaryStatistics(computingElementEventCounter, nMachines, utilization, realUtilization, simulationDuration);
-		;
+		resume += getSummaryStatistics(c, instance, group, groupedCloudUser, nPeers, nMachines, utilization, realUtilization, simulationDuration);
 		return resume;
 	}
 
@@ -113,11 +136,9 @@ public class CLIUTil {
 		ComputingElementEventCounter computingElementEventCounter = new ComputingElementEventCounter();
 
 		if (verbose) {
-			JobEventDispatcher.getInstance().addListener(new JobPrintOutput());
+			JobEventDispatcher.getInstance().addListener(new PrintOutput());
 			TaskEventDispatcher.getInstance().addListener(new TaskPrintOutput());
-			WorkerEventsPrintOutput workerEventsPrintOutput = new WorkerEventsPrintOutput();
-			// workerEventsPrintOutput.setBuffer(bw);
-			WorkerEventDispatcher.getInstance().addListener(workerEventsPrintOutput);
+			WorkerEventDispatcher.getInstance().addListener(new WorkerPrintOutput());
 			EventQueue.LOG = true;
 			EventQueue.LOG_FILEPATH = "events_oursim.txt";
 		}

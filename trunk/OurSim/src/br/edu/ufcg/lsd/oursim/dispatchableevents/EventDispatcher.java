@@ -1,9 +1,11 @@
 package br.edu.ufcg.lsd.oursim.dispatchableevents;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
 
 /**
  * 
@@ -36,8 +38,8 @@ public abstract class EventDispatcher<S, L extends EventListener, F extends Even
 	 * An ordinary constructor.
 	 */
 	protected EventDispatcher() {
-		this.listeners = new HashSet<L>();
-		this.listenerToFilter = new HashMap<L, F>();
+		this.listeners = new TreeSet<L>();
+		this.listenerToFilter = new TreeMap<L, F>();
 	}
 
 	/**
@@ -73,6 +75,10 @@ public abstract class EventDispatcher<S, L extends EventListener, F extends Even
 	 *         <code>false</code> otherwise.
 	 */
 	public abstract boolean removeListener(L listener);
+
+	public void clear() {
+		this.getListeners().clear();
+	}
 
 	/**
 	 * Performs a dispatching of the given event to all the listener that accept

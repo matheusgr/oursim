@@ -1,10 +1,11 @@
 package br.edu.ufcg.lsd.oursim.io.output;
 
 import java.io.Closeable;
+import java.io.IOException;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventListener;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventListener;
-
+import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventListener;
 
 /**
  * 
@@ -14,7 +15,7 @@ import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventListener;
  * @since 18/05/2010
  * 
  */
-public interface Output extends JobEventListener, TaskEventListener, Closeable {
+public interface Output extends JobEventListener, TaskEventListener, WorkerEventListener, Closeable {
 
 	/*
 	 * (non-Javadoc)
@@ -22,6 +23,6 @@ public interface Output extends JobEventListener, TaskEventListener, Closeable {
 	 * @see java.io.Closeable#close()
 	 */
 	@Override
-	void close();
+	void close() throws IOException;
 
 }

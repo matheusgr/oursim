@@ -8,17 +8,40 @@ import br.edu.ufcg.lsd.oursim.entities.Task;
 
 public class TaskEventCounter extends TaskEventListenerAdapter {
 
+	private int numberOfSubmittedTasks = 0;
+
 	private int numberOfFinishedTasks = 0;
 
 	private int numberOfPreemptionsForAllTasks = 0;
 
-	private Set<Long> idsOfFinishedTasks = new HashSet<Long>();
+	private Set<String> idsOfFinishedTasks = new HashSet<String>();
+
+	private Set<String> idsOfSubmittedTasks = new HashSet<String>();
+
+	private long makespan = 0;
+
+	public long getSumOfTasksMakespan() {
+		return makespan;
+	}
+
+	@Override
+	public void taskSubmitted(Event<Task> taskEvent) {
+		this.numberOfSubmittedTasks++;
+		// XXX o id não é único para todas as tasks. A chave única deve
+		// considerar task e ID.
+		Task Task = taskEvent.getSource();
+		idsOfSubmittedTasks.add(Task.getSourceJob().getId() + "-" + Task.getId());
+
+	}
 
 	@Override
 	public void taskFinished(Event<Task> taskEvent) {
 		this.numberOfFinishedTasks++;
-		//XXX o id não é único para todas as tasks. A chave única deve considerar task e ID.
-		idsOfFinishedTasks.add(taskEvent.getSource().getId());
+		// XXX o id não é único para todas as tasks. A chave única deve
+		// considerar task e ID.
+		Task Task = taskEvent.getSource();
+		this.makespan += Task.getMakeSpan();
+		idsOfFinishedTasks.add(Task.getSourceJob().getId() + "-" + Task.getId());
 	}
 
 	@Override
@@ -26,8 +49,14 @@ public class TaskEventCounter extends TaskEventListenerAdapter {
 		this.numberOfPreemptionsForAllTasks++;
 	}
 
+	public final int getNumberOfSubmittedTasks() {
+		// return numberOfFinishedTasks;
+		return this.idsOfSubmittedTasks.size();
+	}
+
 	public final int getNumberOfFinishedTasks() {
-		return numberOfFinishedTasks;
+		// return numberOfFinishedTasks;
+		return this.idsOfFinishedTasks.size();
 	}
 
 	public final int getNumberOfPreemptionsForAllTasks() {

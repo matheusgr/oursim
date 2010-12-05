@@ -22,6 +22,8 @@ public class Machine implements Comparable<Machine> {
 
 	private static long nextMachineId = 0;
 
+	private static final int DEFAULT_PROCESSOR_INDEX = 0;
+
 	/**
 	 * The processor owned by this machine.
 	 * 
@@ -104,6 +106,15 @@ public class Machine implements Comparable<Machine> {
 		return numFreeProcessors;
 	}
 
+	public Processor getFreeProcessor() {
+		for (Processor processor : processors) {
+			if (!processor.isBusy()) {
+				return processor;
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * 
 	 * Gets the main processor of a machine.
@@ -111,7 +122,7 @@ public class Machine implements Comparable<Machine> {
 	 * @return the default processor of this machine.
 	 */
 	public Processor getDefaultProcessor() {
-		return processors.get(0);
+		return processors.get(DEFAULT_PROCESSOR_INDEX);
 	}
 
 	@Override
@@ -124,6 +135,14 @@ public class Machine implements Comparable<Machine> {
 	public String toString() {
 		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("name", name).append("#processors", processors.size()).append(
 				"processors rating", getDefaultProcessor().getSpeed()).toString();
+	}
+
+	public boolean isAllProcessorsFree() {
+		return this.getNumberOfFreeProcessors() == this.getNumberOfProcessors();
+	}
+
+	public boolean isAnyProcessorBusy() {
+		return !isAllProcessorsFree();
 	}
 
 }

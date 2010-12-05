@@ -71,40 +71,40 @@ public class ActiveEntityImp implements ActiveEntity {
 	}
 
 	@Override
-	public void addSubmitTaskEvent(long submitTime, Task task) {
-		this.getEventQueue().addEvent(new SubmitTaskEvent(submitTime, task));
+	public void addSubmitTaskEvent(long submitTime, Task Task) {
+		this.getEventQueue().addEvent(new SubmitTaskEvent(submitTime, Task));
 	}
 
 	@Override
-	public void addStartedTaskEvent(Task task) {
-		this.getEventQueue().addEvent(new StartedTaskEvent(task));
-		this.addFinishTaskEvent(task.getEstimatedFinishTime(), task);
+	public void addStartedTaskEvent(Task Task) {
+		this.getEventQueue().addEvent(new StartedTaskEvent(Task));
+		this.addFinishTaskEvent(Task.getEstimatedFinishTime(), Task);
 	}
 
 	@Override
-	public void addPreemptedTaskEvent(long preemptionTime, Task task) {
-		this.getEventQueue().addEvent(new PreemptedTaskEvent(preemptionTime, task));
+	public void addPreemptedTaskEvent(long preemptionTime, Task Task) {
+		this.getEventQueue().addEvent(new PreemptedTaskEvent(preemptionTime, Task));
 	}
 
 	@Override
-	public void addPreemptedTaskEvent(Task task) {
-		addPreemptedTaskEvent(getCurrentTime(), task);
+	public void addPreemptedTaskEvent(Task Task) {
+		addPreemptedTaskEvent(getCurrentTime(), Task);
 	}
 
 	@Override
-	public void addCancelledTaskEvent(long cancellingTime, Task task) {
-		this.getEventQueue().addEvent(new CancelledTaskEvent(cancellingTime, task));
+	public void addCancelledTaskEvent(long cancellingTime, Task Task) {
+		this.getEventQueue().addEvent(new CancelledTaskEvent(cancellingTime, Task));
 	}
 
 	@Override
-	public void addCancelledTaskEvent(Task task) {
-		addCancelledTaskEvent(getCurrentTime(), task);
+	public void addCancelledTaskEvent(Task Task) {
+		addCancelledTaskEvent(getCurrentTime(), Task);
 	}
 
 	@Override
-	public void addFinishTaskEvent(long finishTime, Task task) {
+	public void addFinishTaskEvent(long finishTime, Task Task) {
 		assert finishTime > this.getCurrentTime():finishTime +" > "+ this.getCurrentTime();
-		FinishTaskEvent finishTaskEvent = new FinishTaskEvent(finishTime, task);
+		FinishTaskEvent finishTaskEvent = new FinishTaskEvent(finishTime, Task);
 		this.getEventQueue().addEvent(finishTaskEvent);
 	}
 

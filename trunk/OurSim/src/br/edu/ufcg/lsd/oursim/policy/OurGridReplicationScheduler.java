@@ -47,10 +47,10 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 	@Override
 	public final void schedule() {
 		for (Iterator<Task> iterator = this.getSubmittedTasks().iterator(); iterator.hasNext();) {
-			Task task = iterator.next();
-			task.getSourcePeer().prioritizePeersToConsume(this.getPeers());
+			Task Task = iterator.next();
+			Task.getSourcePeer().prioritizePeersToConsume(this.getPeers());
 			for (Peer provider : this.getPeers()) {
-				boolean isTaskRunning = provider.executeTask(task);
+				boolean isTaskRunning = provider.executeTask(Task);
 				if (isTaskRunning) {
 					// System.out.println("Is Running: " + task.getStartTime() +
 					// " : " + task.getId() + " : " + task.getReplicaId());
@@ -68,8 +68,8 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 		// this.getSubmittedJobs().add(job);
 
 		// adiciona a matriz das tasks
-		for (Task task : job.getTasks()) {
-			this.getSubmittedTasks().add(task);
+		for (Task Task : job.getTasks()) {
+			this.getSubmittedTasks().add(Task);
 		}
 
 		// adiciona (replicationLevel-1) réplicas -> a matriz já foi adicionada
@@ -90,26 +90,26 @@ public class OurGridReplicationScheduler extends JobSchedulerPolicyAbstract {
 		this.getSubmittedTasks().add(taskEvent.getSource());
 	}
 
-	private void addReplicas(Collection<Task> tasks, int numberOfReplicas) {
+	private void addReplicas(Collection<Task> Tasks, int numberOfReplicas) {
 		for (int i = 0; i < numberOfReplicas; i++) {
-			for (Task task : tasks) {
-				this.getSubmittedTasks().add(task.clone());
+			for (Task Task : Tasks) {
+				this.getSubmittedTasks().add(Task.makeReplica());
 			}
 		}
 	}
 
-	private void stopRemainingReplicas(Task task) {
+	private void stopRemainingReplicas(Task Task) {
 
-		for (Task replica : task.getReplicas()) {
+		for (Task replica : Task.getReplicas()) {
 			// para as replicas que ainda estiverem rodando
 			if (replica.isRunning()) {
 				assert this.getRunningTasks().contains(replica) : replica;
-				if (replica.getEstimatedFinishTime() > task.getFinishTime()) {
+				if (replica.getEstimatedFinishTime() > Task.getFinishTime()) {
 					// ocorria problema quando a task tinha acabado de iniciar
 					assert this.getRunningTasks().contains(replica) || replica.getStartTime() == getCurrentTime() : getCurrentTime() + ": " + replica;
 					assert !replica.isFinished();
 					replica.getTargetPeer().cancelTask(replica);
-				} else if (replica.getEstimatedFinishTime() == task.getFinishTime()) {
+				} else if (replica.getEstimatedFinishTime() == Task.getFinishTime()) {
 					// Pode estar no caso "=" o warning apresentado
 					replica.getTargetPeer().cancelTask(replica);
 				} else {

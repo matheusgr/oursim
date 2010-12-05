@@ -144,6 +144,7 @@ public class OurSim {
 			// dispatch all the events in current time
 			while (queue.peek() != null && queue.peek().getTime() == currentTime) {
 				TimedEvent nextEventInCurrentTime = queue.poll();
+				// System.out.println(nextEventInCurrentTime);
 				nextEventInCurrentTime.action();
 			}
 

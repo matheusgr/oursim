@@ -11,6 +11,7 @@ import java.util.PriorityQueue;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.FinishJobEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.CancelledTaskEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.FinishTaskEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.PreemptedTaskEvent;
 
@@ -50,7 +51,6 @@ public final class EventQueue implements Closeable {
 	 */
 	private Map<Job, FinishJobEvent> job2FinishJobEvent;
 	private Map<Task, FinishTaskEvent> task2FinishTaskEvent;
-//XXX	private Map<Task, FullHourCompletedEvent> task2FullHourCompletedEvent;
 
 	/**
 	 * To trace the events added to this {@link EventQueue}.
@@ -63,7 +63,6 @@ public final class EventQueue implements Closeable {
 		pq = new PriorityQueue<TimedEvent>();
 		job2FinishJobEvent = new HashMap<Job, FinishJobEvent>();
 		task2FinishTaskEvent = new HashMap<Task, FinishTaskEvent>();
-//XXX		task2FullHourCompletedEvent = new HashMap<Task, FullHourCompletedEvent>();
 		if (LOG) {
 			try {
 				bw = new BufferedWriter(new FileWriter(LOG_FILEPATH));
@@ -105,20 +104,19 @@ public final class EventQueue implements Closeable {
 			PreemptedTaskEvent ev = (PreemptedTaskEvent) event;
 			assert task2FinishTaskEvent.containsKey(ev.source);
 			this.task2FinishTaskEvent.remove(ev.source).cancel();
-//XXX			if (this.task2FullHourCompletedEvent.containsKey(ev.source)) {
-//				this.task2FullHourCompletedEvent.remove(ev.source).cancel();
-//			}
 		} else if (event instanceof FinishTaskEvent) {
 			FinishTaskEvent ev = (FinishTaskEvent) event;
 			if (task2FinishTaskEvent.containsKey(ev.source)) {
 				this.task2FinishTaskEvent.remove(ev.source).cancel();
 			}
 			this.task2FinishTaskEvent.put(ev.source, ev);
-		} 
-//XXX		else if (event instanceof FullHourCompletedEvent) {
-//			FullHourCompletedEvent ev = (FullHourCompletedEvent) event;
-//			this.task2FullHourCompletedEvent.put(ev.source.getTask(), ev);
-//		}
+		} else if (event instanceof CancelledTaskEvent) {
+			CancelledTaskEvent ev = (CancelledTaskEvent) event;
+			if (task2FinishTaskEvent.containsKey(ev.source)) {
+				this.task2FinishTaskEvent.remove(ev.source).cancel();
+			}
+		}
+
 		// TODO: definir o que significa a preempção de um job.
 		// assert job2FinishJobEvent.containsKey(job);
 		// this.job2FinishJobEvent.remove(job).cancel();
@@ -132,7 +130,8 @@ public final class EventQueue implements Closeable {
 				e.printStackTrace();
 			}
 		}
-//		System.out.println("add["+getCurrentTime()+"]: " +event.getTime() +" : " +event.getType() + ":" + event);
+		// System.out.println("add["+getCurrentTime()+"]: " +event.getTime() +"
+		// : " +event.getType() + ":" + event);
 		pq.add(event);
 	}
 
@@ -167,8 +166,8 @@ public final class EventQueue implements Closeable {
 		// checks if the next event is a valid one
 		if (pq.peek() != null && !pq.peek().isCancelled()) {
 			if (this.currentTime > pq.peek().getTime()) {
-				System.err.println("EventQueue: "+this);
-				System.err.println("Event:"+pq.peek());
+				System.err.println("EventQueue: " + this);
+				System.err.println("Event:" + pq.peek());
 				System.err.println("Offending Event! " + pq.peek() + ". CurrentTime: " + currentTime);
 				System.exit(1);
 			}
@@ -176,7 +175,8 @@ public final class EventQueue implements Closeable {
 		}
 		// System.out.println(pq.size());
 		TimedEvent polledEvent = pq.poll();
-//		System.out.println("poll: " +polledEvent.getTime() +" : " +polledEvent.getType() + ":" + polledEvent);
+		// System.out.println("poll: " +polledEvent.getTime() +" : "
+		// +polledEvent.getType() + ":" + polledEvent);
 		return polledEvent;
 	}
 

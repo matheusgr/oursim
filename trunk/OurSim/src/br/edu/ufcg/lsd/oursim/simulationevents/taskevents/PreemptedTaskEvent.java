@@ -24,26 +24,31 @@ public class PreemptedTaskEvent extends TaskTimedEvent {
 	 * 
 	 * @param preemptionTime
 	 *            the time at which the task has been preempted.
-	 * @param task
+	 * @param Task
 	 *            the task that has been preempted.
 	 */
-	public PreemptedTaskEvent(long preemptionTime, Task task) {
-		super(preemptionTime, PRIORITY, task);
+	public PreemptedTaskEvent(long preemptionTime, Task Task) {
+		super(preemptionTime, PRIORITY, Task);
 	}
 
 	@Override
 	protected void doAction() {
-		Task task = this.source;
-		if (!task.isCancelled()) {
-			task.preempt(this.time);
-			TaskEventDispatcher.getInstance().dispatchTaskPreempted(task, this.time);
+		Task Task = this.source;
+		if (!Task.isCancelled()) {
+			// TODO XXX definir onde essas ações devem ficar: se em quem a
+			// executa ou se no evento disparado.
+			// task.preempt(this.time);
+			TaskEventDispatcher.getInstance().dispatchTaskPreempted(Task, this.time);
 			// TODO: se for um job de uma task só, avisa que o job foi
 			// preemptado
-			if (task.getSourceJob().getTasks().size() == 1 && task.isAllReplicasFailed()) {
+			if (Task.getSourceJob().isSingleJob() && Task.isAllReplicasFailed() && Task.getSourceJob().getLastPreemptionTime() < this.time) {
 				// EventQueue.getInstance().addPreemptedJobEvent(EventQueue.getInstance().getCurrentTime(),
 				// task.getSourceJob());
-				EventQueue.getInstance().addEvent(new PreemptedJobEvent(EventQueue.getInstance().getCurrentTime(), task.getSourceJob()));
+				Task.getSourceJob().preempt(time);
+				EventQueue.getInstance().addEvent(new PreemptedJobEvent(EventQueue.getInstance().getCurrentTime(), Task.getSourceJob()));
 			}
+		} else {
+			System.out.println("Tentando preemptar uma task que já foi cancelada: " + Task);
 		}
 	}
 

@@ -3,7 +3,7 @@ package br.edu.ufcg.lsd.oursim.entities;
 public class TaskExecution {
 
 	/**
-	 * The size in Millions of Instructions (MI) of this task to be executed in
+	 * The size in Millions of Instructions (MI) of this Task to be executed in
 	 */
 	private long size;
 
@@ -11,24 +11,31 @@ public class TaskExecution {
 
 	private long remainingSize;
 
-	private Task task;
+	private Task Task;
 
 	private Processor processor;
 
-	public TaskExecution(Task task, Processor processor, long startTime) {
-		this.task = task;
+	public TaskExecution(Task Task, Processor processor, long startTime) {
+		assert !processor.isBusy() : Task + " -> " + processor;
+		if (processor.isBusy()) {
+			throw new IllegalArgumentException("The processor has been already in execution.");
+		}
+		this.Task = Task;
 		this.processor = processor;
+		this.processor.busy();
 		// this.size =
 		// Processor.EC2_COMPUTE_UNIT.calculateNumberOfInstructionsProcessed(this.task.getDuration());
-		this.size = convertTaskDurationToNumberOfInstruction(task);
+		this.size = convertTaskDurationToNumberOfInstruction(Task);
 		this.remainingSize = size;
 		this.previousTime = startTime;
+		// TODO talvez nesse momento já devesse setar o startTime da Task, para
+		// não deixar para alguém externo fazer isso
 	}
 
-	private long convertTaskDurationToNumberOfInstruction(Task task) {
-		Peer sourcePeer = task.getSourcePeer();
+	private long convertTaskDurationToNumberOfInstruction(Task Task) {
+		Peer sourcePeer = Task.getSourcePeer();
 		Processor referenceProcessor = sourcePeer.getReferenceProcessor();
-		return referenceProcessor.calculateNumberOfInstructionsProcessed(this.task.getDuration());
+		return referenceProcessor.calculateNumberOfInstructionsProcessed(this.Task.getDuration());
 	}
 
 	/**
@@ -69,6 +76,14 @@ public class TaskExecution {
 
 	public Machine getMachine() {
 		return this.processor.getMachine();
+	}
+
+	public void finish() {
+		this.processor.free();
+	}
+
+	public Processor getProcessor() {
+		return this.processor;
 	}
 
 }

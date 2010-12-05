@@ -31,10 +31,10 @@ public class OurGridPersistentScheduler extends JobSchedulerPolicyAbstract {
 	@Override
 	public final void schedule() {
 		for (Iterator<Task> iterator = this.getSubmittedTasks().iterator(); iterator.hasNext();) {
-			Task task = iterator.next();
-			task.getSourcePeer().prioritizePeersToConsume(this.getPeers());
+			Task Task = iterator.next();
+			Task.getSourcePeer().prioritizePeersToConsume(this.getPeers());
 			for (Peer provider : this.getPeers()) {
-				boolean isTaskRunning = provider.executeTask(task);
+				boolean isTaskRunning = provider.executeTask(Task);
 				if (isTaskRunning) {
 					iterator.remove();
 					break;
@@ -46,8 +46,8 @@ public class OurGridPersistentScheduler extends JobSchedulerPolicyAbstract {
 	@Override
 	public final void taskPreempted(Event<Task> taskEvent) {
 		super.taskPreempted(taskEvent);
-		Task task = taskEvent.getSource();
-		this.rescheduleTask(task);
+		Task Task = taskEvent.getSource();
+		this.rescheduleTask(Task);
 	}
 
 }

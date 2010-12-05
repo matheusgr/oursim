@@ -70,20 +70,20 @@ public class ResourceAllocationManager {
 	 * machine must be deallocated by calling the method
 	 * {@link #deallocateTask(Task)}.
 	 * 
-	 * @param task
+	 * @param Task
 	 *            the given task.
 	 * @return the machine that have been allocated to the given task or
 	 *         <code>null</code> if there are no machine that could be
 	 *         allocated to the task.
 	 * @see {@link #deallocateTask(Task)}
 	 */
-	public Machine allocateTask(Task task) {
-		Machine resource = this.resourceManager.hasAvailableResource() ? this.resourceManager.allocateResourceToTask(task)
-				: tryAllocateByPreemptionOnBehalfOfTask(task);
+	public Machine allocateTask(Task Task) {
+		Machine resource = this.resourceManager.hasAvailableResource() ? this.resourceManager.allocateResourceToTask(Task)
+				: tryAllocateByPreemptionOnBehalfOfTask(Task);
 
 		if (resource != null) {
-			this.taskManager.startTask(task, resource);
-			increaseAccounting(task.getSourcePeer());
+			this.taskManager.startTask(Task, resource);
+			increaseAccounting(Task.getSourcePeer());
 		}
 
 		return resource;
@@ -94,17 +94,17 @@ public class ResourceAllocationManager {
 	 * Performs an deallocation of a task. The task must have been allocated by
 	 * calling the method {@link #allocateTask(Task)}.
 	 * 
-	 * @param task
+	 * @param Task
 	 *            the task to be deallocated.
 	 * @return <code>true</code> if the task has been succesfully deallocate,
 	 *         <code>false</code> otherwise.
 	 * @see {@link #allocateTask(Task)}
 	 */
-	public boolean deallocateTask(Task task) {
-		assert this.resourceManager.isAllocated(this.taskManager.getMachine(task));
-		if (this.resourceManager.isAllocated(this.taskManager.getMachine(task))) {
-			this.resourceManager.releaseResource(this.taskManager.finishTask(task));
-			decreaseAccounting(task.getSourcePeer());
+	public boolean deallocateTask(Task Task) {
+		assert this.resourceManager.isAllocated(this.taskManager.getMachine(Task));
+		if (this.resourceManager.isAllocated(this.taskManager.getMachine(Task))) {
+			this.resourceManager.releaseResource(this.taskManager.finishTask(Task));
+			decreaseAccounting(Task.getSourcePeer());
 			return true;
 		} else {
 			assert false;
@@ -115,15 +115,15 @@ public class ResourceAllocationManager {
 	/**
 	 * Force a preemption of a task on behalf of a given another.
 	 * 
-	 * @param task
+	 * @param Task
 	 *            task that will benefit itself of the preemption.
 	 * @return the machine where the preempted task was running.
 	 */
-	private Machine tryAllocateByPreemptionOnBehalfOfTask(Task task) {
+	private Machine tryAllocateByPreemptionOnBehalfOfTask(Task Task) {
 
 		Machine releasedMachine = null;
 
-		Peer consumer = task.getSourcePeer();
+		Peer consumer = Task.getSourcePeer();
 		List<Peer> preemptablePeers = peer.prioritizePeersToPreemptionOnBehalfOf(consumer);
 
 		if (!preemptablePeers.isEmpty()) {
@@ -156,10 +156,10 @@ public class ResourceAllocationManager {
 			i++;
 			chosen = preemptablePeers.get(preemptablePeers.size() - i);
 		}
-		List<Task> tasks = this.taskManager.getAllTasksFromPeer(chosen);
-		if (!tasks.isEmpty()) {
-			this.peer.prioritizeTasksToPreemption(tasks);
-			return tasks.get(0);
+		List<Task> Tasks = this.taskManager.getAllTasksFromPeer(chosen);
+		if (!Tasks.isEmpty()) {
+			this.peer.prioritizeTasksToPreemption(Tasks);
+			return Tasks.get(0);
 		} else {
 			return null;
 		}

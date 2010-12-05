@@ -105,6 +105,8 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 
 	private double wastedTime;
 
+	private boolean wasRecentlyPreempted = false;
+
 	public Task(long id, String executable, long duration, long submissionTime, Job sourceJob) {
 		super(id, submissionTime);
 		this.executable = new File(executable, -1);
@@ -190,6 +192,7 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	 */
 	public void setTaskExecution(TaskExecution taskExecution) {
 		this.taskExecution = taskExecution;
+		this.wasRecentlyPreempted = false;
 	}
 
 	public void prioritizeResourcesToConsume(List<Machine> resources) {
@@ -208,17 +211,18 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	}
 
 	@Override
+	public Long getStartTime() {
+		assert startTime != null || finishTime == null;
+		return startTime;
+	}
+
+	@Override
 	public void finish(long time) {
 		assert this.finishTime == null || isAnyReplicaFinished();
 		assert this.startTime != null;
 		this.hasLocallyRunned = this.sourceJob.getSourcePeer().hasMachine(this.taskExecution.getMachine().getName());
+		this.taskExecution.finish();
 		this.finishTime = time;
-	}
-
-	@Override
-	public Long getStartTime() {
-		assert startTime != null || finishTime == null;
-		return startTime;
 	}
 
 	@Override
@@ -229,9 +233,23 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 			this.wastedTime += (time - startTime);
 			this.startTime = null;
 			this.targetPeer = null;
+			this.taskExecution.finish();
+			// this.taskExecution = null;
+			this.wasRecentlyPreempted = true;
 		} else {
 			System.err.println("Tentou preemptar uma já concluída: " + time + " " + this);
 		}
+	}
+
+	public void cancel() {
+		assert !this.cancelled;
+		this.cancelled = true;
+		this.taskExecution.finish();
+		// this.taskExecution = null;
+	}
+
+	public boolean isCancelled() {
+		return cancelled;
 	}
 
 	/**
@@ -248,8 +266,8 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 
 	@Override
 	public Long getEstimatedFinishTime() {
-		assert startTime != null;
-		assert taskExecution != null;
+		assert taskExecution != null : this;
+		assert startTime != null : this;
 		if (startTime != null) {
 			// return this.getStartTime() +
 			// taskExecution.getRemainingTimeToFinish();
@@ -308,9 +326,24 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 		}
 	}
 
-	@Override
 	public Task clone() {
-		Task theClone;
+		// Task theClone = null;
+		// try {
+		// theClone = (Task) super.clone();
+		// } catch (CloneNotSupportedException e) {
+		// assert false;
+		// e.printStackTrace();
+		// return null;
+		// }
+		// theClone.replicaId = this.replicas.size();
+		// this.replicas.add(theClone);
+		// theClone.replicas = this.replicas;
+		// return theClone;
+		return makeReplica();
+	}
+
+	public Task makeReplica() {
+		Task theClone = null;
 		try {
 			theClone = (Task) super.clone();
 		} catch (CloneNotSupportedException e) {
@@ -342,16 +375,20 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 		return null;
 	}
 
+	public boolean wasRecentlyPreempted() {
+		return wasRecentlyPreempted;
+	}
+
 	public boolean wasPreempted() {
 		return this.numberOfpreemptions > 0;
 	}
 
 	public boolean isAllReplicasFailed() {
-		boolean hasAllReplyFailed = true;
+		boolean hasAllReplicaFailed = true;
 		for (Task reply : replicas) {
-			hasAllReplyFailed &= reply.wasPreempted();
+			hasAllReplicaFailed &= reply.wasPreempted();
 		}
-		return hasAllReplyFailed;
+		return hasAllReplicaFailed;
 	}
 
 	public Set<Task> getReplicas() {
@@ -394,15 +431,6 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 				break;
 			}
 		}
-	}
-
-	public void cancel() {
-		assert !this.cancelled;
-		this.cancelled = true;
-	}
-
-	public boolean isCancelled() {
-		return cancelled;
 	}
 
 	@Override

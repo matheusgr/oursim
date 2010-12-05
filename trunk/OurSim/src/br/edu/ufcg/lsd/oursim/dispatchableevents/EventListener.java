@@ -18,6 +18,6 @@ package br.edu.ufcg.lsd.oursim.dispatchableevents;
  * @since 19/05/2010
  * 
  */
-public interface EventListener extends java.util.EventListener {
+public interface EventListener extends java.util.EventListener, Comparable<EventListener> {
 
 }

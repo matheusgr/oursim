@@ -19,7 +19,7 @@ public class CreateCMD {
 
 		String workloadType = "marcus";
 		String workloadPattern = "resources/%s_workload_7_dias_%s_sites_%s.txt";
-		String resultDir = "/local/edigley/traces/oursim/19_11_2010";
+		String resultDir = "/local/edigley/traces/oursim/20_11_2010";
 		long avDur = TimeUtil.ONE_WEEK + 10 * TimeUtil.ONE_HOUR;
 		int spotLimit = 100;
 
@@ -33,18 +33,26 @@ public class CreateCMD {
 		cmd += String.format("JAVACALL='java %s -Xms500M -Xmx1500M -XX:-UseGCOverheadLimit -jar'; \\\n", jvmArgs);
 		cmd += "SPT=resources/eu-west-1.linux.m1.small.csv; \\\n";
 
-		int[] nSitesV = ArrayBuilder.createVector(1000);
-		int[] nResV = ArrayBuilder.createVector(25, 50, 25);
-		int[] rodadas = ArrayBuilder.createVector(1, 1, 1);
+		// int[] nSitesV = ArrayBuilder.createVector(1000);
+		// int[] nResV = ArrayBuilder.createVector(25, 50, 25);
+		// int[] rodadas = ArrayBuilder.createVector(1, 1, 1);
 
-		System.out.println(scheduler);
+		int[] nSitesV = new int[] { 50, 25, 10 };
+		int[] nResV = new int[] { 50, 35, 25, 10 };
+		int[] rodadas = new int[] { 6, 7, 8, 9, 10 };
+
+		System.out.println("scheduler: " + scheduler);
+		System.out.print("nSitesV  : ");
 		ArrayBuilder.print(nSitesV);
+		System.out.print("nResV    : ");
 		ArrayBuilder.print(nResV);
+		System.out.print("rodadas  : ");
 		ArrayBuilder.print(rodadas);
 
 		for (int rodada : rodadas) {
 			for (int nSites : nSitesV) {
-				for (int nRes : nResV) {
+				for (int nRes : nResV) {// tá variando primeiro. Talvez fosse
+					// melhor se nSites variasse primeiro
 					// int nRes = 25;
 					String isdFilePath = String.format("resources/iosup_site_description_%s_sites.txt", nSites);
 					String mdFilePath = String.format("resources/machines_speeds_%s_sites_%s_machines_by_site_%s.txt", nSites, nRes, rodada);

@@ -20,18 +20,20 @@ public class CancelledTaskEvent extends TaskTimedEvent {
 	 * 
 	 * @param cancellingTime
 	 *            the time at which the task has been cancelled.
-	 * @param task
+	 * @param Task
 	 *            the task that has been preempted.
 	 */
-	public CancelledTaskEvent(long cancellingTime, Task task) {
-		super(cancellingTime, PRIORITY, task);
+	public CancelledTaskEvent(long cancellingTime, Task Task) {
+		super(cancellingTime, PRIORITY, Task);
 	}
 
 	@Override
 	protected void doAction() {
-		Task task = this.source;
-		task.cancel();
-		TaskEventDispatcher.getInstance().dispatchTaskCancelled(task, this.time);
+		Task Task = this.source;
+		// TODO XXX definir onde essas ações devem ficar: se em quem a executa
+		// ou se no evento disparado.
+		// task.cancel();
+		TaskEventDispatcher.getInstance().dispatchTaskCancelled(Task, this.time);
 	}
 
 }
