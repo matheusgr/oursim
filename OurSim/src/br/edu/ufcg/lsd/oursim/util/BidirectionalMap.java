@@ -3,6 +3,7 @@ package br.edu.ufcg.lsd.oursim.util;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.apache.commons.collections.BidiMap;
 import org.apache.commons.collections.bidimap.TreeBidiMap;
@@ -92,6 +93,17 @@ public class BidirectionalMap<K, V> implements Map<K, V> {
 	@Override
 	public Collection<V> values() {
 		return bidiMap.values();
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		String sep = "";
+		for (Entry<K, V> entry : entrySet()) {
+			sb.append(sep).append("   " + entry.getKey() + " -> " + entry.getValue());
+			sep = "\n";
+		}
+		return sb.toString();
 	}
 
 }

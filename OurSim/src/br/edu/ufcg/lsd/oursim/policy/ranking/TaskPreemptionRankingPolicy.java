@@ -29,9 +29,9 @@ public class TaskPreemptionRankingPolicy extends RankingPolicy<Peer, Task> {
 	}
 
 	@Override
-	public void rank(List<Task> tasks) {
+	public void rank(List<Task> Tasks) {
 		// get recently started task first
-		Collections.sort(tasks, new Comparator<Task>() {
+		Collections.sort(Tasks, new Comparator<Task>() {
 			@Override
 			public int compare(Task t1, Task t2) {
 				return (int) (t2.getStartTime() - t1.getStartTime());

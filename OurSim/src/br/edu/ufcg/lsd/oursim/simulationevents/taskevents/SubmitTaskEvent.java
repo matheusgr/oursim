@@ -21,18 +21,18 @@ public class SubmitTaskEvent extends TaskTimedEvent {
 	 * 
 	 * @param submitTime
 	 *            the time at which the job has been submitted.
-	 * @param task
+	 * @param Task
 	 *            the task that has been submitted.
 	 */
-	public SubmitTaskEvent(long submitTime, Task task) {
-		super(submitTime, PRIORITY, task);
+	public SubmitTaskEvent(long submitTime, Task Task) {
+		super(submitTime, PRIORITY, Task);
 	}
 
 	@Override
 	protected final void doAction() {
-		Task task = (Task) source;
-		if (!task.isCancelled()) {
-			TaskEventDispatcher.getInstance().dispatchTaskSubmitted(task);
+		Task Task = (Task) source;
+		if (!Task.isCancelled()) {
+			TaskEventDispatcher.getInstance().dispatchTaskSubmitted(Task);
 		}
 	}
 

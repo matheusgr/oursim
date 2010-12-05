@@ -83,8 +83,8 @@ public class MarcusWorkload extends JobEventListenerAdapter implements Workload 
 				long thinkTimeFromFirstJob = currentJob.getSubmissionTime();
 				while (scanner.hasNextLine()
 						&& (nextJob = createJob(lastReadLine = scanner.nextLine(), peers, thinkTimeFromFirstJob)).getId() == currentJob.getId()) {
-					Task task = nextJob.getTasks().get(0);
-					currentJob.addTask(new Task(task.getId(), "", task.getDuration(), currentJob.getSubmissionTime(), null));
+					Task Task = nextJob.getTasks().get(0);
+					currentJob.addTask(new Task(Task.getId(), "", Task.getDuration(), currentJob.getSubmissionTime(), null));
 				}
 				if (!usersRead.contains(currentJob.getUserId())) {
 					usersRead.add(currentJob.getUserId());

@@ -51,8 +51,8 @@ public class OnDemandBoTGWANorduGridWorkload implements Workload {
 		if (this.nextJob == null && scanner.hasNextLine()) {
 			Job firstJob = (nextNextJob == null) ? createJob(scanner.nextLine(), peers, startingTime) : nextNextJob;
 			while (scanner.hasNextLine() && (nextNextJob = createJob(scanner.nextLine(), peers, startingTime)).getId() == firstJob.getId()) {
-				Task task = nextNextJob.getTasks().get(0);
-				firstJob.addTask(new Task(task.getId(), "", task.getDuration(), firstJob.getSubmissionTime(), null));
+				Task Task = nextNextJob.getTasks().get(0);
+				firstJob.addTask(new Task(Task.getId(), "", Task.getDuration(), firstJob.getSubmissionTime(), null));
 //				firstJob.addTask(new Task(task.getId(), "", task.getDuration(), task.getSubmissionTime(), null));
 			}
 			this.nextJob = firstJob;

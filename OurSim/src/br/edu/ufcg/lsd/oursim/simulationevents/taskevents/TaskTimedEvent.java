@@ -22,11 +22,11 @@ public abstract class TaskTimedEvent extends TimedEventAbstract<Task> {
 	 *            the time at which the event have occurred.
 	 * @param priority
 	 *            the priority of the event.
-	 * @param task
+	 * @param Task
 	 *            the task this event relates to.
 	 */
-	public TaskTimedEvent(long time, int priority, Task task) {
-		super(time, priority, task);
+	public TaskTimedEvent(long time, int priority, Task Task) {
+		super(time, priority, Task);
 	}
 
 	@Override

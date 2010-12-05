@@ -10,4 +10,7 @@ public final class TimeUtil {
 	public static final long ONE_MONTH = 30 * ONE_DAY;
 	public static final long ONE_YEAR = 365 * ONE_DAY;
 
+	public static final long HALF_AN_HOUR = ONE_HOUR / 2;
+	public static final long FIFTEEN_MINUTES = HALF_AN_HOUR / 2;
+
 }

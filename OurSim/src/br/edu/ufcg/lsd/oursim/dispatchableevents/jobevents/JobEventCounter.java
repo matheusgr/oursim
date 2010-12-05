@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
+import br.edu.ufcg.lsd.oursim.dispatchableevents.EventListener;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 
 public class JobEventCounter extends JobEventListenerAdapter {
@@ -16,13 +17,20 @@ public class JobEventCounter extends JobEventListenerAdapter {
 
 	private double totalCostOfAllPreemptedJobs = 0;
 
+	private long makespan = 0;
+
 	private Set<Long> idsOfFinishedJobs = new HashSet<Long>();
 
 	private Set<Long> idsOfSubmittedJobs = new HashSet<Long>();
 
+	public long getSumOfJobsMakespan() {
+		return makespan;
+	}
+
 	@Override
 	public final void jobFinished(Event<Job> jobEvent) {
 		Job job = jobEvent.getSource();
+		this.makespan += job.getMakeSpan();
 		this.numberOfFinishedJobs++;
 		this.idsOfFinishedJobs.add(job.getId());
 		this.totalCostOfAllFinishedJobs += job.getCost();

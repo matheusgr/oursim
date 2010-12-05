@@ -49,12 +49,12 @@ public final class FifoSharingPolicy implements ResourceSharingPolicy {
 	public void addPeer(Peer peer) {
 	}
 
-	public void increaseBalance(Peer source, Peer target, Task task) {
+	public void increaseBalance(Peer source, Peer target, Task Task) {
 	}
 
-	public void decreaseBalance(Peer source, Peer target, Task task) {
+	public void decreaseBalance(Peer source, Peer target, Task Task) {
 	}
 
-	public void updateMutualBalance(Peer provider, Peer consumer, Task task) {
+	public void updateMutualBalance(Peer provider, Peer consumer, Task Task) {
 	}
 }

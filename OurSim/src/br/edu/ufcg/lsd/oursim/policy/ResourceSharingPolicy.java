@@ -23,11 +23,11 @@ public interface ResourceSharingPolicy {
 
 	long getBalance(Peer source, Peer target);
 
-	void increaseBalance(Peer source, Peer target, Task task);
+	void increaseBalance(Peer source, Peer target, Task Task);
 
-	void decreaseBalance(Peer source, Peer target, Task task);
+	void decreaseBalance(Peer source, Peer target, Task Task);
 
-	void updateMutualBalance(Peer provider, Peer consumer, Task task);
+	void updateMutualBalance(Peer provider, Peer consumer, Task Task);
 
 	/**
 	 * Gets an collection of peers sorted in a way that prioritize the peer with

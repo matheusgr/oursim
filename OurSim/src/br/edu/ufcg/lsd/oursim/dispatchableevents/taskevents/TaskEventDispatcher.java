@@ -59,48 +59,48 @@ public class TaskEventDispatcher extends EventDispatcher<Task, TaskEventListener
 
 	/**
 	 * @see {@link TaskEventListener#taskSubmitted(Event)
-	 * @param task
+	 * @param Task
 	 */
-	public void dispatchTaskSubmitted(Task task) {
-		dispatch(TYPE_OF_DISPATCHING.submitted, task);
+	public void dispatchTaskSubmitted(Task Task) {
+		dispatch(TYPE_OF_DISPATCHING.submitted, Task);
 	}
 
 	/**
 	 * @see {@link TaskEventListener#taskStarted(Event)
-	 * @param task
+	 * @param Task
 	 */
-	public void dispatchTaskStarted(Task task) {
-		dispatch(TYPE_OF_DISPATCHING.started, task);
+	public void dispatchTaskStarted(Task Task) {
+		dispatch(TYPE_OF_DISPATCHING.started, Task);
 	}
 
 	/**
 	 * @see {@link TaskEventListener#taskFinished(Event)
-	 * @param task
+	 * @param Task
 	 */
-	public void dispatchTaskFinished(Task task) {
-		dispatch(TYPE_OF_DISPATCHING.finished, task);
+	public void dispatchTaskFinished(Task Task) {
+		dispatch(TYPE_OF_DISPATCHING.finished, Task);
 	}
 
 	/**
 	 * @see {@link TaskEventListener#taskPreempted(Event)
-	 * @param task
+	 * @param Task
 	 * @param preemptionTime
 	 */
-	public void dispatchTaskPreempted(Task task, long preemptionTime) {
-		dispatch(TYPE_OF_DISPATCHING.preempted, task, preemptionTime);
+	public void dispatchTaskPreempted(Task Task, long preemptionTime) {
+		dispatch(TYPE_OF_DISPATCHING.preempted, Task, preemptionTime);
 	}
 
-	public void dispatchTaskCancelled(Task task, long cancellingTime) {
-		dispatch(TYPE_OF_DISPATCHING.cancelled, task, cancellingTime);
+	public void dispatchTaskCancelled(Task Task, long cancellingTime) {
+		dispatch(TYPE_OF_DISPATCHING.cancelled, Task, cancellingTime);
 	}
 
 	
-	private void dispatch(TYPE_OF_DISPATCHING type, Task task, long preemptionTime) {
-		dispatch(type, new Event<Task>(preemptionTime, task));
+	private void dispatch(TYPE_OF_DISPATCHING type, Task Task, long preemptionTime) {
+		dispatch(type, new Event<Task>(preemptionTime, Task));
 	}
 
-	private void dispatch(TYPE_OF_DISPATCHING type, Task task) {
-		dispatch(type, new Event<Task>(task));
+	private void dispatch(TYPE_OF_DISPATCHING type, Task Task) {
+		dispatch(type, new Event<Task>(Task));
 	}
 
 	@SuppressWarnings("unchecked")

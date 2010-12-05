@@ -11,6 +11,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
+import br.edu.ufcg.lsd.oursim.dispatchableevents.EventListener;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventListener;
 import br.edu.ufcg.lsd.oursim.entities.util.ResourceAllocationManager;
 import br.edu.ufcg.lsd.oursim.entities.util.ResourceManager;
@@ -209,11 +210,11 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 	 *            The instante at which the update refers to.
 	 */
 	public void updateTime(long currentTime) {
-		for (Task task : this.taskManager.getRunningTasks()) {
-			Long estimatedFinishTime = task.getTaskExecution().updateProcessing(currentTime);
+		for (Task Task : this.taskManager.getRunningTasks()) {
+			Long estimatedFinishTime = Task.getTaskExecution().updateProcessing(currentTime);
 			if (estimatedFinishTime != null) {
 				long finishTime = getCurrentTime() + estimatedFinishTime;
-				this.addFinishTaskEvent(finishTime, task);
+				this.addFinishTaskEvent(finishTime, Task);
 			}
 		}
 	}
@@ -264,20 +265,20 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 	/**
 	 * Add a task to be executed in this peer.
 	 * 
-	 * @param task
+	 * @param Task
 	 *            The task to be executed.
 	 * @return <code>true</code> if the task is succesfully added and is been
 	 *         executed, <code>false</code> otherwise.
 	 */
-	public final boolean executeTask(Task task) {
-		Machine allocatedMachine = this.resourceAllocationManager.allocateTask(task);
+	public final boolean executeTask(Task Task) {
+		Machine allocatedMachine = this.resourceAllocationManager.allocateTask(Task);
 		if (allocatedMachine != null) {
 			long currentTime = getCurrentTime();
 			Processor defaultProcessor = allocatedMachine.getDefaultProcessor();
-			task.setTaskExecution(new TaskExecution(task, defaultProcessor, currentTime));
-			task.setStartTime(currentTime);
-			task.setTargetPeer(this);
-			this.addStartedTaskEvent(task);
+			Task.setTaskExecution(new TaskExecution(Task, defaultProcessor, currentTime));
+			Task.setStartTime(currentTime);
+			Task.setTargetPeer(this);
+			this.addStartedTaskEvent(Task);
 			return true;
 		} else {
 			return false;
@@ -288,20 +289,20 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 	 * Finishs the execution of a task. This means the task has been succesfully
 	 * executed and has been completed.
 	 * 
-	 * @param task
+	 * @param Task
 	 *            The task to be finished.
 	 * @throws IllegalArgumentException
 	 *             if the task was not being executed in this peer.
 	 */
-	public final void finishTask(Task task) throws IllegalArgumentException {
-		assert this.taskManager.isInExecution(task) : task;
+	public final void finishTask(Task Task) throws IllegalArgumentException {
+		assert this.taskManager.isInExecution(Task) : Task;
 
-		String machineName = this.taskManager.getMachine(task).getName();
-		long usefulTime = getCurrentTime() - task.getStartTime();
+		String machineName = this.taskManager.getMachine(Task).getName();
+		long usefulTime = getCurrentTime() - Task.getStartTime();
 
-		if (this.taskManager.isInExecution(task)) {
-			this.resourceManager.releaseResource(this.taskManager.finishTask(task));
-			this.resourceSharingPolicy.updateMutualBalance(this, task.getSourcePeer(), task);
+		if (this.taskManager.isInExecution(Task)) {
+			this.resourceManager.releaseResource(this.taskManager.finishTask(Task));
+			this.resourceSharingPolicy.updateMutualBalance(this, Task.getSourcePeer(), Task);
 		} else {
 			throw new IllegalArgumentException("The task was not being executed in this peer.");
 		}
@@ -314,19 +315,22 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 	 * Preempts the execution of a task. This means the task was been executing
 	 * but must be preempted, whatever the reason.
 	 * 
-	 * @param task
+	 * @param Task
 	 *            The task to be preempted.
 	 */
-	public final void preemptTask(Task task) {
-		assert this.taskManager.isInExecution(task) : task;
+	public final void preemptTask(Task Task) {
+		assert this.taskManager.isInExecution(Task) : Task;
 
-		String machineName = this.taskManager.getMachine(task).getName();
-		long wastedTime = getCurrentTime() - task.getStartTime();
+		String machineName = this.taskManager.getMachine(Task).getName();
+		long wastedTime = getCurrentTime() - Task.getStartTime();
 
-		if (this.taskManager.isInExecution(task)) {
-			this.resourceAllocationManager.deallocateTask(task);
-			this.resourceSharingPolicy.updateMutualBalance(this, task.getSourcePeer(), task);
-			this.addPreemptedTaskEvent(task);
+		if (this.taskManager.isInExecution(Task)) {
+			this.resourceAllocationManager.deallocateTask(Task);
+			this.resourceSharingPolicy.updateMutualBalance(this, Task.getSourcePeer(), Task);
+			// TODO XXX definir onde essas ações devem ficar: se em quem a
+			// executa ou se no evento disparado.
+			Task.preempt(getCurrentTime());
+			this.addPreemptedTaskEvent(Task);
 		} else {
 			throw new IllegalArgumentException("The task was not being executed in this peer.");
 		}
@@ -336,21 +340,24 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 
 	}
 
-	public final void cancelTask(Task task) {
-		assert this.taskManager.isInExecution(task) : task;
+	public final void cancelTask(Task Task) {
+		assert this.taskManager.isInExecution(Task) : Task;
 
-		if (this.taskManager.isInExecution(task)) {
-			String machineName = this.taskManager.getMachine(task).getName();
-			long wastedTime = getCurrentTime() - task.getStartTime();
+		if (this.taskManager.isInExecution(Task)) {
+			String machineName = this.taskManager.getMachine(Task).getName();
+			long wastedTime = getCurrentTime() - Task.getStartTime();
 
-			this.resourceAllocationManager.deallocateTask(task);
-			this.resourceSharingPolicy.updateMutualBalance(this, task.getSourcePeer(), task);
-			this.addCancelledTaskEvent(task);
+			this.resourceAllocationManager.deallocateTask(Task);
+			this.resourceSharingPolicy.updateMutualBalance(this, Task.getSourcePeer(), Task);
+			// TODO XXX definir onde essas ações devem ficar: se em quem a
+			// executa ou se no evento disparado.
+			Task.cancel();
+			this.addCancelledTaskEvent(Task);
 
 			Long cum = this.amountOfWastedTime.get(machineName);
 			this.amountOfWastedTime.put(machineName, cum + wastedTime);
 		} else {
-			throw new IllegalArgumentException("The task " + task + " was not being executed in this peer.");
+			throw new IllegalArgumentException("The task " + Task + " was not being executed in this peer.");
 		}
 
 	}
@@ -417,8 +424,8 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 		String machineName = workerEvent.getSource();
 		if (this.resourceManager.isAllocated(machineName)) {
 			Machine resource = this.resourceManager.getResource(machineName);
-			Task task = this.taskManager.getTask(resource);
-			preemptTask(task);// TODO nesse momento o resource não estará mais
+			Task Task = this.taskManager.getTask(resource);
+			preemptTask(Task);// TODO nesse momento o resource não estará mais
 			// em
 			// allocated e sim em free pois o preempt
 			// efetivamente libera o recurso.
@@ -469,11 +476,11 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 	 * Sorts the collection of tasks in a way that the preferable tasks to
 	 * preemption are firstly accessed.
 	 * 
-	 * @param tasks
+	 * @param Tasks
 	 *            the tasks candidates to preemption.
 	 */
-	public final void prioritizeTasksToPreemption(List<Task> tasks) {
-		this.taskPreemptionRankingPolicy.rank(tasks);
+	public final void prioritizeTasksToPreemption(List<Task> Tasks) {
+		this.taskPreemptionRankingPolicy.rank(Tasks);
 	}
 
 	/**
@@ -535,6 +542,11 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 			referenceMachine = new Machine(getName() + "_referenceMachine", avgSpeed);
 		}
 		return referenceMachine.getDefaultProcessor();
+	}
+
+	@Override
+	public int compareTo(EventListener o) {
+		return this.hashCode() - o.hashCode();
 	}
 
 }

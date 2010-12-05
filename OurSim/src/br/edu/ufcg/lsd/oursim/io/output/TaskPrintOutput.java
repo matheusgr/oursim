@@ -1,8 +1,7 @@
 package br.edu.ufcg.lsd.oursim.io.output;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
+import java.io.IOException;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.entities.Task;
@@ -17,71 +16,48 @@ import br.edu.ufcg.lsd.oursim.entities.Task;
  */
 public class TaskPrintOutput extends OutputAdapter {
 
-	/**
-	 * the stream where the results will be printed out.
-	 */
-	private PrintStream out;
-
-	/**
-	 * An default constructor. Using this constructor the results will be
-	 * printed out in the default output.
-	 */
 	public TaskPrintOutput() {
-		this.out = System.out;
+		super();
 	}
 
-	/**
-	 * Using this constructor the results will be printed out in the file called
-	 * <code>fileName</code>.
-	 * 
-	 * @param fileName
-	 *            The name of the file where the results will be printed out.
-	 */
-	public TaskPrintOutput(File file) {
-		try {
-			this.out = new PrintStream(file);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+	public TaskPrintOutput(File file) throws IOException {
+		super(file);
+		super.appendln("type:time:taskId:replicaId");
 	}
 
 	@Override
 	public void taskSubmitted(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		this.out.println("(U:" + task.getSubmissionTime() + ":" + task.getReplicaId() + ":" + task.getId() + ")");
+		Task Task = taskEvent.getSource();
+		super.appendln("(U:" + Task.getSubmissionTime() + ":" + Task.getId() + ":" + Task.getReplicaId() + ":NA)");
 	}
 
 	@Override
 	public void taskStarted(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		String machineName = task.getTaskExecution().getMachine().getName();
-		this.out.println("(S:" + task.getStartTime() + ":" + task.getId() + ":" + task.getReplicaId() + ":" + machineName + ")");
+		Task Task = taskEvent.getSource();
+		String machineName = Task.getTaskExecution().getMachine().getName();
+		super.appendln("(S:" + Task.getStartTime() + ":" + Task.getId() + ":" + Task.getReplicaId() + ":" + machineName + ":" + Task.getEstimatedFinishTime()
+				+ ")");
 	}
 
 	@Override
 	public void taskPreempted(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		String machineName = task.getTaskExecution().getMachine().getName();
-		this.out.println("(P:" + taskEvent.getTime() + ":" + task.getId() + ":" + task.getReplicaId() + ":" + machineName + ")");
+		Task Task = taskEvent.getSource();
+		String machineName = Task.getTaskExecution().getMachine().getName();
+		super.appendln("(P:" + taskEvent.getTime() + ":" + Task.getId() + ":" + Task.getReplicaId() + ":" + machineName + ")");
 	}
 
 	@Override
 	public void taskFinished(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		String machineName = task.getTaskExecution().getMachine().getName();
-		this.out.println("(F:" + task.getFinishTime() + ":" + task.getId() + ":" + task.getReplicaId() + ":" + machineName + ")");
+		Task Task = taskEvent.getSource();
+		String machineName = Task.getTaskExecution().getMachine().getName();
+		super.appendln("(F:" + Task.getFinishTime() + ":" + Task.getId() + ":" + Task.getReplicaId() + ":" + machineName + ")");
 	}
 
 	@Override
 	public void taskCancelled(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		String machineName = task.getTaskExecution().getMachine().getName();
-		this.out.println("(C:" + taskEvent.getTime() + ":" + task.getId() + ":" + task.getReplicaId() + ":" + machineName + ")");
-	}
-
-	@Override
-	public void close() {
-		this.out.close();
+		Task Task = taskEvent.getSource();
+		String machineName = Task.getTaskExecution().getMachine().getName();
+		super.appendln("(C:" + taskEvent.getTime() + ":" + Task.getId() + ":" + Task.getReplicaId() + ":" + machineName + ")");
 	}
 
 }

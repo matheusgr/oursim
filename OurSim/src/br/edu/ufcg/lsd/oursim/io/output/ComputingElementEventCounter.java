@@ -1,6 +1,7 @@
 package br.edu.ufcg.lsd.oursim.io.output;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
+import br.edu.ufcg.lsd.oursim.dispatchableevents.EventListener;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventCounter;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventListener;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventCounter;
@@ -24,6 +25,18 @@ public class ComputingElementEventCounter implements JobEventListener, TaskEvent
 	public ComputingElementEventCounter() {
 		this.jobEventCounter = new JobEventCounter();
 		this.taskEventCounter = new TaskEventCounter();
+	}
+
+	public long getSumOfTasksMakespan() {
+		return this.taskEventCounter.getSumOfTasksMakespan();
+	}
+	
+	public long getSumOfJobsMakespan() {
+		return this.jobEventCounter.getSumOfJobsMakespan();
+	}
+
+	public final int getNumberOfSubmittedTasks() {
+		return this.taskEventCounter.getNumberOfSubmittedTasks();
 	}
 
 	public final int getNumberOfFinishedTasks() {
@@ -97,6 +110,11 @@ public class ComputingElementEventCounter implements JobEventListener, TaskEvent
 	@Override
 	public void taskSubmitted(Event<Task> taskEvent) {
 		this.taskEventCounter.taskSubmitted(taskEvent);
+	}
+
+	@Override
+	public int compareTo(EventListener o) {
+		return this.hashCode() - o.hashCode();
 	}
 
 }

@@ -57,8 +57,8 @@ public class MarcusWorkload2 implements Workload {
 			}
 
 			while (scanner.hasNextLine() && (nextJob = createJob(lastReadLine = scanner.nextLine(), peers)).getId() == currentJob.getId()) {
-				Task task = nextJob.getTasks().get(0);
-				currentJob.addTask(new Task(task.getId(), "", task.getDuration(), currentJob.getSubmissionTime(), null));
+				Task Task = nextJob.getTasks().get(0);
+				currentJob.addTask(new Task(Task.getId(), "", Task.getDuration(), currentJob.getSubmissionTime(), null));
 			}
 			this.nextJob = currentJob;
 		}

@@ -54,10 +54,10 @@ public class ResourceManager {
 		return chosen;
 	}
 
-	public Machine allocateResourceToTask(Task task) {
+	public Machine allocateResourceToTask(Task Task) {
 		assert this.hasAvailableResource();
 		LinkedList<Machine> freeResources = new LinkedList<Machine>(free.values());
-		task.prioritizeResourcesToConsume(freeResources);
+		Task.prioritizeResourcesToConsume(freeResources);
 		// TODO: considerar o caso em que nenhuma máquina satisfaz a task.
 		Machine chosen = freeResources.getFirst();
 		assert this.free.containsValue(chosen);

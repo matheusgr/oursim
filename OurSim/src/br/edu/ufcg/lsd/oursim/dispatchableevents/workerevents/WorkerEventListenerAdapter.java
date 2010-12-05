@@ -11,7 +11,7 @@ import br.edu.ufcg.lsd.oursim.dispatchableevents.EventListenerAdapter;
  * @since 19/05/2010
  * 
  */
-public abstract class WorkerEventListenerAdapter implements WorkerEventListener, EventListenerAdapter {
+public abstract class WorkerEventListenerAdapter extends EventListenerAdapter implements WorkerEventListener {
 
 	@Override
 	public void workerAvailable(Event<String> workerEvent) {

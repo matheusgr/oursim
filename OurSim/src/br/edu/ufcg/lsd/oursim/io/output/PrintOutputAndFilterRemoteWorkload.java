@@ -199,14 +199,14 @@ public final class PrintOutputAndFilterRemoteWorkload extends OutputAdapter {
 		StringBuilder sb2 = new StringBuilder();
 
 		Long remoteTasksRuntimeSum = 0l;
-		for (Task task : job.getTasks()) {
-			tasks.append(sep).append(task.getDuration());
-			if (!task.hasLocallyRunned()) {
-				remoteTasks.append(sep2).append(task.getDuration());
-				remoteTasksRuntimeSum += task.getDuration();
+		for (Task Task : job.getTasks()) {
+			tasks.append(sep).append(Task.getDuration());
+			if (!Task.hasLocallyRunned()) {
+				remoteTasks.append(sep2).append(Task.getDuration());
+				remoteTasksRuntimeSum += Task.getDuration();
 				remTasksSize++;
 				sep2 = ";";
-				remoteMakeSpan = Math.max(remoteMakeSpan, task.getMakeSpan());
+				remoteMakeSpan = Math.max(remoteMakeSpan, Task.getMakeSpan());
 			}
 			sep = ";";
 		}

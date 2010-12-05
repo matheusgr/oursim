@@ -12,7 +12,7 @@ import br.edu.ufcg.lsd.oursim.entities.Job;
  * @since 19/05/2010
  * 
  */
-public abstract class JobEventListenerAdapter implements JobEventListener, EventListenerAdapter {
+public abstract class JobEventListenerAdapter extends EventListenerAdapter implements JobEventListener {
 
 	public void jobSubmitted(Event<Job> jobEvent) {
 	}

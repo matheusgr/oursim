@@ -82,21 +82,21 @@ public class TaskManager {
 	 * Adds a running tasks. This means that the {@link Task} <code>task</code>
 	 * are running in a {@link Machine} <code>machine</code>.
 	 * 
-	 * @param task
+	 * @param Task
 	 *            the task to be added.
 	 * @param resource
 	 *            the machine in which the task are running.
 	 */
-	public void startTask(Task task, Machine resource) {
-		assert resource != null && !tasksInExecution.containsKey(task);
+	public void startTask(Task Task, Machine resource) {
+		assert resource != null && !tasksInExecution.containsKey(Task);
 
-		this.tasksInExecution.put(task, resource);
+		this.tasksInExecution.put(Task, resource);
 
-		Peer sourcePeer = task.getSourcePeer();
+		Peer sourcePeer = Task.getSourcePeer();
 		if (sourcePeer == peer) {
-			this.addLocalTask(task);
+			this.addLocalTask(Task);
 		} else {
-			this.addForeignTask(task);
+			this.addForeignTask(Task);
 		}
 
 	}
@@ -109,21 +109,21 @@ public class TaskManager {
 	 */
 	public void finishTask(Machine resource) {
 		assert this.tasksInExecution.containsValue(resource);
-		Task task = this.getTask(resource);
-		finishTask(task);
+		Task Task = this.getTask(resource);
+		finishTask(Task);
 	}
 
 	/**
 	 * Finishs a given task.
 	 * 
-	 * @param task
+	 * @param Task
 	 *            the given task.
 	 * @return the machine in which the given task was running.
 	 */
-	public Machine finishTask(Task task) {
-		assert this.tasksInExecution.containsKey(task) : task;
-		Machine machine = this.tasksInExecution.remove(task);
-		boolean removed = this.remove(task);
+	public Machine finishTask(Task Task) {
+		assert this.tasksInExecution.containsKey(Task) : Task;
+		Machine machine = this.tasksInExecution.remove(Task);
+		boolean removed = this.remove(Task);
 		assert removed && machine != null;
 		return machine;
 	}
@@ -131,13 +131,13 @@ public class TaskManager {
 	/**
 	 * Remove a task from this taskManager.
 	 * 
-	 * @param task
+	 * @param Task
 	 *            the task to be removed.
 	 * @return <code>true</code> if the task has been successfully removed,
 	 *         <code>false</false> otherwise.
 	 */
-	private boolean remove(Task task) {
-		return (task.getSourcePeer() == peer) ? removeLocalTask(task) : removeForeignTask(task);
+	private boolean remove(Task Task) {
+		return (Task.getSourcePeer() == peer) ? removeLocalTask(Task) : removeForeignTask(Task);
 	}
 
 	/**
@@ -148,19 +148,19 @@ public class TaskManager {
 	 * @return all tasks that are running and belongs to the given peer.
 	 */
 	public List<Task> getAllTasksFromPeer(Peer chosen) {
-		List<Task> tasks;
+		List<Task> Tasks;
 		if (chosen == peer) {
-			tasks = new ArrayList<Task>(localTasks);
+			Tasks = new ArrayList<Task>(localTasks);
 		} else {
 			// todas as tasks do escolhido que estão rodando
-			tasks = new LinkedList<Task>();
+			Tasks = new LinkedList<Task>();
 			for (Task j : foreignTasks) {
 				if (j.getSourcePeer() == chosen) {
-					tasks.add(j);
+					Tasks.add(j);
 				}
 			}
 		}
-		return tasks;
+		return Tasks;
 	}
 
 	/**
@@ -196,12 +196,12 @@ public class TaskManager {
 	/**
 	 * Gets the machine in which a given task are running.
 	 * 
-	 * @param task
+	 * @param Task
 	 *            the given task.
 	 * @return the machine in which the given task are running.
 	 */
-	public Machine getMachine(Task task) {
-		return this.tasksInExecution.get(task);
+	public Machine getMachine(Task Task) {
+		return this.tasksInExecution.get(Task);
 	}
 
 	/**
@@ -231,32 +231,32 @@ public class TaskManager {
 	/**
 	 * Checks if a given task is running.
 	 * 
-	 * @param task
+	 * @param Task
 	 *            the given task.
 	 * @return <code>true</code> if the given task is running,
 	 *         <code>false</false> otherwise.
 	 */
-	public boolean isInExecution(Task task) {
-		return this.tasksInExecution.containsKey(task);
+	public boolean isInExecution(Task Task) {
+		return this.tasksInExecution.containsKey(Task);
 	}
 
-	private void addLocalTask(Task task) {
-		assert !this.localTasks.contains(task);
-		this.localTasks.add(task);
+	private void addLocalTask(Task Task) {
+		assert !this.localTasks.contains(Task);
+		this.localTasks.add(Task);
 	}
 
-	private void addForeignTask(Task task) {
-		this.foreignTasks.add(task);
+	private void addForeignTask(Task Task) {
+		this.foreignTasks.add(Task);
 	}
 
-	private boolean removeLocalTask(Task task) {
-		assert this.localTasks.contains(task);
-		return this.localTasks.remove(task);
+	private boolean removeLocalTask(Task Task) {
+		assert this.localTasks.contains(Task);
+		return this.localTasks.remove(Task);
 	}
 
-	private boolean removeForeignTask(Task task) {
-		assert this.foreignTasks.contains(task);
-		return this.foreignTasks.remove(task);
+	private boolean removeForeignTask(Task Task) {
+		assert this.foreignTasks.contains(Task);
+		return this.foreignTasks.remove(Task);
 	}
 
 }

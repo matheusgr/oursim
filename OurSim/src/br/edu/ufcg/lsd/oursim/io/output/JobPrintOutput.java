@@ -1,12 +1,10 @@
 package br.edu.ufcg.lsd.oursim.io.output;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
+import java.io.IOException;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
 import br.edu.ufcg.lsd.oursim.entities.Job;
-
 
 /**
  * 
@@ -18,32 +16,13 @@ import br.edu.ufcg.lsd.oursim.entities.Job;
  */
 public class JobPrintOutput extends OutputAdapter {
 
-	/**
-	 * the stream where the results will be printed out.
-	 */
-	private PrintStream out;
-
-	/**
-	 * An default constructor. Using this constructor the results will be
-	 * printed out in the default output.
-	 */
 	public JobPrintOutput() {
-		this.out = System.out;
+		super();
 	}
 
-	/**
-	 * Using this constructor the results will be printed out in the file called
-	 * <code>fileName</code>.
-	 * 
-	 * @param fileName
-	 *            The name of the file where the results will be printed out.
-	 */
-	public JobPrintOutput(String fileName) {
-		try {
-			this.out = new PrintStream(new File(fileName));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+	public JobPrintOutput(File file) throws IOException {
+		super(file);
+		super.appendln("type:time:jobId");
 	}
 
 	@Override
@@ -53,7 +32,7 @@ public class JobPrintOutput extends OutputAdapter {
 		long id = job.getId();
 		long submissionTime = job.getSubmissionTime();
 
-		this.out.println("U:" + submissionTime + ":" + id);
+		super.appendln("U:" + submissionTime + ":" + id);
 	}
 
 	@Override
@@ -63,7 +42,7 @@ public class JobPrintOutput extends OutputAdapter {
 		long id = job.getId();
 		long startTime = job.getStartTime();
 
-		this.out.println("S:" + startTime + ":" + id);
+		super.appendln("S:" + startTime + ":" + id);
 	}
 
 	@Override
@@ -73,27 +52,17 @@ public class JobPrintOutput extends OutputAdapter {
 		long id = job.getId();
 		long preemptionTime = jobEvent.getTime();
 
-		this.out.println("P:" + preemptionTime + ":" + id);
+		super.appendln("P:" + preemptionTime + ":" + id);
 	}
 
 	@Override
 	public void jobFinished(Event<Job> jobEvent) {
-
 		Job job = jobEvent.getSource();
 
 		long id = job.getId();
 		long finishTime = job.getFinishTime();
-		long submissionTime = job.getSubmissionTime();
-		long numberOfpreemptions = job.getNumberOfPreemptions();
-		long runTimeDuration = job.getRunningTime();
 
-		this.out.println("F:" + finishTime + ":" + id + ":" + submissionTime + ":" + runTimeDuration + ":" + numberOfpreemptions);
-
-	}
-
-	@Override
-	public void close() {
-		this.out.close();
+		super.appendln("F:" + finishTime + ":" + id);
 	}
 
 }
