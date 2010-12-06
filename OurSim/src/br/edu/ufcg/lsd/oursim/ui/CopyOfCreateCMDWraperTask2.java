@@ -65,10 +65,10 @@ public class CopyOfCreateCMDWraperTask2 {
 		// int[] nResV = ArrayBuilder.createVector(25, 50, 25);
 		// int[] rodadas = ArrayBuilder.createVector(1);
 
-		int[] nSitesV = new int[] { 10 };
-		int[] nResV = new int[] { 10};
+		int[] nSitesV = new int[] { 50 };
+		int[] nResV = new int[] { 50};
 
-		int[] rodadas = ArrayBuilder.createVector(14,30);
+		int[] rodadas = ArrayBuilder.createVector(1);
 
 		System.out.println("scheduler: " + scheduler);
 		System.out.print("nSitesV  : ");

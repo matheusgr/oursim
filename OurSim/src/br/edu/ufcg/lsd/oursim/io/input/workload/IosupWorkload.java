@@ -55,7 +55,7 @@ public class IosupWorkload implements Workload {
 	private static Job createJob(String line, Map<String, Peer> peers, long startingTime) {
 		// "time" "jobId" "jobSize" "runtime" "tasks" "user" "peer"
 		Scanner scLine = new Scanner(line);
-		System.out.println(line);
+//		System.out.println(line);
 		long time = scLine.nextLong();
 		long jobID = scLine.nextLong();
 		long jobSize = scLine.nextLong();
