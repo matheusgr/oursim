@@ -39,11 +39,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang.time.StopWatch;
+
+import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
 
 import br.edu.ufcg.lsd.oursim.OurSim;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
@@ -54,17 +57,20 @@ import br.edu.ufcg.lsd.oursim.io.input.Input;
 import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
 import br.edu.ufcg.lsd.oursim.io.output.ComputingElementEventCounter;
+import br.edu.ufcg.lsd.oursim.io.output.JobPrintOutput;
 import br.edu.ufcg.lsd.oursim.io.output.PrintOutput;
 import br.edu.ufcg.lsd.oursim.policy.FifoSharingPolicy;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 import br.edu.ufcg.lsd.oursim.ui.SystemConfigurationCommandParser;
+import br.edu.ufcg.lsd.oursim.util.TimeUtil;
 import br.edu.ufcg.lsd.spotinstancessimulator.dispatchableevents.spotinstances.SpotPriceEventDispatcher;
 import br.edu.ufcg.lsd.spotinstancessimulator.entities.EC2Instance;
 import br.edu.ufcg.lsd.spotinstancessimulator.entities.EC2InstanceBadge;
 import br.edu.ufcg.lsd.spotinstancessimulator.io.input.SpotPrice;
 import br.edu.ufcg.lsd.spotinstancessimulator.io.input.SpotPriceFluctuation;
 import br.edu.ufcg.lsd.spotinstancessimulator.io.input.workload.IosupWorkloadWithBidValue;
+import br.edu.ufcg.lsd.spotinstancessimulator.io.output.SpotPricePrintOutput;
 import br.edu.ufcg.lsd.spotinstancessimulator.parser.Ec2InstanceParser;
 import br.edu.ufcg.lsd.spotinstancessimulator.policy.SpotInstancesMultiCoreSchedulerLimited;
 import br.edu.ufcg.lsd.spotinstancessimulator.policy.SpotInstancesScheduler;
@@ -104,6 +110,9 @@ public class SpotCLI {
 
 		PrintOutput printOutput = new PrintOutput((File) cmd.getOptionObject(OUTPUT), false);
 		JobEventDispatcher.getInstance().addListener(printOutput);
+//		SpotPriceEventDispatcher.getInstance().addListener(new SpotPricePrintOutput());
+//		JobEventDispatcher.getInstance().addListener(new JobPrintOutput());
+		
 
 		ComputingElementEventCounter compElemEventCounter = prepareOutputAccounting(cmd, cmd.hasOption(VERBOSE));
 
@@ -114,16 +123,22 @@ public class SpotCLI {
 
 		Grid grid = prepareGrid(cmd);
 
-		if (cmd.hasOption(SPOT_INSTANCES)) {
-			String spotTraceFilePath = cmd.getOptionValue(AVAILABILITY);
-			long timeOfFirstSpotPrice = SpotInstaceTraceFormat.extractTimeFromFirstSpotPrice(spotTraceFilePath);
-			availability = new SpotPriceFluctuation(spotTraceFilePath, timeOfFirstSpotPrice);
-			workload = defineWorkloadToSpotInstances(cmd, cmd.getOptionValue(WORKLOAD), workload, grid.getMapOfPeers(), spotTraceFilePath, BID_VALUE);
-		} else {
-			showMessageAndExit("Essa interface é só para spot instances.");
-		}
+		String spotTraceFilePath = cmd.getOptionValue(AVAILABILITY);
+		List<SpotPrice> refSpotPrices = SpotInstaceTraceFormat.extractReferenceSpotPrices(spotTraceFilePath);
 
-		jobScheduler = createSpotInstancesScheduler(cmd, INSTANCE_TYPE, INSTANCE_REGION, INSTANCE_SO, AVAILABILITY);
+		long timeOfFirstSpotPrice = refSpotPrices.get(SpotInstaceTraceFormat.FIRST).getTime();
+		long timeOfLastSpotPrice = refSpotPrices.get(SpotInstaceTraceFormat.LAST).getTime();
+
+		long folga = TimeUtil.ONE_MONTH;
+		long randomValue = (new Random()).nextInt((int) (timeOfLastSpotPrice - timeOfFirstSpotPrice - folga));
+
+		long randomPoint = randomValue;
+
+		availability = new SpotPriceFluctuation(spotTraceFilePath, timeOfFirstSpotPrice, randomPoint);
+
+		workload = defineWorkloadToSpotInstances(cmd, grid.getMapOfPeers(), refSpotPrices);
+
+		jobScheduler = createSpotInstancesScheduler(cmd, refSpotPrices);
 
 		BufferedWriter bw = null;
 		if (cmd.hasOption(UTILIZATION)) {
@@ -145,12 +160,12 @@ public class SpotCLI {
 
 		EC2Instance ec2Instance = ((SpotInstancesMultiCoreSchedulerLimited) jobScheduler).getEc2Instance();
 
-		fw.write(formatSummaryStatistics(compElemEventCounter, ec2Instance.name, ec2Instance.group,cmd.hasOption(GROUP_BY_PEEP), grid.getPeers().size(), grid.getListOfPeers().get(0)
-				.getNumberOfMachines(), -1, -1, stopWatch.getTime())
+		fw.write(formatSummaryStatistics(compElemEventCounter, ec2Instance.name, ec2Instance.group, cmd.hasOption(GROUP_BY_PEEP), grid.getPeers().size(), grid
+				.getListOfPeers().get(0).getNumberOfMachines(), -1, -1, stopWatch.getTime())
 				+ "\n");
 
-		System.out.println(getSummaryStatistics(compElemEventCounter, ec2Instance.name, ec2Instance.group,cmd.hasOption(GROUP_BY_PEEP), grid.getListOfPeers().size(), grid.getListOfPeers()
-				.get(0).getNumberOfMachines(), -1, -1, stopWatch.getTime()));
+		System.out.println(getSummaryStatistics(compElemEventCounter, ec2Instance.name, ec2Instance.group, cmd.hasOption(GROUP_BY_PEEP), grid.getListOfPeers()
+				.size(), grid.getListOfPeers().get(0).getNumberOfMachines(), -1, -1, stopWatch.getTime()));
 
 		fw.close();
 
@@ -173,36 +188,29 @@ public class SpotCLI {
 		return grid;
 	}
 
-	static Workload defineWorkloadToSpotInstances(CommandLine cmd, String workloadFilePath, Workload workload, Map<String, Peer> peersMap,
-			String spotTraceFilePath, String BID_VALUE) throws IOException, java.text.ParseException, FileNotFoundException {
-		if (hasOptions(cmd, BID_VALUE)) {
-			double bidValue = -1;
-			try {
-				bidValue = Double.parseDouble(cmd.getOptionValue(BID_VALUE));
-			} catch (NumberFormatException e) {
-				if (cmd.getOptionValue(BID_VALUE).equals("min")) {
-					bidValue = SpotInstaceTraceFormat.extractlowestSpotPrice(spotTraceFilePath).getPrice();
-				} else if (cmd.getOptionValue(BID_VALUE).equals("max")) {
-					bidValue = SpotInstaceTraceFormat.extractHighestSpotPrice(spotTraceFilePath).getPrice();
-				} else if (cmd.getOptionValue(BID_VALUE).equals("med")) {
-					double min = SpotInstaceTraceFormat.extractlowestSpotPrice(spotTraceFilePath).getPrice();
-					double max = SpotInstaceTraceFormat.extractHighestSpotPrice(spotTraceFilePath).getPrice();
-					double med = (min + max) / 2.0;
-					bidValue = med;
-				} else {
-					System.err.println("bid inválido.");
-					System.exit(10);
-				}
+	static Workload defineWorkloadToSpotInstances(CommandLine cmd, Map<String, Peer> peersMap, List<SpotPrice> refSpotPrices) throws IOException,
+			java.text.ParseException, FileNotFoundException {
+		double bidValue = -1;
+		try {
+			bidValue = Double.parseDouble(cmd.getOptionValue(BID_VALUE));
+		} catch (NumberFormatException e) {
+			if (cmd.getOptionValue(BID_VALUE).equals("min")) {
+				bidValue = refSpotPrices.get(SpotInstaceTraceFormat.LOWEST).getPrice();
+			} else if (cmd.getOptionValue(BID_VALUE).equals("max")) {
+				bidValue = refSpotPrices.get(SpotInstaceTraceFormat.HIGHEST).getPrice();
+			} else if (cmd.getOptionValue(BID_VALUE).equals("med")) {
+				double med = refSpotPrices.get(SpotInstaceTraceFormat.MEAN).getPrice();
+				bidValue = med;
+			} else {
+				System.err.println("bid inválido.");
+				System.exit(10);
 			}
-			workload = new IosupWorkloadWithBidValue(workloadFilePath, peersMap, 0, bidValue);
-		} else {
-			System.err.println("Combinação de parâmetros de spot-instances inválida.");
 		}
-		return workload;
+		return new IosupWorkloadWithBidValue(cmd.getOptionValue(WORKLOAD), peersMap, 0, bidValue);
 	}
 
-	static JobSchedulerPolicy createSpotInstancesScheduler(CommandLine cmd, String INSTANCE_TYPE, String INSTANCE_REGION, String INSTANCE_SO,
-			String AVAILABILITY) throws FileNotFoundException, java.text.ParseException {
+	static JobSchedulerPolicy createSpotInstancesScheduler(CommandLine cmd, List<SpotPrice> refSpotPrices) throws FileNotFoundException,
+			java.text.ParseException {
 		JobSchedulerPolicy jobScheduler;
 		String ec2InstancesFilePath = "resources/ec2_instances.txt";
 		EC2Instance ec2Instance;
@@ -226,7 +234,7 @@ public class SpotCLI {
 		}
 		Peer spotInstancesPeer = new Peer("SpotInstancesPeer", FifoSharingPolicy.getInstance());
 
-		SpotPrice initialSpotPrice = SpotInstaceTraceFormat.extractFirstSpotPrice(cmd.getOptionValue(AVAILABILITY));
+		SpotPrice initialSpotPrice = refSpotPrices.get(SpotInstaceTraceFormat.FIRST);
 		int limit = Integer.parseInt(cmd.getOptionValue(LIMIT));
 		long speed = ec2Instance.speedByCore;
 		jobScheduler = new SpotInstancesMultiCoreSchedulerLimited(spotInstancesPeer, initialSpotPrice, ec2Instance, limit, cmd.hasOption(GROUP_BY_PEEP));
