@@ -93,6 +93,8 @@ public class SpotCLI {
 
 	public static final String PEERS_DESCRIPTION = "pd";
 
+	private static final String GROUP_BY_PEEP = "gbp";
+
 	public static void main(String[] args) throws Exception {
 
 		StopWatch stopWatch = new StopWatch();
@@ -103,20 +105,16 @@ public class SpotCLI {
 		PrintOutput printOutput = new PrintOutput((File) cmd.getOptionObject(OUTPUT), false);
 		JobEventDispatcher.getInstance().addListener(printOutput);
 
-		ComputingElementEventCounter computingElementEventCounter = prepareOutputAccounting(cmd, cmd.hasOption(VERBOSE));
+		ComputingElementEventCounter compElemEventCounter = prepareOutputAccounting(cmd, cmd.hasOption(VERBOSE));
 
 		OurSim oursim = null;
 		Input<? extends AvailabilityRecord> availability = null;
 		Workload workload = null;
 		JobSchedulerPolicy jobScheduler = null;
-		// Map<String, Peer> peersMap = null;
 
 		Grid grid = prepareGrid(cmd);
 
 		if (cmd.hasOption(SPOT_INSTANCES)) {
-			// peersMap =
-			// GWAFormat.extractPeersFromGWAFile(cmd.getOptionValue(WORKLOAD),
-			// 0, FifoSharingPolicy.getInstance());
 			String spotTraceFilePath = cmd.getOptionValue(AVAILABILITY);
 			long timeOfFirstSpotPrice = SpotInstaceTraceFormat.extractTimeFromFirstSpotPrice(spotTraceFilePath);
 			availability = new SpotPriceFluctuation(spotTraceFilePath, timeOfFirstSpotPrice);
@@ -145,9 +143,14 @@ public class SpotCLI {
 		stopWatch.stop();
 		fw.write("# Simulation                  duration:" + stopWatch + ".\n");
 
-		fw.write(formatSummaryStatistics(computingElementEventCounter, -1, -1, -1, stopWatch.getTime()) + ".\n");
+		EC2Instance ec2Instance = ((SpotInstancesMultiCoreSchedulerLimited) jobScheduler).getEc2Instance();
 
-		System.out.println(getSummaryStatistics(computingElementEventCounter, -1, -1, -1, stopWatch.getTime()));
+		fw.write(formatSummaryStatistics(compElemEventCounter, ec2Instance.name, ec2Instance.group,cmd.hasOption(GROUP_BY_PEEP), grid.getPeers().size(), grid.getListOfPeers().get(0)
+				.getNumberOfMachines(), -1, -1, stopWatch.getTime())
+				+ "\n");
+
+		System.out.println(getSummaryStatistics(compElemEventCounter, ec2Instance.name, ec2Instance.group,cmd.hasOption(GROUP_BY_PEEP), grid.getListOfPeers().size(), grid.getListOfPeers()
+				.get(0).getNumberOfMachines(), -1, -1, stopWatch.getTime()));
 
 		fw.close();
 
@@ -156,8 +159,8 @@ public class SpotCLI {
 		}
 
 		JobEventDispatcher.getInstance().removeListener(printOutput);
-		JobEventDispatcher.getInstance().removeListener(computingElementEventCounter);
-		TaskEventDispatcher.getInstance().removeListener(computingElementEventCounter);
+		JobEventDispatcher.getInstance().removeListener(compElemEventCounter);
+		TaskEventDispatcher.getInstance().removeListener(compElemEventCounter);
 		EventQueue.getInstance().clear();
 
 	}
@@ -173,8 +176,6 @@ public class SpotCLI {
 	static Workload defineWorkloadToSpotInstances(CommandLine cmd, String workloadFilePath, Workload workload, Map<String, Peer> peersMap,
 			String spotTraceFilePath, String BID_VALUE) throws IOException, java.text.ParseException, FileNotFoundException {
 		if (hasOptions(cmd, BID_VALUE)) {
-			// long timeOfFirstSubmission =
-			// GWAFormat.extractSubmissionTimeFromFirstJob(workloadFilePath);
 			double bidValue = -1;
 			try {
 				bidValue = Double.parseDouble(cmd.getOptionValue(BID_VALUE));
@@ -193,9 +194,6 @@ public class SpotCLI {
 					System.exit(10);
 				}
 			}
-			// workload = new
-			// OnDemandGWANorduGridWorkloadWithBidValue(workloadFilePath,
-			// peersMap, timeOfFirstSubmission, bidValue);
 			workload = new IosupWorkloadWithBidValue(workloadFilePath, peersMap, 0, bidValue);
 		} else {
 			System.err.println("Combinação de parâmetros de spot-instances inválida.");
@@ -222,15 +220,16 @@ public class SpotCLI {
 			resto = resto.substring(resto.indexOf(".") + 1);
 			String type = resto.substring(0, resto.lastIndexOf("."));
 			ec2Instance = loadEC2InstancesTypes(ec2InstancesFilePath).get(type);
+			ec2Instance.name = type;
+			ec2Instance.group = type.substring(0, type.indexOf("."));
+			ec2Instance.fileName = f.getName();
 		}
 		Peer spotInstancesPeer = new Peer("SpotInstancesPeer", FifoSharingPolicy.getInstance());
 
 		SpotPrice initialSpotPrice = SpotInstaceTraceFormat.extractFirstSpotPrice(cmd.getOptionValue(AVAILABILITY));
-		// jobScheduler = new SpotInstancesScheduler(spotInstancesPeer,
-		// initialSpotPrice, ec2Instance.speed);
 		int limit = Integer.parseInt(cmd.getOptionValue(LIMIT));
 		long speed = ec2Instance.speedByCore;
-		jobScheduler = new SpotInstancesMultiCoreSchedulerLimited(spotInstancesPeer, initialSpotPrice, ec2Instance, limit);
+		jobScheduler = new SpotInstancesMultiCoreSchedulerLimited(spotInstancesPeer, initialSpotPrice, ec2Instance, limit, cmd.hasOption(GROUP_BY_PEEP));
 		SpotPriceEventDispatcher.getInstance().addListener((SpotInstancesScheduler) jobScheduler);
 		return jobScheduler;
 	}
@@ -281,6 +280,7 @@ public class SpotCLI {
 		options.addOption(INSTANCE_REGION, "instance_region", true, "Região a qual a instância pertence.");
 		options.addOption(INSTANCE_SO, "instance_so", true, "Sistema operacional da instância a ser simulada.");
 		options.addOption(BID_VALUE, "bid_value", true, "Valor do bid para alocação de instâncias no modelo amazon spot instances..");
+		options.addOption(GROUP_BY_PEEP, "group_by_peer", false, "permitir apenas um usuário da cloud por peer.");
 		// options.addOption(SPOT_MACHINES_SPEED, "machines_speed", true,
 		// "Velocidade das máquinas spot instance.");
 		options.addOption(LIMIT, "limit", true, "Número máximo de instâncias simultâneas que podem ser alocadas por usuário.");

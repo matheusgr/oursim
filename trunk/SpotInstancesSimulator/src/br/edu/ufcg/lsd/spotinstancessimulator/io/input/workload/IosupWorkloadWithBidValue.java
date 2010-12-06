@@ -29,8 +29,8 @@ public class IosupWorkloadWithBidValue extends IosupWorkload {
 	public Job peek() {
 		Job nextJob = super.peek();
 		if (nextJob != null) {
-			for (Task task : nextJob.getTasks()) {
-				task.setBidValue(bidValue);
+			for (Task Task : nextJob.getTasks()) {
+				Task.setBidValue(bidValue);
 			}
 		}
 		return nextJob;

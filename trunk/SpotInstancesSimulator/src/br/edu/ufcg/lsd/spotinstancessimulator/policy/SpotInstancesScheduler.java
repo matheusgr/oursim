@@ -55,17 +55,17 @@ public class SpotInstancesScheduler extends SpotInstancesActiveEntity implements
 			BidValue bid = entry.getKey();
 			if (bid.getValue() < currentSpotPrice.getPrice()) {
 				Machine machine = entry.getValue();
-				Task task = machine2Task.remove(machine);
+				Task Task = machine2Task.remove(machine);
 				iterator.remove();
-				addPreemptedTaskEvent(getCurrentTime(), task);
+				addPreemptedTaskEvent(getCurrentTime(), Task);
 			}
 		}
 	}
 
 	@Override
 	public void addJob(Job job) {
-		for (Task task : job.getTasks()) {
-			this.addSubmitTaskEvent(this.getCurrentTime(), task);
+		for (Task Task : job.getTasks()) {
+			this.addSubmitTaskEvent(this.getCurrentTime(), Task);
 		}
 	}
 
@@ -90,12 +90,12 @@ public class SpotInstancesScheduler extends SpotInstancesActiveEntity implements
 	@Override
 	public void fullHourCompleted(Event<SpotValue> spotValueEvent) {
 		BidValue bidValue = (BidValue) spotValueEvent.getSource();
-		Task task = bidValue.getTask();
-		if (!task.isFinished()) {
-			assert this.accountedCost.containsKey(task);
-			double totalCost = this.accountedCost.get(task) + currentSpotPrice.getPrice();
-			this.accountedCost.put(task, totalCost);
-			task.setCost(totalCost);
+		Task Task = bidValue.getTask();
+		if (!Task.isFinished()) {
+			assert this.accountedCost.containsKey(Task);
+			double totalCost = this.accountedCost.get(Task) + currentSpotPrice.getPrice();
+			this.accountedCost.put(Task, totalCost);
+			Task.setCost(totalCost);
 			// estava sem essa linha
 			this.addFullHourCompletedEvent(bidValue);
 		} else {
@@ -130,22 +130,22 @@ public class SpotInstancesScheduler extends SpotInstancesActiveEntity implements
 
 	@Override
 	public void taskSubmitted(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
+		Task Task = taskEvent.getSource();
 		assert this.machine2Task.size() == this.allocatedMachines.size();
-		if (task.getBidValue() >= currentSpotPrice.getPrice()) {
+		if (Task.getBidValue() >= currentSpotPrice.getPrice()) {
 			String machineName = "m_" + nextMachineId++;
 			Machine newMachine = new Machine(machineName, machineSpeed);
-			BidValue bidValue = new BidValue(machineName, getCurrentTime(), task.getBidValue(), task);
+			BidValue bidValue = new BidValue(machineName, getCurrentTime(), Task.getBidValue(), Task);
 			this.addFullHourCompletedEvent(bidValue);
-			this.machine2Task.put(newMachine, task);
+			this.machine2Task.put(newMachine, Task);
 			this.allocatedMachines.put(bidValue, newMachine);
 			long currentTime = getCurrentTime();
 			Processor defaultProcessor = newMachine.getDefaultProcessor();
-			task.setTaskExecution(new TaskExecution(task, defaultProcessor, currentTime));
-			task.setStartTime(currentTime);
-			task.setTargetPeer(thePeer);
-			this.accountedCost.put(task, 0.0);
-			this.addStartedTaskEvent(task);
+			Task.setTaskExecution(new TaskExecution(Task, defaultProcessor, currentTime));
+			Task.setStartTime(currentTime);
+			Task.setTargetPeer(thePeer);
+			this.accountedCost.put(Task, 0.0);
+			this.addStartedTaskEvent(Task);
 		}
 		assert this.machine2Task.size() == this.allocatedMachines.size();
 	}
@@ -156,11 +156,11 @@ public class SpotInstancesScheduler extends SpotInstancesActiveEntity implements
 		this.machine2Task.remove(machine);
 		BidValue bidValue = this.allocatedMachines.getKey(machine);
 		this.allocatedMachines.remove(bidValue);
-		Task task = bidValue.getTask();
-		assert this.accountedCost.containsKey(task);
-		double totalCost = this.accountedCost.get(task) + currentSpotPrice.getPrice();
-		this.accountedCost.put(task, totalCost);
-		task.setCost(totalCost);
+		Task Task = bidValue.getTask();
+		assert this.accountedCost.containsKey(Task);
+		double totalCost = this.accountedCost.get(Task) + currentSpotPrice.getPrice();
+		this.accountedCost.put(Task, totalCost);
+		Task.setCost(totalCost);
 	}
 
 	@Override
