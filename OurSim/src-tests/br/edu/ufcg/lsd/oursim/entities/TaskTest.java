@@ -1,13 +1,9 @@
 package br.edu.ufcg.lsd.oursim.entities;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import br.edu.ufcg.lsd.oursim.entities.Processor;
-import br.edu.ufcg.lsd.oursim.entities.Task;
-import br.edu.ufcg.lsd.oursim.entities.TaskExecution;
 import br.edu.ufcg.lsd.oursim.policy.FifoSharingPolicy;
 
 public class TaskTest {
@@ -25,19 +21,19 @@ public class TaskTest {
 
 		TaskExecution taskExecution = new TaskExecution(Task, processor, 0);
 
-		assertEquals(130, taskExecution.updateProcessing(50));
+		assertEquals(new Long(130), taskExecution.updateProcessing(50));
 
 		Processor processor2 = new Processor(0, 200);
 		taskExecution.setProcessor(processor2);
-		assertEquals(295, taskExecution.updateProcessing(80));
+		assertEquals(new Long(295), taskExecution.updateProcessing(80));
 
 		Processor processor3 = new Processor(0, 1000);
 		taskExecution.setProcessor(processor3);
-		assertEquals(9, taskExecution.updateProcessing(130));
+		assertEquals(new Long(9), taskExecution.updateProcessing(130));
 		taskExecution.setProcessor(processor);
-		assertEquals(9, taskExecution.updateProcessing(139));
+		assertEquals(new Long(9), taskExecution.updateProcessing(139));
 
-		assertEquals(0, taskExecution.updateProcessing(148));
+		assertEquals(new Long(0), taskExecution.updateProcessing(148));
 
 	}
 
