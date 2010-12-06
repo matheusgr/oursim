@@ -21,7 +21,7 @@ public class CopyOfCreateCMDWraperTask2 {
 
 		String workloadType = "marcus";
 		String workloadPattern = "%s_workload_7_dias_%s_sites_%s.txt";
-		String resultDir = "/local/edigley/traces/oursim/03_12_2010";
+		String resultDir = "/local/edigley/traces/oursim/06_12_2010";
 		long avDur = TimeUtil.ONE_WEEK + 10 * TimeUtil.ONE_HOUR;
 		int spotLimit = 100; // Integer.MAX_VALUE;
 
@@ -78,7 +78,7 @@ public class CopyOfCreateCMDWraperTask2 {
 		System.out.print("rodadas  : ");
 		ArrayBuilder.print(rodadas);
 
-		String inputDir = "resources/";
+		String inputDir = "input-files/";
 		List<String> inputs = new ArrayList<String>();
 		List<String> outputs = new ArrayList<String>();
 
@@ -180,7 +180,7 @@ public class CopyOfCreateCMDWraperTask2 {
 
 		(new File(inputDir)).mkdir();
 
-		FileUtils.copyFileToDirectory(new File("resources-/exemplo-de-execucao.txt"), new File(inputDir));
+		FileUtils.copyFileToDirectory(new File("/home/edigley/local/resources_BKP/exemplo-de-execucao.txt"), new File(inputDir));
 
 		for (String inputFile : inputs) {
 			String sourceDir = "";
