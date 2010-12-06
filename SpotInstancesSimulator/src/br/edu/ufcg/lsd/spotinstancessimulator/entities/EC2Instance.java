@@ -22,6 +22,12 @@ public class EC2Instance {
 
 	public String arch;
 
+	public String group;
+
+	public String name;
+
+	public String fileName;
+
 	public List<EC2InstanceBadge> badges = new ArrayList<EC2InstanceBadge>();
 
 	public EC2InstanceBadge getBadge(String region, String so) {

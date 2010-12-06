@@ -24,6 +24,8 @@ import br.edu.ufcg.lsd.spotinstancessimulator.io.input.SpotPrice;
 
 public class SpotInstancesMultiCoreSchedulerLimited extends SpotInstancesScheduler implements JobSchedulerPolicy, SpotPriceEventListener {
 
+	private boolean onlyOneUserByPeer = false;
+
 	private int limit;
 
 	private Map<String, Integer> numberOfAllocatedMachinesForUser;
@@ -31,8 +33,6 @@ public class SpotInstancesMultiCoreSchedulerLimited extends SpotInstancesSchedul
 	private Map<String, List<Machine>> allocatedMachinesForUser;
 
 	private BidirectionalMap<BidValue, Machine> allocatedMachines;
-
-	private BidirectionalMap<BidValue, Processor> allocatedProcessors;
 
 	private Map<String, List<Task>> queuedTasks;
 
@@ -48,11 +48,10 @@ public class SpotInstancesMultiCoreSchedulerLimited extends SpotInstancesSchedul
 
 	private EC2Instance ec2Instance;
 
-	public SpotInstancesMultiCoreSchedulerLimited(Peer thePeer, SpotPrice initialSpotPrice, EC2Instance ec2Instance, int limit) {
+	public SpotInstancesMultiCoreSchedulerLimited(Peer thePeer, SpotPrice initialSpotPrice, EC2Instance ec2Instance, int limit, boolean onlyOneUserByPeer) {
 		super(thePeer, initialSpotPrice, ec2Instance.speedByCore);
 		this.processor2Task = new BidirectionalMap<Processor, Task>();
 		this.allocatedMachines = new BidirectionalMap<BidValue, Machine>();
-		this.allocatedProcessors = new BidirectionalMap<BidValue, Processor>();
 		this.allocatedMachinesForUser = new HashMap<String, List<Machine>>();
 		this.numberOfAllocatedMachinesForUser = new HashMap<String, Integer>();
 		this.queuedTasks = new HashMap<String, List<Task>>();
@@ -61,6 +60,7 @@ public class SpotInstancesMultiCoreSchedulerLimited extends SpotInstancesSchedul
 		this.ec2Instance = ec2Instance;
 		this.thePeer = thePeer;
 		this.limit = limit;
+		this.onlyOneUserByPeer = onlyOneUserByPeer;
 	}
 
 	@Override
@@ -79,8 +79,8 @@ public class SpotInstancesMultiCoreSchedulerLimited extends SpotInstancesSchedul
 
 	@Override
 	public void addJob(Job job) {
-		for (Task task : job.getTasks()) {
-			this.addSubmitTaskEvent(this.getCurrentTime(), task);
+		for (Task Task : job.getTasks()) {
+			this.addSubmitTaskEvent(this.getCurrentTime(), Task);
 		}
 	}
 
@@ -94,6 +94,14 @@ public class SpotInstancesMultiCoreSchedulerLimited extends SpotInstancesSchedul
 		throw new RuntimeException();
 	}
 
+	public void setOnlyOneUserByPeer(boolean onlyOneUserByPeer) {
+		this.onlyOneUserByPeer = onlyOneUserByPeer;
+	}
+
+	public boolean isOnlyOneUserByPeer() {
+		return onlyOneUserByPeer;
+	}
+
 	private static Processor getAnyAvailableProcessor(List<Machine> machines) {
 		for (Machine machine : machines) {
 			Processor processor;
@@ -104,8 +112,25 @@ public class SpotInstancesMultiCoreSchedulerLimited extends SpotInstancesSchedul
 		return null;
 	}
 
-	// B-- beginning of implementation of SpotPriceEventListener
+	private String getCloudUserId(Task Task) {
+		return onlyOneUserByPeer ? Task.getSourceJob().getSourcePeer().getName() : Task.getSourceJob().getUserId();
+	}
 
+	private void startTask(Task queuedTask, Processor processor) {
+		long currentTime = getCurrentTime();
+		queuedTask.setTaskExecution(new TaskExecution(queuedTask, processor, currentTime));
+		queuedTask.setStartTime(currentTime);
+		queuedTask.setTargetPeer(thePeer);
+		// XXX TODO Pensar nas consequências da linha abaixo!!!!
+		this.accountedCost.put(queuedTask, 0.0);
+		this.addStartedTaskEvent(queuedTask);
+	}
+
+	public EC2Instance getEc2Instance() {
+		return ec2Instance;
+	}
+
+	// B-- beginning of implementation of SpotPriceEventListener
 	@Override
 	public void newSpotPrice(Event<SpotValue> spotValueEvent) {
 		SpotPrice newSpotPrice = (SpotPrice) spotValueEvent.getSource();
@@ -115,28 +140,26 @@ public class SpotInstancesMultiCoreSchedulerLimited extends SpotInstancesSchedul
 	@Override
 	public void fullHourCompleted(Event<SpotValue> spotValueEvent) {
 		BidValue bidValue = (BidValue) spotValueEvent.getSource();
-		Task task = bidValue.getTask();
-		if (!task.isFinished()) {
-			assert this.accountedCost.containsKey(task);
-			double totalCost = this.accountedCost.get(task) + currentSpotPrice.getPrice();
-			this.accountedCost.put(task, totalCost);
-			task.setCost(totalCost);
+		Task Task = bidValue.getTask();
+		if (!Task.isFinished()) {
+			assert this.accountedCost.containsKey(Task);
+			double totalCost = this.accountedCost.get(Task) + currentSpotPrice.getPrice();
+			this.accountedCost.put(Task, totalCost);
+			Task.setCost(totalCost);
 			this.addFullHourCompletedEvent(bidValue);
-		} else if (task.getTaskExecution().getMachine().isAnyProcessorBusy()) {
-			assert this.accountedCost.containsKey(task);
-			double totalCost = this.accountedCost.get(task) + currentSpotPrice.getPrice();
-			this.accountedCost.put(task, totalCost);
-			task.setCost(totalCost);
+		} else if (Task.getTaskExecution().getMachine().isAnyProcessorBusy()) {
+			assert this.accountedCost.containsKey(Task);
+			double totalCost = this.accountedCost.get(Task) + currentSpotPrice.getPrice();
+			this.accountedCost.put(Task, totalCost);
+			Task.setCost(totalCost);
 			this.addFullHourCompletedEvent(bidValue);
 		} else {
-			System.out.println("Task: " + task.getId() + ": já terminou antes de completar uma hora e a máquina estava livre.");
+			// System.out.println("Task: " + task.getId() + ": já terminou antes
+			// de completar uma hora e a máquina estava livre.");
 		}
-	}
-
-	// E-- End of implementation of SpotPriceEventListener
+	} // E-- End of implementation of SpotPriceEventListener
 
 	// B-- beginning of implementation of JobEventListener
-
 	@Override
 	public void jobSubmitted(Event<Job> jobEvent) {
 		this.addJob(jobEvent.getSource());
@@ -152,65 +175,60 @@ public class SpotInstancesMultiCoreSchedulerLimited extends SpotInstancesSchedul
 
 	@Override
 	public void jobStarted(Event<Job> jobEvent) {
-	}
-
-	// E-- end of implementation of JobEventListener
+	} // E-- end of implementation of JobEventListener
 
 	// B-- beginning of implementation of TaskEventListener
-
 	@Override
 	public void taskSubmitted(Event<Task> taskEvent) {
-		Task task = taskEvent.getSource();
-		assert this.processor2Task.size() == this.allocatedMachines.size();
+		Task Task = taskEvent.getSource();
 
-		if (task.getBidValue() >= currentSpotPrice.getPrice()) {
+		if (Task.getBidValue() >= currentSpotPrice.getPrice()) {
 
-			String userId = task.getSourceJob().getUserId();
-			if (!numberOfAllocatedMachinesForUser.containsKey(userId)) {
-				this.numberOfAllocatedMachinesForUser.put(userId, 0);
-				this.allocatedMachinesForUser.put(userId, new ArrayList<Machine>());
+			String cloudUserId = getCloudUserId(Task);
+			if (!numberOfAllocatedMachinesForUser.containsKey(cloudUserId)) {
+				this.numberOfAllocatedMachinesForUser.put(cloudUserId, 0);
+				this.allocatedMachinesForUser.put(cloudUserId, new ArrayList<Machine>());
 			}
 
 			Processor availableProcessor;
-			if ((availableProcessor = getAnyAvailableProcessor(this.allocatedMachinesForUser.get(userId))) != null) {
+			if ((availableProcessor = getAnyAvailableProcessor(this.allocatedMachinesForUser.get(cloudUserId))) != null) {
 
-				this.processor2Task.put(availableProcessor, task);
-				startTask(task, availableProcessor);
+				this.processor2Task.put(availableProcessor, Task);
+				startTask(Task, availableProcessor);
 
-			} else if (this.numberOfAllocatedMachinesForUser.get(userId) < limit) {
+			} else if (this.numberOfAllocatedMachinesForUser.get(cloudUserId) < limit) {
 
-				String machineName = task.getSourceJob().getUserId() + "-m_" + nextMachineId++;
+				String machineName = getCloudUserId(Task) + "-m_" + nextMachineId++;
 				Machine newMachine = new Machine(machineName, ec2Instance.speedByCore, ec2Instance.numCores);
-				BidValue bidValue = new BidValue(machineName, getCurrentTime(), task.getBidValue(), task);
+				BidValue bidValue = new BidValue(machineName, getCurrentTime(), Task.getBidValue(), Task);
 				this.addFullHourCompletedEvent(bidValue);
 
 				Processor allocatedProcessor = newMachine.getDefaultProcessor();
-				this.processor2Task.put(allocatedProcessor, task);
+				this.processor2Task.put(allocatedProcessor, Task);
 				this.allocatedMachines.put(bidValue, allocatedProcessor.getMachine());
 
-				this.numberOfAllocatedMachinesForUser.put(userId, this.numberOfAllocatedMachinesForUser.get(userId) + 1);
-				this.allocatedMachinesForUser.get(userId).add(newMachine);
+				this.numberOfAllocatedMachinesForUser.put(cloudUserId, this.numberOfAllocatedMachinesForUser.get(cloudUserId) + 1);
+				this.allocatedMachinesForUser.get(cloudUserId).add(newMachine);
 
-				startTask(task, allocatedProcessor);
+				startTask(Task, allocatedProcessor);
 
 			} else {
-				if (!queuedTasks.containsKey(userId)) {
-					this.queuedTasks.put(userId, new ArrayList<Task>());
+				if (!queuedTasks.containsKey(cloudUserId)) {
+					this.queuedTasks.put(cloudUserId, new ArrayList<Task>());
 				}
-				this.queuedTasks.get(userId).add(task);
+				this.queuedTasks.get(cloudUserId).add(Task);
 			}
 
 		} else {
-			System.out.println("task.getBidValue() < currentSpotPrice.getPrice(): " + task.getBidValue() + " < " + currentSpotPrice.getPrice());
+			System.out.println("task.getBidValue() < currentSpotPrice.getPrice(): " + Task.getBidValue() + " < " + currentSpotPrice.getPrice());
 		}
 
-		assert this.processor2Task.size() == this.allocatedMachines.size();
 	}
 
 	@Override
 	public void taskFinished(Event<Task> taskEvent) {
 		Task sourceTask = taskEvent.getSource();
-		String userId = sourceTask.getSourceJob().getUserId();
+		String userId = getCloudUserId(sourceTask);
 
 		// System.out.println(getCurrentTime() + ":\n" +
 		// this.allocatedMachines);
@@ -262,16 +280,6 @@ public class SpotInstancesMultiCoreSchedulerLimited extends SpotInstancesSchedul
 
 	}
 
-	private void startTask(Task queuedTask, Processor processor) {
-		long currentTime = getCurrentTime();
-		queuedTask.setTaskExecution(new TaskExecution(queuedTask, processor, currentTime));
-		queuedTask.setStartTime(currentTime);
-		queuedTask.setTargetPeer(thePeer);
-		// XXX TODO Pensar nas consequências da linha abaixo!!!!
-		this.accountedCost.put(queuedTask, 0.0);
-		this.addStartedTaskEvent(queuedTask);
-	}
-
 	@Override
 	public void taskStarted(Event<Task> taskEvent) {
 	}
@@ -282,12 +290,9 @@ public class SpotInstancesMultiCoreSchedulerLimited extends SpotInstancesSchedul
 
 	@Override
 	public void taskCancelled(Event<Task> taskEvent) {
-	}
-
-	// E-- end of implementation of TaskEventListener
+	} // E-- end of implementation of TaskEventListener
 
 	// B-- beginning of implementation of SpotPriceEventListener
-
 	@Override
 	public void workerAvailable(Event<String> workerEvent) {
 	}
@@ -310,8 +315,6 @@ public class SpotInstancesMultiCoreSchedulerLimited extends SpotInstancesSchedul
 
 	@Override
 	public void workerRunning(Event<String> workerEvent) {
-	}
-
-	// E-- end of implementation of SpotPriceEventListener
+	} // E-- end of implementation of SpotPriceEventListener
 
 }

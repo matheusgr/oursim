@@ -19,20 +19,22 @@ public class SpotPricePrintOutput extends OutputAdapter implements SpotPriceEven
 
 	public SpotPricePrintOutput(File file) throws IOException {
 		super(file);
-		super.appendln("type:time:value:task");
+		super.appendln("type:time:value:task:machine:processor");
 	}
 
 	@Override
 	public void fullHourCompleted(Event<SpotValue> spotPriceEvent) {
 		BidValue bidValue = (BidValue) spotPriceEvent.getSource();
-		Task task = bidValue.getTask();
-		super.appendln("H:" + bidValue.getTime() + ":" + bidValue.getPrice() + ":" + task.getId());
+		Task Task = bidValue.getTask();
+		String machineName = Task.getTaskExecution().getMachine().getName();
+		int processorId = Task.getTaskExecution().getProcessor().getId();
+		super.appendln("H:" + bidValue.getTime() + ":" + bidValue.getPrice() + ":" + Task.getId() + ":" + machineName + ":" + processorId);
 	}
 
 	@Override
 	public void newSpotPrice(Event<SpotValue> spotPriceEvent) {
 		SpotPrice newSpotPrice = (SpotPrice) spotPriceEvent.getSource();
-//		super.appendln("N:" + newSpotPrice.getTime() + ":" + newSpotPrice.getPrice() + ":NA");
+		super.appendln("N:" + newSpotPrice.getTime() + ":" + newSpotPrice.getPrice() + ":NA:NA:NA");
 	}
 
 }

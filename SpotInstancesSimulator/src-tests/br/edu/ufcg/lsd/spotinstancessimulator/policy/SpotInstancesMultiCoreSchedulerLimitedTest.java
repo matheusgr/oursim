@@ -43,25 +43,27 @@ public class SpotInstancesMultiCoreSchedulerLimitedTest extends AbstractOurSimAP
 	private int numCores;
 	private int limit;
 
+	private Peer spotInstancesPeer;
+	private SpotPrice initialSpotPrice;
+	private EC2Instance ec2Instance;
+
 	@Before
 	@SuppressWarnings("unchecked")
 	public void setUp() throws Exception {
 		super.setUp();
-		Peer spotInstancesPeer = new Peer("SpotInstancesPeer", FifoSharingPolicy.getInstance());
-		SpotPrice initialSpotPrice = new SpotPrice("m1.small", new Date(), SPOT_PRICE);
+		this.spotInstancesPeer = new Peer("SpotInstancesPeer", FifoSharingPolicy.getInstance());
+		initialSpotPrice = new SpotPrice("m1.small", new Date(), SPOT_PRICE);
 		this.limit = 2;
 		this.speedByCore = 1;
 		this.numCores = 1;
-		EC2Instance ec2Instance = new EC2Instance();
-		ec2Instance.numCores = numCores;
-		ec2Instance.speedByCore = Math.round(speedByCore * Processor.EC2_COMPUTE_UNIT.getSpeed());
-		this.spotScheduler = new SpotInstancesMultiCoreSchedulerLimited(spotInstancesPeer, initialSpotPrice, ec2Instance, limit);
-		SpotPriceEventDispatcher.getInstance().addListener(this.spotScheduler);
+		this.ec2Instance = new EC2Instance();
+		this.ec2Instance.numCores = numCores;
+		this.ec2Instance.speedByCore = Math.round(speedByCore * Processor.EC2_COMPUTE_UNIT.getSpeed());
 	}
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void testRun_1() {
+	public void testRunSingleCoreMachines() {
 		assertTrue(true);
 		assertEquals(true, true);
 
@@ -95,8 +97,8 @@ public class SpotInstancesMultiCoreSchedulerLimitedTest extends AbstractOurSimAP
 				for (int i = 0; i < numOfJobs; i++) {
 					Job job = addJob(nextJobId++, 0, jobRuntime, peer, this.inputs, jobs);
 					job.setUserId("default_user");
-					for (Task task : job.getTasks()) {
-						task.setBidValue(SPOT_PRICE);
+					for (Task Task : job.getTasks()) {
+						Task.setBidValue(SPOT_PRICE);
 					}
 				}
 			}
@@ -104,8 +106,8 @@ public class SpotInstancesMultiCoreSchedulerLimitedTest extends AbstractOurSimAP
 
 		Grid grid = new Grid(peers);
 
-		// TaskEventDispatcher.getInstance().addListener(new TaskPrintOutput());
-		SpotPriceEventDispatcher.getInstance().addListener(new SpotPricePrintOutput());
+		this.spotScheduler = new SpotInstancesMultiCoreSchedulerLimited(spotInstancesPeer, initialSpotPrice, ec2Instance, limit, true);
+		SpotPriceEventDispatcher.getInstance().addListener(this.spotScheduler);
 
 		oursim = new OurSim(EventQueue.getInstance(), grid, spotScheduler, workload, availability);
 		oursim.setActiveEntity(new SpotInstancesActiveEntity());
@@ -117,7 +119,212 @@ public class SpotInstancesMultiCoreSchedulerLimitedTest extends AbstractOurSimAP
 		}
 
 		// sem colocar o delta fica bugado
-		assertEquals(2 * (limit * SPOT_PRICE), totalCost, 0);
+		assertEquals(4 * SPOT_PRICE, totalCost, 0);
+		assertEquals(numOfJobs, this.jobEventCounter.getNumberOfFinishedJobs());
+		assertEquals(0, this.jobEventCounter.getNumberOfPreemptionsForAllJobs());
+		assertEquals(numOfJobs, this.taskEventCounter.getNumberOfFinishedTasks());
+		assertEquals(0, this.taskEventCounter.getNumberOfPreemptionsForAllTasks());
+
+		TaskEventDispatcher.getInstance().clear();
+		SpotPriceEventDispatcher.getInstance().clear();
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testRunDualCoreMachines() {
+
+		final int numberOfPeers = 1;
+		final int numberOfResources = 6;
+		final int numOfJobs = 10;
+		final long jobRuntime = TimeUtil.FIFTEEN_MINUTES;
+
+		peers = new ArrayList<Peer>(numberOfPeers);
+
+		final Peer peer = new Peer("the_peer", numberOfResources, Processor.EC2_COMPUTE_UNIT.getSpeed(), FifoSharingPolicy.getInstance());
+		peers.add(peer);
+
+		Input<SpotPrice> availability = new InputAbstract<SpotPrice>() {
+			@Override
+			protected void setUp() {
+				long period = TimeUtil.FIFTEEN_MINUTES;
+				long time = 0;
+				while (time <= SIMULATION_TIME) {
+					this.inputs.add(new SpotPrice(INSTANCE_NAME, time, SPOT_PRICE));
+					time += period;
+				}
+			}
+		};
+
+		jobs = new ArrayList<Job>(numOfJobs);
+
+		Workload workload = new WorkloadAbstract() {
+			@Override
+			protected void setUp() {
+				for (int i = 0; i < numOfJobs; i++) {
+					Job job = addJob(nextJobId++, 0, jobRuntime, peer, this.inputs, jobs);
+					job.setUserId("default_user");
+					for (Task Task : job.getTasks()) {
+						Task.setBidValue(SPOT_PRICE);
+					}
+				}
+			}
+		};
+
+		Grid grid = new Grid(peers);
+
+		this.ec2Instance.numCores = 2;
+		this.spotScheduler = new SpotInstancesMultiCoreSchedulerLimited(spotInstancesPeer, initialSpotPrice, ec2Instance, limit, true);
+		SpotPriceEventDispatcher.getInstance().addListener(this.spotScheduler);
+
+		oursim = new OurSim(EventQueue.getInstance(), grid, spotScheduler, workload, availability);
+		oursim.setActiveEntity(new SpotInstancesActiveEntity());
+		oursim.start();
+
+		double totalCost = 0.0;
+		for (Job job : jobs) {
+			totalCost += job.getCost();
+		}
+
+		// sem colocar o delta fica bugado
+		assertEquals(2 * SPOT_PRICE, totalCost, 0);
+		assertEquals(numOfJobs, this.jobEventCounter.getNumberOfFinishedJobs());
+		assertEquals(0, this.jobEventCounter.getNumberOfPreemptionsForAllJobs());
+		assertEquals(numOfJobs, this.taskEventCounter.getNumberOfFinishedTasks());
+		assertEquals(0, this.taskEventCounter.getNumberOfPreemptionsForAllTasks());
+
+		TaskEventDispatcher.getInstance().clear();
+		SpotPriceEventDispatcher.getInstance().clear();
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testRunDualCoreMachines_2() {
+
+		final int numberOfPeers = 1;
+		final int numberOfResources = 6;
+		final int numOfJobs = 10;
+		final long jobRuntime = 10 * TimeUtil.ONE_MINUTE;
+
+		peers = new ArrayList<Peer>(numberOfPeers);
+
+		final Peer peer = new Peer("the_peer", numberOfResources, Processor.EC2_COMPUTE_UNIT.getSpeed(), FifoSharingPolicy.getInstance());
+		peers.add(peer);
+
+		Input<SpotPrice> availability = new InputAbstract<SpotPrice>() {
+			@Override
+			protected void setUp() {
+				long period = TimeUtil.FIFTEEN_MINUTES;
+				long time = 0;
+				while (time <= SIMULATION_TIME) {
+					this.inputs.add(new SpotPrice(INSTANCE_NAME, time, SPOT_PRICE));
+					time += period;
+				}
+			}
+		};
+
+		jobs = new ArrayList<Job>(numOfJobs);
+
+		Workload workload = new WorkloadAbstract() {
+			@Override
+			protected void setUp() {
+				for (int i = 0; i < numOfJobs; i++) {
+					Job job = addJob(nextJobId++, 0, jobRuntime, peer, this.inputs, jobs);
+					job.setUserId("default_user");
+					for (Task Task : job.getTasks()) {
+						Task.setBidValue(SPOT_PRICE);
+					}
+				}
+			}
+		};
+
+		Grid grid = new Grid(peers);
+
+		this.ec2Instance.numCores = 2;
+		this.spotScheduler = new SpotInstancesMultiCoreSchedulerLimited(spotInstancesPeer, initialSpotPrice, ec2Instance, limit, true);
+		SpotPriceEventDispatcher.getInstance().addListener(this.spotScheduler);
+
+		oursim = new OurSim(EventQueue.getInstance(), grid, spotScheduler, workload, availability);
+		oursim.setActiveEntity(new SpotInstancesActiveEntity());
+		oursim.start();
+
+		double totalCost = 0.0;
+		for (Job job : jobs) {
+			totalCost += job.getCost();
+		}
+
+		// sem colocar o delta fica bugado
+		assertEquals(2 * SPOT_PRICE, totalCost, 0);
+		assertEquals(numOfJobs, this.jobEventCounter.getNumberOfFinishedJobs());
+		assertEquals(0, this.jobEventCounter.getNumberOfPreemptionsForAllJobs());
+		assertEquals(numOfJobs, this.taskEventCounter.getNumberOfFinishedTasks());
+		assertEquals(0, this.taskEventCounter.getNumberOfPreemptionsForAllTasks());
+
+		TaskEventDispatcher.getInstance().clear();
+		SpotPriceEventDispatcher.getInstance().clear();
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testRunDualCoreMachines_3() {
+
+		final int numberOfPeers = 1;
+		final int numberOfResources = 6;
+		final int numOfJobs = 10;
+		final long jobRuntime = 20 * TimeUtil.ONE_MINUTE - 1;
+
+		peers = new ArrayList<Peer>(numberOfPeers);
+
+		final Peer peer = new Peer("the_peer", numberOfResources, Processor.EC2_COMPUTE_UNIT.getSpeed(), FifoSharingPolicy.getInstance());
+		peers.add(peer);
+
+		Input<SpotPrice> availability = new InputAbstract<SpotPrice>() {
+			@Override
+			protected void setUp() {
+				long period = TimeUtil.FIFTEEN_MINUTES;
+				long time = 0;
+				while (time <= SIMULATION_TIME) {
+					this.inputs.add(new SpotPrice(INSTANCE_NAME, time, SPOT_PRICE));
+					time += period;
+				}
+			}
+		};
+
+		jobs = new ArrayList<Job>(numOfJobs);
+
+		Workload workload = new WorkloadAbstract() {
+			@Override
+			protected void setUp() {
+				for (int i = 0; i < numOfJobs; i++) {
+					Job job = addJob(nextJobId++, 0, jobRuntime, peer, this.inputs, jobs);
+					job.setUserId("default_user");
+					for (Task Task : job.getTasks()) {
+						Task.setBidValue(SPOT_PRICE);
+					}
+				}
+			}
+		};
+
+		Grid grid = new Grid(peers);
+
+		this.ec2Instance.numCores = 2;
+		this.spotScheduler = new SpotInstancesMultiCoreSchedulerLimited(spotInstancesPeer, initialSpotPrice, ec2Instance, limit, true);
+		SpotPriceEventDispatcher.getInstance().addListener(this.spotScheduler);
+
+		oursim = new OurSim(EventQueue.getInstance(), grid, spotScheduler, workload, availability);
+		oursim.setActiveEntity(new SpotInstancesActiveEntity());
+		oursim.start();
+
+		double totalCost = 0.0;
+		for (Job job : jobs) {
+			System.out.println(job.getCost());
+			totalCost += job.getCost();
+		}
+
+		// sem colocar o delta fica bugado
+		assertEquals(2 * SPOT_PRICE, totalCost, 0);
 		assertEquals(numOfJobs, this.jobEventCounter.getNumberOfFinishedJobs());
 		assertEquals(0, this.jobEventCounter.getNumberOfPreemptionsForAllJobs());
 		assertEquals(numOfJobs, this.taskEventCounter.getNumberOfFinishedTasks());
