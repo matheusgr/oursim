@@ -11,12 +11,13 @@ import br.edu.ufcg.lsd.oursim.OurSimAPIVolatilityTest;
 import br.edu.ufcg.lsd.oursim.entities.ProcessorTest;
 import br.edu.ufcg.lsd.oursim.entities.TaskTest;
 import br.edu.ufcg.lsd.oursim.policy.NoFSharingPolicyTest;
+import br.edu.ufcg.lsd.oursim.policy.OurGridPersistentSchedulerMultiplePeersTest;
 import br.edu.ufcg.lsd.oursim.policy.OurGridPersistentSchedulerTest;
 import br.edu.ufcg.lsd.oursim.policy.OurGridReplicationSchedulerTest;
 
 @RunWith(Suite.class)
 @SuiteClasses( { ProcessorTest.class, TaskTest.class, NoFSharingPolicyTest.class, OurGridPersistentSchedulerTest.class, OurSimAPIVolatilityTest.class,
-		OurGridReplicationSchedulerTest.class })
+		OurGridReplicationSchedulerTest.class, OurGridPersistentSchedulerMultiplePeersTest.class })
 public class TestSuite {
 
 	static class Compatibility {
