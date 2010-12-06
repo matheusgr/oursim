@@ -95,6 +95,8 @@ public class CLI {
 
 	public static final String WORKLOAD_TYPE = "wt";
 
+	public static final String EXTRACT_REMOTE_WORKLOAD = "erw";
+
 	public static final String NUM_PEERS = "np";
 
 	public static final String NUM_RESOURCES_BY_PEER = "nr";
@@ -145,10 +147,15 @@ public class CLI {
 		PrintOutput printOutput = new PrintOutput(outputFile, false);
 		JobEventDispatcher.getInstance().addListener(printOutput);
 		closeables.add(printOutput);
-		Output remoteWorkloadExtractor = new RemoteTasksExtractorOutput(new File(outputFile.getName() + "_spot_workload.txt"));
-		closeables.add(remoteWorkloadExtractor);
-		JobEventDispatcher.getInstance().addListener(remoteWorkloadExtractor);
-
+		if (cmd.hasOption(EXTRACT_REMOTE_WORKLOAD)) {
+			File remoteWorkloadFile = (File) cmd.getOptionObject(EXTRACT_REMOTE_WORKLOAD);
+			// Output remoteWorkloadExtractor = new
+			// RemoteTasksExtractorOutput(new File(outputFile.getName() +
+			// "_spot_workload.txt"));
+			Output remoteWorkloadExtractor = new RemoteTasksExtractorOutput(remoteWorkloadFile);
+			closeables.add(remoteWorkloadExtractor);
+			JobEventDispatcher.getInstance().addListener(remoteWorkloadExtractor);
+		}
 		Grid grid = prepareGrid(cmd);
 
 		prepareOptionalOutputFiles(cmd, grid, closeables);
@@ -332,6 +339,8 @@ public class CLI {
 		Option numResByPeer = new Option(NUM_RESOURCES_BY_PEER, "nresources", true, "O número de réplicas para cada task.");
 		Option numPeers = new Option(NUM_PEERS, "npeers", true, "O número de peers do grid.");
 		Option nofOption = new Option(NOF, "nof", false, "Utiliza a Rede de Favores (NoF).");
+		Option erwOption = new Option(EXTRACT_REMOTE_WORKLOAD, "extract_remote_workload", true,
+				"Extrai, para cada job, o subconjunto das tasks que rodaram em recursos remotos.");
 		Option output = new Option(OUTPUT, "output", true, "O nome do arquivo em que o output da simulação será gravado.");
 
 		workload.setRequired(true);
@@ -346,6 +355,7 @@ public class CLI {
 		workerEvents.setType(File.class);
 		taskEvents.setType(File.class);
 		output.setType(File.class);
+		erwOption.setType(File.class);
 		numResByPeer.setType(Number.class);
 		numPeers.setType(Number.class);
 		speedOption.setType(Number.class);
@@ -366,6 +376,7 @@ public class CLI {
 		options.addOption(machinesDescription);
 		options.addOption(scheduler);
 		options.addOption(output);
+		options.addOption(erwOption);
 		options.addOption(numResByPeer);
 		options.addOption(numPeers);
 		options.addOption(peersDescription);

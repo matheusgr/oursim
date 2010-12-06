@@ -40,7 +40,7 @@ public class Main {
 		// -we <file> : registra todos os eventos de disponibilidade
 		// we = String.format("-we %s", workerEventsFile);
 
-		String optional = String.format("%s %s %s", u, te, we);
+		String optional = String.format(" %s %s %s ", u, te, we);
 
 		String argsPattern = "-wt %s -w %s -s %s -pd %s -md %s -synthetic_av %s -o %s %s";
 
