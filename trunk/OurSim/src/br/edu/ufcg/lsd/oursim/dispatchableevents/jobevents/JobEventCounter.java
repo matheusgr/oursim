@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
-import br.edu.ufcg.lsd.oursim.dispatchableevents.EventListener;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 
 public class JobEventCounter extends JobEventListenerAdapter {
