@@ -16,6 +16,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import br.edu.ufcg.lsd.oursim.dispatchableevents.Event;
+import br.edu.ufcg.lsd.oursim.dispatchableevents.EventListener;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventListener;
 import br.edu.ufcg.lsd.oursim.entities.Grid;
@@ -82,6 +83,11 @@ public class SimulationBase {
 		@Override
 		public void jobPreempted(Event<Job> jobEvent) {
 			fail("Doesn't expect preemption");
+		}
+
+		@Override
+		public int compareTo(EventListener o) {
+			throw new RuntimeException();
 		}
 
 	}

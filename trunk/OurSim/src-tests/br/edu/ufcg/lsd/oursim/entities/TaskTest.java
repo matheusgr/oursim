@@ -19,11 +19,11 @@ public class TaskTest {
 		p.addMachine(new Machine("",Processor.EC2_COMPUTE_UNIT.getSpeed()));
 		Job j = new Job(1,0,p);
 
-		Task task = new Task(0, "executavel.exe", 30, 0, j);
+		Task Task = new Task(0, "executavel.exe", 30, 0, j);
 
 		Processor processor = new Processor(0, 500);
 
-		TaskExecution taskExecution = new TaskExecution(task, processor, 0);
+		TaskExecution taskExecution = new TaskExecution(Task, processor, 0);
 
 		assertEquals(130, taskExecution.updateProcessing(50));
 

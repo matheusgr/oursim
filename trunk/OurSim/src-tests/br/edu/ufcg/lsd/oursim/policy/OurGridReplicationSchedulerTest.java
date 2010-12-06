@@ -35,6 +35,7 @@ public class OurGridReplicationSchedulerTest extends AbstractOurSimAPITest {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testRun_3() throws Exception {
+
 		final int numberOfPeers = 1;
 		final int numberOfResources = 6;
 
@@ -96,8 +97,8 @@ public class OurGridReplicationSchedulerTest extends AbstractOurSimAPITest {
 		assertEquals(1, this.jobEventCounter.getNumberOfPreemptionsForAllJobs());
 		assertEquals(numberOfFinishedTasks, this.taskEventCounter.getNumberOfFinishedTasks());
 		// TODO tem que considerar que há tantos cancelamentos quanto preempcoes
-//		assertEquals(11,
-//		this.taskEventCounter.getNumberOfPreemptionsForAllTasks());
+		// assertEquals(11,
+		// this.taskEventCounter.getNumberOfPreemptionsForAllTasks());
 
 	}
 

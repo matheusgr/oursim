@@ -44,10 +44,10 @@ public class NoFSharingPolicyTest {
 		Job job = new Job(0, 10, p2);
 		job.setStartTime(10);
 		for (int id = 0; id < 10; id++) {
-			Task task = new Task(id, "", 10, 10, job);
-			task.setTaskExecution(new TaskExecution(task,null,10));
-			task.setStartTime(10);
-			runningElements.add(task);
+			Task Task = new Task(id, "", 10, 10, job);
+			Task.setTaskExecution(new TaskExecution(Task,new Machine("m_bla",Processor.EC2_COMPUTE_UNIT.getSpeed()).getDefaultProcessor(),10));
+			Task.setStartTime(10);
+			runningElements.add(Task);
 		}
 
 		List<Peer> preemptablePeers = nof.getPreemptablePeers(p1, p3, resourcesBeingConsumed, runningElements);
@@ -73,19 +73,19 @@ public class NoFSharingPolicyTest {
 		job = new Job(0, 10, p2);
 		job.setStartTime(10);
 		for (int id = 0; id < 4; id++) {
-			Task task = new Task(id, "", 10, 10, job);
-			task.setTaskExecution(new TaskExecution(task,null,10));
-			task.setStartTime(10);
-			runningElements.add(task);
+			Task Task = new Task(id, "", 10, 10, job);
+			Task.setTaskExecution(new TaskExecution(Task,new Machine("m_bla",Processor.EC2_COMPUTE_UNIT.getSpeed()).getDefaultProcessor(),10));
+			Task.setStartTime(10);
+			runningElements.add(Task);
 		}
 
 		job = new Job(1, 10, p3);
 		job.setStartTime(10);
 		for (int id = 0; id < 6; id++) {
-			Task task = new Task(id, "", 10, 10, job);
-			task.setTaskExecution(new TaskExecution(task,null,10));
-			task.setStartTime(10);
-			runningElements.add(task);
+			Task Task = new Task(id, "", 10, 10, job);
+			Task.setTaskExecution(new TaskExecution(Task,new Machine("m_bla",Processor.EC2_COMPUTE_UNIT.getSpeed()).getDefaultProcessor(),10));
+			Task.setStartTime(10);
+			runningElements.add(Task);
 		}
 
 		List<Peer> preemptablePeers = nof.getPreemptablePeers(p1, p4, resourcesBeingConsumed, runningElements);
@@ -111,25 +111,25 @@ public class NoFSharingPolicyTest {
 		job = new Job(0, 10, p2);
 		job.setStartTime(10);
 		for (int id = 0; id < 5; id++) {
-			Task task = new Task(id, "", 10, 10, job);
-			task.setTaskExecution(new TaskExecution(task,null,10));
-			task.setStartTime(10);
-			runningElements.add(task);
+			Task Task = new Task(id, "", 10, 10, job);
+			Task.setTaskExecution(new TaskExecution(Task,new Machine("m_bla",Processor.EC2_COMPUTE_UNIT.getSpeed()).getDefaultProcessor(),10));
+			Task.setStartTime(10);
+			runningElements.add(Task);
 		}
 
 		job = new Job(1, 10, p3);
 		job.setStartTime(10);
 		for (int id = 0; id < 4; id++) {
-			Task task = new Task(id, "", 10, 10, job);
-			task.setTaskExecution(new TaskExecution(task,null,10));
-			task.setStartTime(10);
-			runningElements.add(task);
+			Task Task = new Task(id, "", 10, 10, job);
+			Task.setTaskExecution(new TaskExecution(Task,new Machine("m_bla",Processor.EC2_COMPUTE_UNIT.getSpeed()).getDefaultProcessor(),10));
+			Task.setStartTime(10);
+			runningElements.add(Task);
 		}
 
-		Task task = new Task(4, "", 10, 10, job);
-		task.setTaskExecution(new TaskExecution(task,null,10));
-		task.setStartTime(20);
-		runningElements.add(task);
+		Task Task = new Task(4, "", 10, 10, job);
+		Task.setTaskExecution(new TaskExecution(Task,new Machine("m_bla",Processor.EC2_COMPUTE_UNIT.getSpeed()).getDefaultProcessor(),10));
+		Task.setStartTime(20);
+		runningElements.add(Task);
 
 		List<Peer> preemptablePeers = nof.getPreemptablePeers(p1, p4, resourcesBeingConsumed, runningElements);
 
@@ -149,30 +149,30 @@ public class NoFSharingPolicyTest {
 
 		Job job = new Job(0, 10, p1);
 
-		Task task = new Task(4, "", 10, 0, job);
+		Task Task = new Task(4, "", 10, 0, job);
 		Machine m = new Machine("m_1",Processor.EC2_COMPUTE_UNIT.getSpeed());
-		task.setTaskExecution(new TaskExecution(task,m.getDefaultProcessor(),0));
-		task.setStartTime(0);
-		task.finish(10);
+		Task.setTaskExecution(new TaskExecution(Task,m.getDefaultProcessor(),0));
+		Task.setStartTime(0);
+		Task.finish(10);
 
-		nof.increaseBalance(p1, p2, task);
+		nof.increaseBalance(p1, p2, Task);
 
 		job = new Job(0, 10, p2);
 		job.setStartTime(10);
 		for (int id = 0; id < 5; id++) {
-			task = new Task(id, "", 10, 10, job);
-			task.setTaskExecution(new TaskExecution(task,null,10));
-			task.setStartTime(10);
-			runningElements.add(task);
+			Task = new Task(id, "", 10, 10, job);
+			Task.setTaskExecution(new TaskExecution(Task,new Machine("m_bla",Processor.EC2_COMPUTE_UNIT.getSpeed()).getDefaultProcessor(),10));
+			Task.setStartTime(10);
+			runningElements.add(Task);
 		}
 
 		job = new Job(1, 10, p3);
 		job.setStartTime(10);
 		for (int id = 0; id < 5; id++) {
-			task = new Task(id, "", 10, 10, job);
-			task.setTaskExecution(new TaskExecution(task,null,10));
-			task.setStartTime(10);
-			runningElements.add(task);
+			Task = new Task(id, "", 10, 10, job);
+			Task.setTaskExecution(new TaskExecution(Task,new Machine("m_bla",Processor.EC2_COMPUTE_UNIT.getSpeed()).getDefaultProcessor(),10));
+			Task.setStartTime(10);
+			runningElements.add(Task);
 		}
 
 		List<Peer> preemptablePeers = nof.getPreemptablePeers(p1, p2, resourcesBeingConsumed, runningElements);
@@ -193,31 +193,31 @@ public class NoFSharingPolicyTest {
 
 		Job job = new Job(0, 10, p1);
 
-		Task task = new Task(4, "", 10, 0, job);
+		Task Task = new Task(4, "", 10, 0, job);
 		Machine m = new Machine("m_1",Processor.EC2_COMPUTE_UNIT.getSpeed());
-		task.setTaskExecution(new TaskExecution(task,m.getDefaultProcessor(),10));
-		task.setStartTime(0);
-		task.finish(10);
+		Task.setTaskExecution(new TaskExecution(Task,m.getDefaultProcessor(),10));
+		Task.setStartTime(0);
+		Task.finish(10);
 
-		nof.increaseBalance(p1, p2, task);
-		nof.increaseBalance(p1, p3, task);
+		nof.increaseBalance(p1, p2, Task);
+		nof.increaseBalance(p1, p3, Task);
 
 		job = new Job(0, 10, p2);
 		job.setStartTime(10);
 		for (int id = 0; id < 5; id++) {
-			task = new Task(id, "", 10, 10, job);
-			task.setTaskExecution(new TaskExecution(task,null,10));
-			task.setStartTime(10);
-			runningElements.add(task);
+			Task = new Task(id, "", 10, 10, job);
+			Task.setTaskExecution(new TaskExecution(Task,new Machine("m_bla",Processor.EC2_COMPUTE_UNIT.getSpeed()).getDefaultProcessor(),10));
+			Task.setStartTime(10);
+			runningElements.add(Task);
 		}
 
 		job = new Job(1, 10, p3);
 		job.setStartTime(10);
 		for (int id = 0; id < 5; id++) {
-			task = new Task(id, "", 10, 10, job);
-			task.setTaskExecution(new TaskExecution(task,null,10));
-			task.setStartTime(10);
-			runningElements.add(task);
+			Task = new Task(id, "", 10, 10, job);
+			Task.setTaskExecution(new TaskExecution(Task,new Machine("m_bla",Processor.EC2_COMPUTE_UNIT.getSpeed()).getDefaultProcessor(),10));
+			Task.setStartTime(10);
+			runningElements.add(Task);
 		}
 
 		List<Peer> preemptablePeers = nof.getPreemptablePeers(p1, p2, resourcesBeingConsumed, runningElements);

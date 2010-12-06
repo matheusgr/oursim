@@ -13,10 +13,14 @@ import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventCounter;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.jobevents.JobEventDispatcher;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventCounter;
 import br.edu.ufcg.lsd.oursim.dispatchableevents.taskevents.TaskEventDispatcher;
+import br.edu.ufcg.lsd.oursim.dispatchableevents.workerevents.WorkerEventDispatcher;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
 import br.edu.ufcg.lsd.oursim.io.input.workload.WorkloadAbstract;
+import br.edu.ufcg.lsd.oursim.io.output.JobPrintOutput;
+import br.edu.ufcg.lsd.oursim.io.output.TaskPrintOutput;
+import br.edu.ufcg.lsd.oursim.io.output.WorkerPrintOutput;
 import br.edu.ufcg.lsd.oursim.policy.FifoSharingPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.FinishJobEvent;
@@ -88,13 +92,14 @@ public abstract class AbstractOurSimAPITest {
 		for (int i = 0; i < NUMBER_OF_PEERS; i++) {
 			peers.add(new Peer("p_" + i, NUMBER_OF_RESOURCES_BY_PEER, RESOURCE_MIPS_RATING, FifoSharingPolicy.getInstance()));
 		}
-
 	}
 
 	@After
 	public void tearDown() throws Exception {
-
 		EventQueue.getInstance().clear();
+		JobEventDispatcher.getInstance().clear();
+		TaskEventDispatcher.getInstance().clear();
+		WorkerEventDispatcher.getInstance().clear();
 		JobEventDispatcher.getInstance().removeListener(jobEventCounter);
 		TaskEventDispatcher.getInstance().removeListener(taskEventCounter);
 		EventQueue.totalNumberOfEvents = 0;
@@ -137,11 +142,18 @@ public abstract class AbstractOurSimAPITest {
 		return allWorkloads;
 	}
 
-	public static final void addJob(long jobId, long submissionTime, long duration, final Peer peer, Collection<Job>... collectionsOfJob) {
+	public static final Job addJob(long jobId, long submissionTime, long duration, final Peer peer, Collection<Job>... collectionsOfJob) {
 		Job job = new Job(jobId, submissionTime, duration, peer);
 		for (Collection<Job> collection : collectionsOfJob) {
 			collection.add(job);
 		}
+		return job;
+	}
+
+	public static final void setUpToPrintEvents() {
+		JobEventDispatcher.getInstance().addListener(new JobPrintOutput());
+		TaskEventDispatcher.getInstance().addListener(new TaskPrintOutput());
+		WorkerEventDispatcher.getInstance().addListener(new WorkerPrintOutput());
 	}
 
 }
