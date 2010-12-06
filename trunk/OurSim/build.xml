@@ -15,9 +15,9 @@
 		<antcall target="compile" />
 		<antcall target="create-jar" />
 		<!--antcall target="javadoc" /--> 
-		<copy file="./resources/exemplo-de-execucao.txt" todir="${dist.dir}/${application.name}" />
-		<copy todir="${dist.dir}/${application.name}/resources">
-			<fileset dir="./resources">
+		<!--copy file="./resources/exemplo-de-execucao.txt" todir="${dist.dir}/${application.name}" /-->
+		<copy todir="${dist.dir}/${application.name}/input-files">
+			<fileset dir="./input-files">
 				<include name="**/*.*" />
 			</fileset>
 		</copy>
