@@ -31,6 +31,7 @@ public class Main {
 		String u = "";
 		String te = "";
 		String we = "";
+		
 		// Descomente as linhas abaixo se quiser rastrear os respectivos eventos
 		// -u <file> : a cada evento registra a utilizacao do sistem
 		// u = String.format("-u %s", utilizationFile);
@@ -41,7 +42,7 @@ public class Main {
 
 		String optional = String.format("%s %s %s", u, te, we);
 
-		String argsPattern = "-v -wt %s -w %s -s %s -pd %s -md %s -synthetic_av %s -o %s %s";
+		String argsPattern = "-wt %s -w %s -s %s -pd %s -md %s -synthetic_av %s -o %s %s";
 
 		String argsString = String.format(argsPattern, workloadType, workload, scheduler + " " + nReplicas, peersDescription, machinesDescription, avDuration,
 				output, optional);
