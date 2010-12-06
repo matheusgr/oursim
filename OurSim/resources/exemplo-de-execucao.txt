@@ -1,1 +1,0 @@
-time java -Xms500M -Xmx1500M -XX:-UseGCOverheadLimit -jar oursim.jar -w resources/new_workload.txt -pd resources/marcus_site_description.txt  -wt marcus -nr 500 -d -o oursim_trace_500_resources.txt
