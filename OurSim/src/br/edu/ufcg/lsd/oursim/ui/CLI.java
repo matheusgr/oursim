@@ -180,6 +180,8 @@ public class CLI {
 			c.close();
 		}
 
+		EventQueue.getInstance().clear();
+		
 		// adiciona métricas resumos no fim do arquivo
 		FileWriter fw = new FileWriter(cmd.getOptionValue(OUTPUT), true);
 		closeables.add(fw);
