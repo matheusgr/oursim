@@ -244,8 +244,10 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	public void cancel() {
 		assert !this.cancelled;
 		this.cancelled = true;
-		this.taskExecution.finish();
-		// this.taskExecution = null;
+		if (this.taskExecution != null) {
+			this.taskExecution.finish();
+			// this.taskExecution = null;
+		}
 	}
 
 	public boolean isCancelled() {
