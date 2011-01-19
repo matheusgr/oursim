@@ -82,6 +82,7 @@ public class ResourceManager {
 		assert this.allocated.containsKey(machineName) || this.free.containsKey(machineName);
 		Machine resource = this.allocated.containsKey(machineName) ? this.allocated.remove(machineName) : this.free.remove(machineName);
 		assert resource.getName().equals(machineName) : resource.getName() + " == " + machineName;
+		//XXX deu um nullpointerexception nessa próxima linha quando estava usando o gerador de disponibilidade de mutka
 		this.unavailable.put(resource.getName(), resource);
 	}
 

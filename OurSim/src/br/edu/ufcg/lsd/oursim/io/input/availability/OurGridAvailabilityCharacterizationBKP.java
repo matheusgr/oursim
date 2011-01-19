@@ -1,20 +1,34 @@
 package br.edu.ufcg.lsd.oursim.io.input.availability;
 
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 import umontreal.iro.lecuyer.randvar.LognormalGen;
 import umontreal.iro.lecuyer.randvar.RandomVariateGen;
 import umontreal.iro.lecuyer.rng.MRG31k3p;
 import br.edu.ufcg.lsd.oursim.entities.Machine;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
+import br.edu.ufcg.lsd.oursim.io.input.Input;
 import br.edu.ufcg.lsd.oursim.util.TimeUtil;
 
-public class OurGridAvailabilityCharacterization extends SyntheticAvailabilityCharacterizationAbstract {
+public class OurGridAvailabilityCharacterizationBKP implements Input<AvailabilityRecord> {
 
+	private long startingTime;
+	private long amountOfSeconds;
+
+	private Map<Machine, Long> machine2Time;
+	private Map<String, Machine> machines;
 	private Map<Machine, RandomVariateGen> machine2AvRandomVariate;
 	private Map<Machine, RandomVariateGen> machine2NaRandomVariate;
+
+	private AvailabilityRecord nextAV;
+	private Queue<AvailabilityRecord> nextAvailabilityRecords;
+	private boolean shouldStop = false;
 
 	private double[] wt = new double[] { 0.004181871, 0.003738143, 0.003333431, 0.002965424, 0.002631788, 0.002330196, 0.002058353, 0.001814015, 0.001595011,
 			0.001399249, 0.030019328, 0.031149866, 0.032020006, 0.032641937, 0.033028974, 0.033195470, 0.033156675, 0.032928558, 0.032527618, 0.031970677,
@@ -24,20 +38,70 @@ public class OurGridAvailabilityCharacterization extends SyntheticAvailabilityCh
 
 	private double wm = 0.01681250;
 
-	public OurGridAvailabilityCharacterization(Map<String, Peer> peers, long amountOfSeconds, long startingTime) throws FileNotFoundException {
-		super(peers, amountOfSeconds, startingTime);
+	public OurGridAvailabilityCharacterizationBKP(Map<String, Peer> peers, long amountOfSeconds, long startingTime) throws FileNotFoundException {
+		assert amountOfSeconds > 0;
+		assert startingTime >= 0;
+		this.startingTime = startingTime;
+		this.amountOfSeconds = amountOfSeconds;
+		this.nextAvailabilityRecords = new PriorityQueue<AvailabilityRecord>();
+		this.machine2Time = new HashMap<Machine, Long>();
 		this.machine2AvRandomVariate = new HashMap<Machine, RandomVariateGen>();
 		this.machine2NaRandomVariate = new HashMap<Machine, RandomVariateGen>();
-		for (Machine machine : machines.values()) {
-			this.machine2AvRandomVariate.put(machine, new LognormalGen(new MRG31k3p(), 7.957307, 2.116613));
-			this.machine2NaRandomVariate.put(machine, new LognormalGen(new MRG31k3p(), 7.242198, 1.034311));
-			long naDuration = Math.round(this.machine2NaRandomVariate.get(machine).nextDouble());
-			this.machine2Time.put(machine, this.startingTime + naDuration);
+		this.machine2Time = new HashMap<Machine, Long>();
+		this.machines = new HashMap<String, Machine>();
+		for (Peer peer : peers.values()) {
+			for (Machine machine : peer.getMachines()) {
+				assert !this.machines.containsKey(machine);
+				this.machines.put(machine.getName(), machine);
+				this.machine2AvRandomVariate.put(machine, new LognormalGen(new MRG31k3p(), 7.957307, 2.116613));
+				this.machine2NaRandomVariate.put(machine, new LognormalGen(new MRG31k3p(), 7.242198, 1.034311));
+				long naDuration = Math.round(this.machine2NaRandomVariate.get(machine).nextDouble());
+				this.machine2Time.put(machine, this.startingTime + naDuration);
+			}
 		}
 	}
 
 	@Override
-	protected void generateAvailabilityForNextInvocations(Machine machine) {
+	public void close() {
+	}
+
+	@Override
+	public AvailabilityRecord peek() {
+		if (!shouldStop) {
+			if (this.nextAV == null && !this.nextAvailabilityRecords.isEmpty()) {
+				this.nextAV = nextAvailabilityRecords.poll();
+			} else if (this.nextAvailabilityRecords.isEmpty()) {
+				for (Machine machine : machine2Time.keySet()) {
+					generateAvailabilityForNextInvocations(machine);
+				}
+				this.nextAV = nextAvailabilityRecords.poll();
+			}
+		}
+
+		if (shouldStop || (this.nextAV != null && this.nextAV.getTime() > this.amountOfSeconds)) {
+			this.nextAvailabilityRecords.clear();
+			this.nextAV = null;
+			this.shouldStop = true;
+		}
+
+		return this.nextAV;
+	}
+
+	@Override
+	public AvailabilityRecord poll() {
+		AvailabilityRecord polledAV = this.peek();
+		this.nextAV = null;
+
+		if (polledAV != null) {
+			generateAvailabilityForNextInvocations(machines.get(polledAV.getMachineName()));
+		}
+
+		printEvent(polledAV);
+
+		return polledAV;
+	}
+
+	private void generateAvailabilityForNextInvocations(Machine machine) {
 		Long avDuration;
 		Long naDuration;
 
@@ -63,9 +127,34 @@ public class OurGridAvailabilityCharacterization extends SyntheticAvailabilityCh
 		do {
 			naDuration = Math.round(this.machine2NaRandomVariate.get(machine).nextDouble());
 		} while (naDuration == 0);
-
+		
 		naDuration = Math.min(TimeUtil.ONE_DAY, naDuration);
 		this.machine2Time.put(machine, time + avDuration + naDuration);
+	}
+
+	public void stop() {
+		this.shouldStop = true;
+	}
+
+	private BufferedWriter bw = null;
+
+	public void setBuffer(BufferedWriter utilizationBuffer) {
+		this.bw = utilizationBuffer;
+		try {
+			this.bw.append("time:event:machine:duration\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void printEvent(AvailabilityRecord polledAV) {
+		try {
+			if (bw != null && polledAV != null) {
+				bw.append(polledAV.getTime() + ":AV:" + polledAV.getMachineName() + ":" + polledAV.getDuration()).append("\n");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static void main(String[] args) {
