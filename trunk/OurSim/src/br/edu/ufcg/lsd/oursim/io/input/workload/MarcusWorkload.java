@@ -156,6 +156,7 @@ public class MarcusWorkload extends JobEventListenerAdapter implements Workload 
 
 	private static Job createJob(String line, Map<String, Peer> peers, long firstJobThinkTime) {
 		// taskId, jobId, thinkTime, runtime, userId, siteId
+		System.out.println(line);
 		Scanner scLine = new Scanner(line);
 		long taskID = scLine.nextLong();
 		long jobID = scLine.nextLong();
@@ -165,7 +166,7 @@ public class MarcusWorkload extends JobEventListenerAdapter implements Workload 
 		long runTime = scLine.nextLong();
 		String userID = scLine.next();
 		String siteID = scLine.next();
-		assert peers.containsKey(siteID) : siteID + " -> " + line;
+		assert peers.containsKey(siteID) : siteID + " -> " + line;		
 		Job job = new Job(jobID, thinkTime, peers.get(siteID));
 		job.addTask(new Task(taskID, "", runTime, 0, null));
 		job.setUserId(userID);

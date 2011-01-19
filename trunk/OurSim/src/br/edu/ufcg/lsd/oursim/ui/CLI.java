@@ -50,6 +50,7 @@ import br.edu.ufcg.lsd.oursim.io.input.availability.AvailabilityRecord;
 import br.edu.ufcg.lsd.oursim.io.input.availability.DedicatedResourcesAvailabilityCharacterization;
 import br.edu.ufcg.lsd.oursim.io.input.availability.MarkovModelAvailabilityCharacterization;
 import br.edu.ufcg.lsd.oursim.io.input.availability.OurGridAvailabilityCharacterization;
+import br.edu.ufcg.lsd.oursim.io.input.availability.SyntheticAvailabilityCharacterizationAbstract;
 import br.edu.ufcg.lsd.oursim.io.input.workload.IosupWorkload;
 import br.edu.ufcg.lsd.oursim.io.input.workload.MarcusWorkload;
 import br.edu.ufcg.lsd.oursim.io.input.workload.MarcusWorkload2;
@@ -149,20 +150,17 @@ public class CLI {
 		closeables.add(printOutput);
 		if (cmd.hasOption(EXTRACT_REMOTE_WORKLOAD)) {
 			File remoteWorkloadFile = (File) cmd.getOptionObject(EXTRACT_REMOTE_WORKLOAD);
-			// Output remoteWorkloadExtractor = new
-			// RemoteTasksExtractorOutput(new File(outputFile.getName() +
-			// "_spot_workload.txt"));
 			Output remoteWorkloadExtractor = new RemoteTasksExtractorOutput(remoteWorkloadFile);
 			closeables.add(remoteWorkloadExtractor);
 			JobEventDispatcher.getInstance().addListener(remoteWorkloadExtractor);
 		}
 		Grid grid = prepareGrid(cmd);
 
-		prepareOptionalOutputFiles(cmd, grid, closeables);
-
 		ComputingElementEventCounter computingElementEventCounter = prepareOutputAccounting(cmd, cmd.hasOption(VERBOSE));
 
 		Input<? extends AvailabilityRecord> availability = defineAvailability(cmd, grid.getMapOfPeers());
+
+		prepareOptionalOutputFiles(cmd, grid, (SyntheticAvailabilityCharacterizationAbstract) availability, closeables);
 
 		long timeOfFirstSubmission = cmd.getOptionValue(WORKLOAD_TYPE).equals("gwa") ? GWAFormat
 				.extractSubmissionTimeFromFirstJob(cmd.getOptionValue(WORKLOAD)) : 0;
@@ -181,8 +179,8 @@ public class CLI {
 		}
 
 		EventQueue.getInstance().clear();
-		
-		// adiciona métricas resumos no fim do arquivo
+
+		// adiciona métricas-resumo ao fim do arquivo
 		FileWriter fw = new FileWriter(cmd.getOptionValue(OUTPUT), true);
 		closeables.add(fw);
 		stopWatch.stop();
@@ -202,7 +200,8 @@ public class CLI {
 
 	}
 
-	private static void prepareOptionalOutputFiles(CommandLine cmd, Grid grid, List<Closeable> closeables) throws IOException {
+	private static void prepareOptionalOutputFiles(CommandLine cmd, Grid grid, SyntheticAvailabilityCharacterizationAbstract availability, List<Closeable> closeables)
+			throws IOException {
 		if (cmd.hasOption(UTILIZATION)) {
 			BufferedWriter bw = createBufferedWriter((File) cmd.getOptionObject(UTILIZATION));
 			grid.setUtilizationBuffer(bw);
@@ -211,6 +210,7 @@ public class CLI {
 
 		if (cmd.hasOption(WORKER_EVENTS)) {
 			BufferedWriter bw2 = createBufferedWriter((File) cmd.getOptionObject(WORKER_EVENTS));
+			availability.setBuffer(bw2);
 			closeables.add(bw2);
 		}
 
@@ -365,6 +365,7 @@ public class CLI {
 
 		scheduler.setArgs(2);
 		availability.setArgs(2);
+		syntAvail.setArgs(2);
 
 		OptionGroup availGroup = new OptionGroup();
 		availGroup.addOption(availability);

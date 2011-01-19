@@ -17,6 +17,7 @@ import br.edu.ufcg.lsd.oursim.io.input.workload.Workload;
 import br.edu.ufcg.lsd.oursim.policy.JobSchedulerPolicy;
 import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntity;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
+import br.edu.ufcg.lsd.oursim.simulationevents.HaltSimulationEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.TimedEvent;
 
 /**
@@ -144,8 +145,14 @@ public class OurSim {
 			// dispatch all the events in current time
 			while (queue.peek() != null && queue.peek().getTime() == currentTime) {
 				TimedEvent nextEventInCurrentTime = queue.poll();
-				// System.out.println(nextEventInCurrentTime);
-				nextEventInCurrentTime.action();
+				if (nextEventInCurrentTime instanceof HaltSimulationEvent) {
+					System.out.println("HaltSimulationEvent: " + nextEventInCurrentTime);
+					queue.clear();
+					jobScheduler.stop();
+					availability.stop();
+				} else {
+					nextEventInCurrentTime.action();
+				}
 			}
 
 			// after the invocation of the actions of all events in current

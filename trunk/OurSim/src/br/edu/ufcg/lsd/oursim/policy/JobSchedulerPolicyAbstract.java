@@ -38,7 +38,7 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 	private Set<Task> runningTasks;
 
 	/**
-	 * All the peers that participate of the grid.
+	 * All grid's participating peers.
 	 */
 	private List<Peer> peers;
 
@@ -75,6 +75,13 @@ public abstract class JobSchedulerPolicyAbstract extends ActiveEntityImp impleme
 	@Override
 	public boolean isFinished() {
 		return this.submittedTasks.isEmpty() && this.runningTasks.isEmpty();
+	}
+
+	@Override
+	public void stop() {
+		this.submittedTasks.clear();
+		//XXX talvez devesse cancelar todas as runningTasks antes
+		this.runningTasks.clear();
 	}
 
 	@Override

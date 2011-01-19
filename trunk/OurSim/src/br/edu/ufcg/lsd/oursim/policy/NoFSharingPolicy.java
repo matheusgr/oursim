@@ -109,6 +109,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 	}
 
 	private void updateBalance(Peer provider, Peer consumer, long balance) {
+		
 		HashMap<Peer, Long> balances = allBalances.get(provider);
 		long finalBalance = getBalance(consumer, balances) + balance;
 		if (finalBalance < 0) {
@@ -274,6 +275,8 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 		}
 
 		return new ArrayList<Peer>(resourcesBeingConsumedClone.keySet());
+		
+		
 	}
 
 }

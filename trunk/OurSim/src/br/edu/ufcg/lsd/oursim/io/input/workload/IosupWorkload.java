@@ -47,31 +47,41 @@ public class IosupWorkload implements Workload {
 	@Override
 	public Job peek() {
 		if (this.nextJob == null && scanner.hasNextLine()) {
-			this.nextJob = createJob(scanner.nextLine(), peers, startingTime);
+			String nextLine = scanner.nextLine();
+			if (!nextLine.trim().isEmpty()) {
+				this.nextJob = createJob(nextLine, peers, startingTime);
+			}
 		}
 		return this.nextJob;
 	}
 
 	private static Job createJob(String line, Map<String, Peer> peers, long startingTime) {
+		assert !line.trim().isEmpty();
 		// "time" "jobId" "jobSize" "runtime" "tasks" "user" "peer"
-		Scanner scLine = new Scanner(line);
-//		System.out.println(line);
-		long time = scLine.nextLong();
-		long jobID = scLine.nextLong();
-		long jobSize = scLine.nextLong();
-		long runTime = scLine.nextLong();
-		String tasks = scLine.next();
-		String userID = scLine.next();
-		String peerID = scLine.next();
-		Job job = new Job(jobID, time, peers.get(peerID));
-		job.setUserId(userID);
-		Scanner scTasks = new Scanner(tasks);
-		scTasks.useDelimiter(";");
-		while (scTasks.hasNext()) {
-			long taskRunTime = scTasks.nextLong();
-			job.addTask("", taskRunTime);
+		try {
+			Scanner scLine = new Scanner(line);
+			long time = scLine.nextLong();
+			long jobID = scLine.nextLong();
+			long jobSize = scLine.nextLong();
+			long runTime = scLine.nextLong();
+			String tasks = scLine.next();
+			String userID = scLine.next();
+			String peerID = scLine.next();
+			Job job = new Job(jobID, time, peers.get(peerID));
+			job.setUserId(userID);
+			Scanner scTasks = new Scanner(tasks);
+			scTasks.useDelimiter(";");
+			while (scTasks.hasNext()) {
+				long taskRunTime = scTasks.nextLong();
+				job.addTask("", taskRunTime);
+			}
+			return job;
+		} catch (Exception e) {
+			System.err.println("linha: " + line);
+			e.printStackTrace();
+			System.exit(1);
+			return null;
 		}
-		return job;
 	}
 
 	@Override
