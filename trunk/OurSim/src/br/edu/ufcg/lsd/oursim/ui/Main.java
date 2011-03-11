@@ -11,9 +11,11 @@ public class Main {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		String workload = "input-files/marcus_workload_7_dias_50_sites_1.txt";
-		String peersDescription = "input-files/iosup_site_description_50_sites.txt";
-		String machinesDescription = "input-files/machines_speeds_50_sites_25_machines_by_site_1.txt";
+		//String workload = "resources/marcus_workload_1_dias_10_sites_1.txt";
+		//String workload = "/home/edigley/local/traces/oursim/marcus/new_workload/teste_geracao_de_workload/marcus_workload_7_dias_30_sites_1.txt";
+		String workload = "input-files/head_marcus_workload_7_dias_30_sites_1.txt";
+		String peersDescription = "input-files/iosup_site_description_30_sites.txt";
+		String machinesDescription = "input-files/machines_speeds_30_sites_20_machines_by_site_1.txt";
 		String scheduler;
 		scheduler = "replication";
 		scheduler = "persistent";
@@ -21,11 +23,9 @@ public class Main {
 		String schedulerOption = scheduler + " " + nReplicas;
 
 		String workloadType = "marcus";
-		String numberOfResources = "50";
-//		String avDuration = String.valueOf(TimeUtil.ONE_WEEK + TimeUtil.ONE_HOUR);
-		String avDuration = String.valueOf(TimeUtil.ONE_HOUR);
+		String avDuration = "ourgrid";//String.valueOf(TimeUtil.ONE_WEEK + TimeUtil.ONE_DAY);
 
-		String output = "oursim-trace-50_7_dias_50_sites.txt";
+		String output = "oursim-trace-20_7_dias_30_sites.txt";
 		String utilizationFile = "oursim_system_utilization.txt";
 		String workerEventsFile = "oursim_worker_events.txt";
 		String taskEventsFile = "oursim_task_events.txt";
@@ -41,16 +41,15 @@ public class Main {
 		// te = String.format("-te %s", taskEventsFile);
 		/* -we <file> : registra todos os eventos de (in)disponibilidade */
 		// we = String.format("-we %s", workerEventsFile);
-
 		String optional = String.format(" %s %s %s ", u, te, we);
 
-		String argsPattern = "-wt %s -w %s -nof -s %s -pd %s -md %s -synthetic_av %s mutka -o %s %s";
+		String argsPattern = "-h 20000 -wt %s -w %s -s %s -pd %s -md %s -synthetic_av %s -o %s %s";
 
 		String argsString = String.format(argsPattern, workloadType, workload, schedulerOption, peersDescription, machinesDescription, avDuration, output,
 				optional);
 
 		args = argsString.split("\\s+");
-		System.out.println(argsString);
+		// System.out.println(argsString);
 		CLI.main(args);
 	}
 

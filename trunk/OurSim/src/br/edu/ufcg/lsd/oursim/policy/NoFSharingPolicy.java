@@ -1,4 +1,3 @@
-
 package br.edu.ufcg.lsd.oursim.policy;
 
 import java.util.ArrayList;
@@ -13,7 +12,6 @@ import java.util.Map.Entry;
 
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.entities.Task;
-
 
 /**
  * 
@@ -109,7 +107,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 	}
 
 	private void updateBalance(Peer provider, Peer consumer, long balance) {
-		
+
 		HashMap<Peer, Long> balances = allBalances.get(provider);
 		long finalBalance = getBalance(consumer, balances) + balance;
 		if (finalBalance < 0) {
@@ -157,7 +155,6 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 
 	@Override
 	public List<Peer> getPreemptablePeers(final Peer provider, Peer consumer, final Map<Peer, Integer> resourcesBeingConsumed, final Set<Task> runningTasks) {
-
 		List<Peer> peersByPriorityOfPreemption = sortPeersByPriorityOfPreemption(provider, consumer, resourcesBeingConsumed, runningTasks);
 		peersByPriorityOfPreemption.remove(consumer);
 		return peersByPriorityOfPreemption;
@@ -170,7 +167,8 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 		// Provider's balance
 		HashMap<Peer, Long> balances = allBalances.get(provider);
 
-		// Comparing who much each peer deserves. Ordering made by NoFComparator.
+		// Comparing who much each peer deserves. Ordering made by
+		// NoFComparator.
 		TreeMap<Peer, Integer> resourcesBeingConsumedClone = new TreeMap<Peer, Integer>(new NoFComparator(provider, resourcesBeingConsumed, runningTasks));
 		resourcesBeingConsumedClone.putAll(resourcesBeingConsumed);
 
@@ -183,7 +181,8 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 
 		long resourcesLeft = provider.getNumberOfMachinesToShare();
 
-		while (resourcesLeft > 0) {
+		// XXX && !resourcesBeingConsumedClone.isEmpty()
+		while (resourcesLeft > 0 && !resourcesBeingConsumedClone.isEmpty()) {
 
 			// Consumers to share resources left by providing peer
 			int numConsumingPeers = resourcesBeingConsumedClone.size();
@@ -200,7 +199,8 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 
 			long resourcesToShare = resourcesLeft;
 
-			// If all peers deserves only less that one resource, start lenient strategy
+			// If all peers deserves only less that one resource, start lenient
+			// strategy
 			boolean startLenientSharing = true;
 
 			// Set minimum resources allowed for each peer and remove satisfied
@@ -228,10 +228,12 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 					resourcesForPeer = resourcesLeft;
 				}
 
-				// If any peer cannot get at least one resource, start lenient sharing
+				// If any peer cannot get at least one resource, start lenient
+				// sharing
 				startLenientSharing = startLenientSharing && resourcesForPeer == 0;
 
-				int resourcesInUse = resourcesBeingConsumedClone.get(remoteConsumer);
+				// XXX ? resourcesBeingConsumedClone.get(remoteConsumer) : 0
+				int resourcesInUse = resourcesBeingConsumedClone.containsKey(remoteConsumer) ? resourcesBeingConsumedClone.get(remoteConsumer) : 0;
 
 				if (resourcesInUse <= resourcesForPeer) {
 					iterator.remove(); // Satisfied consumer, don't preempt
@@ -256,7 +258,8 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 			// Recalculating resources consumed by this peer
 			// This is used to recalculating a new allowed shared in next turn
 			for (Entry<Peer, Long> entry : receivedResources.entrySet()) {
-				long currentUsedResources = resourcesBeingConsumedClone.get(entry.getKey());
+				//XXX ?resourcesBeingConsumedClone.get(entry.getKey()):0
+				long currentUsedResources = resourcesBeingConsumedClone.containsKey(entry.getKey())?resourcesBeingConsumedClone.get(entry.getKey()):0;
 				long allowedResources = entry.getValue();
 				long finalResourceUse = currentUsedResources - allowedResources;
 				assert finalResourceUse >= 0;
@@ -275,8 +278,7 @@ public class NoFSharingPolicy implements ResourceSharingPolicy {
 		}
 
 		return new ArrayList<Peer>(resourcesBeingConsumedClone.keySet());
-		
-		
+
 	}
 
 }

@@ -86,6 +86,8 @@ public class CLI {
 
 	public static final String SYNTHETIC_AVAILABILITY = "synthetic_av";
 
+	public static final String SYNTHETIC_AVAILABILITY_DURATION = "synthetic_av_dur";
+
 	public static final String MACHINES_DESCRIPTION = "md";
 
 	public static final String DEDICATED_RESOURCES = "d";
@@ -119,6 +121,8 @@ public class CLI {
 	public static final String HELP = "help";
 
 	public static final String USAGE = "usage";
+
+	public static final String HALT_SIMULATION = "h";
 
 	public static final String EXECUTION_LINE = "java -jar oursim.jar";
 
@@ -172,6 +176,10 @@ public class CLI {
 
 		oursim.setActiveEntity(new ActiveEntityImp());
 
+		if (cmd.hasOption(HALT_SIMULATION)) {
+			oursim.addHaltEvent(((Number) cmd.getOptionObject(HALT_SIMULATION)).longValue());
+		}
+
 		oursim.start();
 
 		for (Closeable c : closeables) {
@@ -200,8 +208,8 @@ public class CLI {
 
 	}
 
-	private static void prepareOptionalOutputFiles(CommandLine cmd, Grid grid, SyntheticAvailabilityCharacterizationAbstract availability, List<Closeable> closeables)
-			throws IOException {
+	private static void prepareOptionalOutputFiles(CommandLine cmd, Grid grid, SyntheticAvailabilityCharacterizationAbstract availability,
+			List<Closeable> closeables) throws IOException {
 		if (cmd.hasOption(UTILIZATION)) {
 			BufferedWriter bw = createBufferedWriter((File) cmd.getOptionObject(UTILIZATION));
 			grid.setUtilizationBuffer(bw);
@@ -279,11 +287,14 @@ public class CLI {
 			long startingTime = AvailabilityTraceFormat.extractTimeFromFirstAvailabilityRecord(cmd.getOptionValue(AVAILABILITY), true);
 			availability = new AvailabilityCharacterization(cmd.getOptionValue(AVAILABILITY), startingTime, true);
 		} else if (cmd.hasOption(SYNTHETIC_AVAILABILITY)) {
-			long availabilityThreshold = ((Number) cmd.getOptionObject(SYNTHETIC_AVAILABILITY)).longValue();
-			String avType = cmd.getOptionValues(SYNTHETIC_AVAILABILITY).length == 2 ? cmd.getOptionValues(SYNTHETIC_AVAILABILITY)[1] : "";
+//			long availabilityThreshold = ((Number) cmd.getOptionObject(SYNTHETIC_AVAILABILITY)).longValue();
+//			String avType = cmd.getOptionValues(SYNTHETIC_AVAILABILITY).length == 2 ? cmd.getOptionValues(SYNTHETIC_AVAILABILITY)[1] : "";
+			long availabilityThreshold = cmd.hasOption(SYNTHETIC_AVAILABILITY_DURATION) ? ((Number) cmd.getOptionObject(SYNTHETIC_AVAILABILITY_DURATION))
+					.longValue() : Long.MAX_VALUE;
+			String avType = (String) cmd.getOptionObject(SYNTHETIC_AVAILABILITY);
 			if (avType.equals("mutka")) {
 				availability = new MarkovModelAvailabilityCharacterization(peersMap, availabilityThreshold, 0);
-			} else {
+			} else if (avType.equals("ourgrid")) {
 				availability = new OurGridAvailabilityCharacterization(peersMap, availabilityThreshold, 0);
 			}
 		}
@@ -329,6 +340,7 @@ public class CLI {
 		Option availability = new Option(AVAILABILITY, "availability", true, "Arquivo com a caracterização da disponibilidade para todos os recursos.");
 		Option dedicatedResources = new Option(DEDICATED_RESOURCES, "dedicated", false, "Indica que os recursos são todos dedicados.");
 		Option syntAvail = new Option(SYNTHETIC_AVAILABILITY, "synthetic_availability", true, "Disponibilidade dos recursos deve ser gerada sinteticamente.");
+		Option syntAvailDur = new Option(SYNTHETIC_AVAILABILITY_DURATION, "synthetic_availability_duration", true, "Até que momento gerar eventos de disponibilidade dos recursos.");
 		Option workload = new Option(WORKLOAD, "workload", true, "Arquivo com o workload no format GWA (Grid Workload Archive).");
 		Option utilization = new Option(UTILIZATION, "utilization", true, "Arquivo em que será registrada a utilização da grade.");
 		Option workerEvents = new Option(WORKER_EVENTS, "worker_events", true, "Arquivo em que serão registrados os eventos de disponibilidade.");
@@ -344,6 +356,7 @@ public class CLI {
 		Option erwOption = new Option(EXTRACT_REMOTE_WORKLOAD, "extract_remote_workload", true,
 				"Extrai, para cada job, o subconjunto das tasks que rodaram em recursos remotos.");
 		Option output = new Option(OUTPUT, "output", true, "O nome do arquivo em que o output da simulação será gravado.");
+		Option halt = new Option(HALT_SIMULATION, "halt", true, "O tempo em que a simulação deve parar incondicionalmente.");
 
 		workload.setRequired(true);
 		peersDescription.setRequired(true);
@@ -361,11 +374,14 @@ public class CLI {
 		numResByPeer.setType(Number.class);
 		numPeers.setType(Number.class);
 		speedOption.setType(Number.class);
-		syntAvail.setType(Number.class);
+//		syntAvail.setType(Number.class);
+		syntAvailDur.setType(Number.class);
+		syntAvail.setType(String.class);
+		halt.setType(Number.class);
 
 		scheduler.setArgs(2);
 		availability.setArgs(2);
-		syntAvail.setArgs(2);
+		// syntAvail.setArgs(2);
 
 		OptionGroup availGroup = new OptionGroup();
 		availGroup.addOption(availability);
@@ -378,6 +394,7 @@ public class CLI {
 		options.addOption(workloadType);
 		options.addOption(machinesDescription);
 		options.addOption(scheduler);
+		options.addOption(syntAvailDur);
 		options.addOption(output);
 		options.addOption(erwOption);
 		options.addOption(numResByPeer);
@@ -388,6 +405,7 @@ public class CLI {
 		options.addOption(utilization);
 		options.addOption(workerEvents);
 		options.addOption(taskEvents);
+		options.addOption(halt);
 
 		options.addOption(VERBOSE, "verbose", false, "Informa todos os eventos importantes.");
 		options.addOption(HELP, false, "Comando de ajuda.");

@@ -9,6 +9,7 @@ import umontreal.iro.lecuyer.randvar.RandomVariateGen;
 import umontreal.iro.lecuyer.rng.MRG31k3p;
 import br.edu.ufcg.lsd.oursim.entities.Machine;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
+import br.edu.ufcg.lsd.oursim.util.Seed;
 import br.edu.ufcg.lsd.oursim.util.TimeUtil;
 
 public class OurGridAvailabilityCharacterization extends SyntheticAvailabilityCharacterizationAbstract {
@@ -28,6 +29,7 @@ public class OurGridAvailabilityCharacterization extends SyntheticAvailabilityCh
 		super(peers, amountOfSeconds, startingTime);
 		this.machine2AvRandomVariate = new HashMap<Machine, RandomVariateGen>();
 		this.machine2NaRandomVariate = new HashMap<Machine, RandomVariateGen>();
+		MRG31k3p.setPackageSeed(Seed.OurGridAvailabilityCharacterization_SEED);
 		for (Machine machine : machines.values()) {
 			this.machine2AvRandomVariate.put(machine, new LognormalGen(new MRG31k3p(), 7.957307, 2.116613));
 			this.machine2NaRandomVariate.put(machine, new LognormalGen(new MRG31k3p(), 7.242198, 1.034311));
@@ -66,29 +68,6 @@ public class OurGridAvailabilityCharacterization extends SyntheticAvailabilityCh
 
 		naDuration = Math.min(TimeUtil.ONE_DAY, naDuration);
 		this.machine2Time.put(machine, time + avDuration + naDuration);
-	}
-
-	public static void main(String[] args) {
-		// the first 3 values of the seed must all be less than m1 = 4294967087,
-		// and not all 0; and the last 3 values must all be less than m2 =
-		// 4294944443, and not all 0.
-		MRG31k3p.setPackageSeed(new int[] { 1234, 13455, 5566, 6548, 8764, 5674 });
-		MRG31k3p g1 = new MRG31k3p();
-		MRG31k3p g2 = new MRG31k3p();
-		MRG31k3p g3 = new MRG31k3p();
-		MRG31k3p g4 = new MRG31k3p();
-		LognormalGen l1 = new LognormalGen(g1, 7.957307, 2.116613);
-		LognormalGen l2 = new LognormalGen(g2, 7.957307, 2.116613);
-		LognormalGen l3 = new LognormalGen(g3, 7.957307, 2.116613);
-		LognormalGen l4 = new LognormalGen(g4, 7.957307, 2.116613);
-
-		for (int i = 0; i < 2; i++) {
-			System.out.println(l1.nextDouble());
-			System.out.println(l2.nextDouble());
-			System.out.println(l3.nextDouble());
-			System.out.println(l4.nextDouble());
-			System.out.println("-------------");
-		}
 	}
 
 }

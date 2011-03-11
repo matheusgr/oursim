@@ -134,4 +134,6 @@ public interface ActiveEntity {
 
 	void addAvailabilityRecordEvent(long time, AvailabilityRecord avRecord);
 
+	void addHaltEvent(long haltTime);
+
 }

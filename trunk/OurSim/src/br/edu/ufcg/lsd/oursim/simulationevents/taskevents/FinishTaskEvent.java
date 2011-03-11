@@ -31,16 +31,16 @@ public class FinishTaskEvent extends TaskTimedEvent {
 
 	@Override
 	protected final void doAction() {
-		Task Task = (Task) source;
-		if (!Task.isCancelled()) {
-			Task.finish(time);
-			if (Task.getSourceJob().isFinished()) {
+		Task task = (Task) source;
+		if (!task.isCancelled()) {
+			task.finish(time);
+			if (task.getSourceJob().isFinished()) {
 				// TODO analisar esse acesso direto à fila de eventos
-				EventQueue.getInstance().addEvent(new FinishJobEvent(EventQueue.getInstance().getCurrentTime(), Task.getSourceJob()));
+				EventQueue.getInstance().addEvent(new FinishJobEvent(EventQueue.getInstance().getCurrentTime(), task.getSourceJob()));
 			}
-			TaskEventDispatcher.getInstance().dispatchTaskFinished(Task);
+			TaskEventDispatcher.getInstance().dispatchTaskFinished(task);
 		} else {
-			System.out.println("tava tentando finalizar uma task já cancelada: " + Task);
+			System.out.println("estava tentando finalizar uma task já cancelada: " + task);
 		}
 	}
 }

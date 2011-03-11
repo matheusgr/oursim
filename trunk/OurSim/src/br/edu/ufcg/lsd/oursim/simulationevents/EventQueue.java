@@ -11,9 +11,11 @@ import java.util.PriorityQueue;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Task;
 import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.FinishJobEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.jobevents.SubmitJobEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.CancelledTaskEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.FinishTaskEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.PreemptedTaskEvent;
+import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.SubmitTaskEvent;
 
 /**
  * 
@@ -59,6 +61,8 @@ public final class EventQueue implements Closeable {
 
 	private static EventQueue instance = null;
 
+	private long currentLastJobSubmissionTime = -1;
+
 	private EventQueue() {
 		pq = new PriorityQueue<TimedEvent>();
 		job2FinishJobEvent = new HashMap<Job, FinishJobEvent>();
@@ -96,6 +100,10 @@ public final class EventQueue implements Closeable {
 	 */
 	public void addEvent(TimedEvent event) {
 		assert event.getTime() >= currentTime : event.getTime() + ">=" + currentTime;
+
+		if (event instanceof SubmitJobEvent || event instanceof SubmitTaskEvent) {
+			currentLastJobSubmissionTime = Math.max(event.getTime(), currentLastJobSubmissionTime);
+		}
 
 		if (event instanceof FinishJobEvent) {
 			FinishJobEvent ev = (FinishJobEvent) event;
@@ -177,6 +185,7 @@ public final class EventQueue implements Closeable {
 		TimedEvent polledEvent = pq.poll();
 		// System.out.println("poll: " +polledEvent.getTime() +" : "
 		// +polledEvent.getType() + ":" + polledEvent);
+
 		return polledEvent;
 	}
 
@@ -203,6 +212,10 @@ public final class EventQueue implements Closeable {
 	@Override
 	public String toString() {
 		return "TimeQueue [pq=" + pq.size() + ", time=" + currentTime + "]";
+	}
+
+	public boolean hasFutureJobEvents() {
+		return this.currentLastJobSubmissionTime >= this.currentTime;
 	}
 
 }
