@@ -131,4 +131,10 @@ public class ActiveEntityImp implements ActiveEntity {
 		}
 	}
 
+	@Override
+	public void addHaltEvent(long haltTime) {
+		HaltSimulationEvent haltEvent = new HaltSimulationEvent(haltTime);
+		this.getEventQueue().addEvent(haltEvent);
+	}
+
 }

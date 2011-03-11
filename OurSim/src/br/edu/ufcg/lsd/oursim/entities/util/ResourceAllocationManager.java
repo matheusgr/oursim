@@ -135,7 +135,7 @@ public class ResourceAllocationManager {
 				this.resourceManager.makeResourceAllocated(releasedMachine);
 			}
 		}
-
+		
 		return releasedMachine;
 	}
 

@@ -145,13 +145,20 @@ public class OurSim {
 			// dispatch all the events in current time
 			while (queue.peek() != null && queue.peek().getTime() == currentTime) {
 				TimedEvent nextEventInCurrentTime = queue.poll();
+
+				// TODO Adicionar a estrutura de listeners para o
+				// HaltSimulationEvent
 				if (nextEventInCurrentTime instanceof HaltSimulationEvent) {
-					System.out.println("HaltSimulationEvent: " + nextEventInCurrentTime);
 					queue.clear();
 					jobScheduler.stop();
 					availability.stop();
 				} else {
 					nextEventInCurrentTime.action();
+
+					//escalona evento de término caso o workload já tenha sido todo processado
+					if (workload.peek() == null && jobScheduler.isFinished() && !queue.hasFutureJobEvents()) {
+						this.addHaltEvent(this.activeEntity.getCurrentTime() + 1);
+					}
 				}
 			}
 
@@ -281,6 +288,14 @@ public class OurSim {
 	public void setActiveEntity(ActiveEntity activeEntity) {
 		this.activeEntity = activeEntity;
 		this.activeEntity.setEventQueue(eventQueue);
+	}
+
+	public boolean addHaltEvent(long haltTime) {
+		if (this.activeEntity != null) {
+			this.activeEntity.addHaltEvent(haltTime);
+			return true;
+		}
+		return false;
 	}
 
 }

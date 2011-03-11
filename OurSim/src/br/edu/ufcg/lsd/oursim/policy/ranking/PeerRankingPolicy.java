@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import br.edu.ufcg.lsd.oursim.entities.Peer;
-import br.edu.ufcg.lsd.oursim.util.OurSimMainSpikeSolution;
+import br.edu.ufcg.lsd.oursim.util.Seed;
 
 /**
  * 
@@ -36,7 +36,7 @@ public class PeerRankingPolicy extends RankingPolicy<Peer, Peer> {
 		// }
 		//
 		// });
-		Collections.shuffle(peers, OurSimMainSpikeSolution.RANDOM);
+		Collections.shuffle(peers, Seed.PeerRankingPolicy_RANDOM);
 		// Trying own resources first:
 		for (int i = 0; i < peers.size(); i++) {
 			if (peers.get(i) == this.getRequester()) {

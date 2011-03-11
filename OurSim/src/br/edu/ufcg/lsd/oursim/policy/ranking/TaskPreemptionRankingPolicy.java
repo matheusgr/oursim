@@ -34,7 +34,13 @@ public class TaskPreemptionRankingPolicy extends RankingPolicy<Peer, Task> {
 		Collections.sort(Tasks, new Comparator<Task>() {
 			@Override
 			public int compare(Task t1, Task t2) {
-				return (int) (t2.getStartTime() - t1.getStartTime());
+//				return (int) (t2.getStartTime() - t1.getStartTime());
+				long diffTime = t2.getStartTime() - t1.getStartTime();
+				if (diffTime != 0) {
+					return (int) (diffTime);
+				} else {
+					return t1.compareTo(t2);
+				}
 			}
 		});
 

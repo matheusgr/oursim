@@ -38,20 +38,16 @@ public class CreateCMD {
 		String workloadType = "marcus";
 		String workloadPattern = "%s_workload_7_dias_%s_sites_%s.txt";
 
-		String resultDir = "/local/edigley/traces/oursim/job";
+		String resultDir = "/local/edigley/traces/oursim/28_02_2001_new_marcus_workload";
 
 		long avDur = TimeUtil.ONE_WEEK + TimeUtil.ONE_DAY;
 
-		// int spotLimit = 100;
-
-		// int[] spotLimits = new int[] { 100, 150, 200, 250, 300, 350, 400,
-		// 450, 500, 1000, Integer.MAX_VALUE };
-		int[] spotLimits = new int[] { 100, 500, Integer.MAX_VALUE };
+		int[] spotLimits = new int[] { 100, Integer.MAX_VALUE, 500, 400, 300, 200 };//, 80, 60, 40, 20 };
 
 		String scheduler;
 		scheduler = "replication";
 		scheduler = "persistent";
-		String nReplicas = scheduler.equals("replication") ? "3" : "";
+		String nReplicas = scheduler.equals("replication") ? "2" : "";
 
 		String java = " $JAVACALL ";
 		String jvmArgs = "";
@@ -61,32 +57,38 @@ public class CreateCMD {
 
 		boolean utilization = false;
 
+		boolean runOurSim = true;
+		
+		boolean runSpotSim = false ;
+		
+		// adicionar a opção nof como uma booleana
+
 		String[] spts = new String[] {
 
-		"us-east-1.linux.m1.small.csv",
-
-		"us-east-1.linux.m1.large.csv",
-
-		"us-east-1.linux.m1.xlarge.csv",
+//		"us-east-1.linux.m1.small.csv",
+//
+//		"us-east-1.linux.m1.large.csv",
+//
+//		"us-east-1.linux.m1.xlarge.csv",
 
 		"us-east-1.linux.c1.medium.csv",
 
-		"us-east-1.linux.c1.xlarge.csv",
-
-		"us-east-1.linux.m2.xlarge.csv",
-
-		"us-east-1.linux.m2.2xlarge.csv",
-
-		"us-east-1.linux.m2.4xlarge.csv"
+//		"us-east-1.linux.c1.xlarge.csv",
+//
+//		"us-east-1.linux.m2.xlarge.csv",
+//
+//		"us-east-1.linux.m2.2xlarge.csv",
+//
+//		"us-east-1.linux.m2.4xlarge.csv"
 
 		};
 
-		spts = new String[] {};
+		if (!runSpotSim) {
+			spts = new String[] {};
+		}
+		int[] nSitesV = new int[] { 30 };
+		int[] nResV = new int[] { 20 };
 
-		int[] nSitesV = new int[] { 50, 25, 10 };
-		int[] nResV = new int[] { 50, 35, 25, 10 };
-
-		// int[] rodadas = new int[] { 1, 2, 3 };
 		int[] rodadas = ArrayBuilder.createVector(1);
 
 		System.out.println("scheduler: " + scheduler);
@@ -120,19 +122,21 @@ public class CreateCMD {
 					oursimTask.inputs.add(wFile);
 					oursimTask.inputs.add(isdFilePath);
 					oursimTask.inputs.add(mdFilePath);
-					oursimTask.labels.put(isd.trim(), inputDir +isdFilePath);
-					oursimTask.labels.put(md.trim(), inputDir +mdFilePath);
+					oursimTask.labels.put(isd.trim(), inputDir + isdFilePath);
+					oursimTask.labels.put(md.trim(), inputDir + mdFilePath);
 					oursimTask.labels.put(java.trim(), "unzip oursim.zip ; java -Xms500M -Xmx1500M -XX:-UseGCOverheadLimit -jar ");
 
-					String oursimTrace = String.format("oursim-trace-nof-%s_%s_machines_7_dias_%s_sites_%s.txt", scheduler, nRes, nSites, rodada);
+					String oursimTrace = String.format("oursim-trace-%s_%s_machines_7_dias_%s_sites_%s.txt", scheduler, nRes, nSites, rodada);
 					oursimTask.outputs.add(oursimTrace);
-					outputs.add(oursimTrace);
+					if (runOurSim) {
+						outputs.add(oursimTrace);
+					}
 					String uFile = String.format("oursim-trace-utilization-%s_%s_machines_7_dias_%s_sites_%s.txt", scheduler, nRes, nSites, rodada);
 					if (utilization) {
 						oursimTask.outputs.add(uFile);
 						outputs.add(uFile);
 					}
-					String oursimPattern = java + "oursim.jar -nof -w %s -wt %s -s %s %s -pd %s -nr %s -synthetic_av %s -o %s %s -md %s";// XXX
+					String oursimPattern = java + "oursim.jar -w %s -wt %s -s %s %s -pd %s -nr %s -synthetic_av ourgrid %s -o %s %s -md %s";// XXX
 					// -erw
 					// %s";
 					String preSpotWorkload = oursimTrace + "_spot_workload.txt";
@@ -153,8 +157,9 @@ public class CreateCMD {
 					// prespotsimTask.cmd = String.format(spotsimPrePattern,
 					// preSpotWorkload, spotWorkload);
 
-					tasks.add(oursimTask);
-
+					if (runOurSim) {
+						tasks.add(oursimTask);
+					}
 					List<WraperTask> spotTasks = new ArrayList<WraperTask>();
 
 					for (String sptFilePath : spts) {
@@ -215,9 +220,14 @@ public class CreateCMD {
 					tearDown += " cororoca:" + resultDir;
 					outputs.clear();
 
-					String shellVarDef = String.format("ISD=%s && \\\n MD=%s && \\\n", inputDir + isdFilePath, inputDir + mdFilePath);
-					cmd += NL + sep + shellVarDef + oursimTask;// XXX + NC +
-					// prespotsimTask;
+					String shellVarDef = String.format("ISD=%s && \\\n MD=%s \\\n", inputDir + isdFilePath, inputDir + mdFilePath);
+					cmd += NL + sep + shellVarDef;
+					
+					if (runOurSim) {
+						cmd += " && " +  oursimTask;// XXX + NC +
+						// prespotsimTask;
+					}
+					
 					for (WraperTask spotsimTask : spotTasks) {
 						cmd += NC + spotsimTask;
 					}
@@ -242,6 +252,7 @@ public class CreateCMD {
 				sourceDir = "/local/edigley/traces/oursim/03_12_2010/";
 			} else if (inputFile.startsWith(workloadType + "_workload")) {
 				sourceDir = "/local/edigley/traces/oursim/workloads/";
+				sourceDir = "/local/edigley/traces/oursim/marcus/new_workload/teste_geracao_de_workload/";
 			} else if (inputFile.startsWith("machines_speeds_") || inputFile.startsWith("iosup_site_description_")) {
 				sourceDir = "/local/edigley/traces/oursim/sites_description/";
 			} else if (inputFile.endsWith(".csv")) {
@@ -259,29 +270,32 @@ public class CreateCMD {
 		FileUtils.writeStringToFile(new File("cmd.txt"), setUp + NC + cmd);
 
 		StringBuilder jobSB = new StringBuilder();
-		jobSB.append("job : \n\tlabel : oursim \n\n");
+		jobSB.append("job : \n");
+		jobSB.append("\tlabel : oursim \n");
+		jobSB.append("\trequirements : ( os == linux )\n\n");
+		
 
 		for (WraperTask task : tasks) {
 
 			jobSB.append("\ttask : \n");
-			jobSB.append("\t\tinit : put /local/edigley/workspace/OurSim/dist/oursim.zip oursim.zip \n");
+			jobSB.append("\t\tinit : store /local/edigley/workspace/OurSim/dist/oursim.zip oursim.zip \n");
 
 			jobSB.append("\t\tremote : ");
 			for (Entry<String, String> entry : task.labels.entrySet()) {
 				task.cmd = task.cmd.replace(entry.getKey(), entry.getValue());
 			}
-			
+
 			jobSB.append(task.cmd + "\n");
 
 			jobSB.append("\t\tfinal : ");
 			for (String output : task.outputs) {
 				if (!output.trim().isEmpty()) {
-					jobSB.append(String.format("\t\t\tget %1$s /local/edigley/traces/oursim/job/%1$s \n", output));
+					jobSB.append(String.format("\t\t\tget %1$s /local/edigley/traces/oursim/job_12_02_2011/%1$s \n", output));
 				}
 			}
 
 		}
-		
+
 		FileUtils.writeStringToFile(new File("oursim.jdf"), jobSB.toString());
 
 		System.out.println("\n  Finished!!!!");
