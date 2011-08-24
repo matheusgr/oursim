@@ -19,7 +19,7 @@ public class PeerRankingPolicy extends RankingPolicy<Peer, Peer> {
 	 * An ordinary constructor.
 	 * 
 	 * @param peer
-	 *            the peer who are are requesting.
+	 *            the peer who are requesting.
 	 */
 	public PeerRankingPolicy(Peer peer) {
 		super(peer);
@@ -36,7 +36,7 @@ public class PeerRankingPolicy extends RankingPolicy<Peer, Peer> {
 		// }
 		//
 		// });
-		Collections.shuffle(peers, Seed.PeerRankingPolicy_RANDOM);
+		Collections.shuffle(peers, Seed.getPeerRankingPolicyRANDOM());
 		// Trying own resources first:
 		for (int i = 0; i < peers.size(); i++) {
 			if (peers.get(i) == this.getRequester()) {

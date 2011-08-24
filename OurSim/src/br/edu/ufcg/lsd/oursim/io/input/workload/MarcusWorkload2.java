@@ -28,6 +28,8 @@ public class MarcusWorkload2 implements Workload {
 
 	private Job nextJob;
 
+	public static boolean check = false;
+	
 	public MarcusWorkload2(String workloadFilePath, Map<String, Peer> peers, long quantDeSegundos) throws FileNotFoundException {
 		this.peers = peers;
 		this.scanner = new Scanner(new BufferedReader(new FileReader(workloadFilePath)));
@@ -82,20 +84,29 @@ public class MarcusWorkload2 implements Workload {
 	}
 
 	private static Job createJob(String line, Map<String, Peer> peers) {
-		// taskId time jobId jobSize runtime user peer
-		Scanner scLine = new Scanner(line);
-		long taskID = scLine.nextLong();
-		long time = scLine.nextLong();
-		long jobID = scLine.nextLong();
-		long jobSize = scLine.nextLong();
-		long runTime = scLine.nextLong();
-		String userID = scLine.next();
-		String siteID = scLine.next();
-		assert peers.containsKey(siteID) : siteID + " -> " + line;
-		Job job = new Job(jobID, time, peers.get(siteID));
-		job.addTask(new Task(taskID, "", runTime, time, null));
-		job.setUserId(userID);
-		return job;
+		try {
+			// taskId time jobId jobSize runtime user peer
+			Scanner scLine = new Scanner(line);
+			long taskID = scLine.nextLong();
+			long time = scLine.nextLong();
+			long jobID = scLine.nextLong();
+			long jobSize = scLine.nextLong();
+			long runTime = scLine.nextLong();
+			String userID = scLine.next();
+			String siteID = scLine.next();
+			assert peers.containsKey(siteID) : siteID + " -> " + line;
+			Job job = new Job(jobID, time, peers.get(siteID));
+			job.addTask(new Task(taskID, "", runTime, time, null));
+			job.setUserId(userID);
+			return job;
+		} catch (RuntimeException e) {
+			System.err.println("linha: " + line);
+			if (check) {
+				return new Job(1l,1l,peers.get("1"));
+			}else{
+				throw e;
+			}
+		}
 	}
 
 	@Override

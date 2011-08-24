@@ -53,8 +53,40 @@ public class CLIUTil {
 		System.exit(1);
 	}
 
-	public static String getSummaryStatistics(ComputingElementEventCounter c, String instance, String group, boolean groupedCloudUser, int nPeers,
-			int nMachines, double utilization, double realUtilization, long simulationDuration) {
+	public static String getSummaryStatistics(ComputingElementEventCounter c, String instance, String limit, String group, boolean groupedCloudUser,
+			int nPeers, int nMachines, double utilization, double realUtilization, long simulationDuration, String simulationDurationF) {
+
+		String hostName;
+		String ipAddress;
+
+		try {
+			java.net.InetAddress localMachine = java.net.InetAddress.getLocalHost();
+			hostName = localMachine.getHostName();
+			ipAddress = localMachine.getHostAddress();
+		} catch (Exception e) {
+			hostName = "NA";
+			ipAddress = "NA";
+		} catch (Error e) {
+			/**
+			 * <pre>
+			 * Thrown if the Java Virtual Machine cannot find an appropriate 
+			 * native-language definition of a method declared native.
+			 * 
+			 * Exception in thread &quot;main&quot; java.lang.UnsatisfiedLinkError: no net in java.library.path
+			 * at java.lang.ClassLoader.loadLibrary(ClassLoader.java:1734)
+			 * at java.lang.Runtime.loadLibrary0(Runtime.java:823)
+			 * at java.lang.System.loadLibrary(System.java:1028)
+			 * at sun.security.action.LoadLibraryAction.run(LoadLibraryAction.java:50)
+			 * at java.security.AccessController.doPrivileged(Native Method)
+			 * at java.net.InetAddress.&lt;clinit&gt;(InetAddress.java:216)
+			 * at br.edu.ufcg.lsd.oursim.ui.CLIUTil.getSummaryStatistics(CLIUTil.java:63)
+			 * at br.edu.ufcg.lsd.oursim.ui.CLIUTil.formatSummaryStatistics(CLIUTil.java:151)
+			 * at br.edu.ufcg.lsd.oursim.ui.CLI.main(CLI.java:207)
+			 * </pre>
+			 */
+			hostName = "NA";
+			ipAddress = "NA";
+		}
 
 		DecimalFormat dft = new DecimalFormat("###0.0000");
 
@@ -62,7 +94,7 @@ public class CLIUTil {
 		int notStarted = c.getNumberOfSubmittedJobs() - (c.getNumberOfFinishedJobs() + c.getNumberOfPreemptionsForAllJobs());
 
 		StringBuilder sb = new StringBuilder(
-				"# submitted finished preempted notStarted submittedTasks finishedTasks success sumOfJobsMakespan sumOfTasksMakespan finishedCost preemptedCost totalCost costByTask nPeers nMachines instance group groupedCloudUser utilization realUtilization simulationDuration"
+				"# submitted finished preempted notStarted submittedTasks finishedTasks success sumOfJobsMakespan sumOfTasksMakespan finishedCost preemptedCost totalCost costByTask nPeers nMachines instance limit group groupedCloudUser utilization realUtilization hostname ipaddress simulationDuration simulationDurationF"
 						+ "\n");
 		double totalCost = c.getTotalCostOfAllFinishedJobs() + c.getTotalCostOfAllPreemptedJobs();
 		sb.append("# " +
@@ -99,6 +131,8 @@ public class CLIUTil {
 
 		.append(instance).append(" ")
 
+		.append(limit).append(" ")
+
 		.append(group).append(" ")
 
 		.append(String.valueOf(groupedCloudUser).toUpperCase()).append(" ")
@@ -107,13 +141,19 @@ public class CLIUTil {
 
 		.append(realUtilization).append(" ")
 
+		.append(hostName).append(" ")
+
+		.append(ipAddress).append(" ")
+
+		.append(simulationDurationF).append(" ")
+
 		.append(simulationDuration);
 
 		return sb.toString();
 	}
 
-	public static String formatSummaryStatistics(ComputingElementEventCounter c, String instance, String group, boolean groupedCloudUser, int nPeers,
-			int nMachines, double utilization, double realUtilization, long simulationDuration) {
+	public static String formatSummaryStatistics(ComputingElementEventCounter c, String instance, String limit, String group, boolean groupedCloudUser,
+			int nPeers, int nMachines, double utilization, double realUtilization, long simulationDuration, String simulationDurationF) {
 
 		DecimalFormat dft = new DecimalFormat("000.00");
 
@@ -128,7 +168,8 @@ public class CLIUTil {
 		resume += "# Total cost of all preempted   jobs: " + dft.format(c.getTotalCostOfAllPreemptedJobs()) + ".\n";
 		resume += "# Total cost of all             jobs: " + dft.format(c.getTotalCostOfAllFinishedJobs() + c.getTotalCostOfAllPreemptedJobs()) + ".\n";
 		resume += "# Total of                    events: " + EventQueue.totalNumberOfEvents + ".\n";
-		resume += getSummaryStatistics(c, instance, group, groupedCloudUser, nPeers, nMachines, utilization, realUtilization, simulationDuration);
+		resume += getSummaryStatistics(c, instance, limit, group, groupedCloudUser, nPeers, nMachines, utilization, realUtilization, simulationDuration,
+				simulationDurationF);
 		return resume;
 	}
 

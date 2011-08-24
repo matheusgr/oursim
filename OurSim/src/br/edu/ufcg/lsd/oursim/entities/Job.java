@@ -195,7 +195,7 @@ public class Job extends ComputableElement implements Comparable<Job> {
 
 	@Override
 	public long getDuration() {
-		// a job's duration is a duration of its longest task
+		// a job's duration is the duration of its longest task
 		// TODO: another possibility is the sum of all of its Tasks
 		long longestTaskDuration = Long.MIN_VALUE;
 		for (Task Task : Tasks) {

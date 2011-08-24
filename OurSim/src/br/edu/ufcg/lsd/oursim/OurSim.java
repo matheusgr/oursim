@@ -155,7 +155,7 @@ public class OurSim {
 				} else {
 					nextEventInCurrentTime.action();
 
-					//escalona evento de término caso o workload já tenha sido todo processado
+					//escalona evento de término caso todo o workload já tenha sido processado
 					if (workload.peek() == null && jobScheduler.isFinished() && !queue.hasFutureJobEvents()) {
 						this.addHaltEvent(this.activeEntity.getCurrentTime() + 1);
 					}
@@ -265,7 +265,7 @@ public class OurSim {
 	 * Removes all the listeners added to the respective dispatchers in
 	 * {@link #prepareListeners(List, JobSchedulerPolicy)}.
 	 * 
-	 * @param peers
+	 * @param peersls
 	 *            the peers to be removed from {@link WorkerEventDispatcher}.
 	 * @param sp
 	 *            the scheduler to be removed from

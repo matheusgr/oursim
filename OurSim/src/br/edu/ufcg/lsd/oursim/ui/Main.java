@@ -15,7 +15,7 @@ public class Main {
 		//String workload = "/home/edigley/local/traces/oursim/marcus/new_workload/teste_geracao_de_workload/marcus_workload_7_dias_30_sites_1.txt";
 		String workload = "input-files/head_marcus_workload_7_dias_30_sites_1.txt";
 		String peersDescription = "input-files/iosup_site_description_30_sites.txt";
-		String machinesDescription = "input-files/machines_speeds_30_sites_20_machines_by_site_1.txt";
+		String machinesDescription = "input-files/machines_speeds_30_sites_30_machines_by_site_1.txt";
 		String scheduler;
 		scheduler = "replication";
 		scheduler = "persistent";
@@ -43,7 +43,7 @@ public class Main {
 		// we = String.format("-we %s", workerEventsFile);
 		String optional = String.format(" %s %s %s ", u, te, we);
 
-		String argsPattern = "-h 20000 -wt %s -w %s -s %s -pd %s -md %s -synthetic_av %s -o %s %s";
+		String argsPattern = "-h 20000 -wt %s -w %s -s %s -pd %s -md %s -synthetic_av %s -o %s %s -prs 45354 -acs 89345 3245324 7963452 12342 13 9035";
 
 		String argsString = String.format(argsPattern, workloadType, workload, schedulerOption, peersDescription, machinesDescription, avDuration, output,
 				optional);

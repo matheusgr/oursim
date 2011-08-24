@@ -29,7 +29,7 @@ public class OurGridAvailabilityCharacterization extends SyntheticAvailabilityCh
 		super(peers, amountOfSeconds, startingTime);
 		this.machine2AvRandomVariate = new HashMap<Machine, RandomVariateGen>();
 		this.machine2NaRandomVariate = new HashMap<Machine, RandomVariateGen>();
-		MRG31k3p.setPackageSeed(Seed.OurGridAvailabilityCharacterization_SEED);
+		MRG31k3p.setPackageSeed(Seed.getOurGridAvailabilityCharacterizationSEED());
 		for (Machine machine : machines.values()) {
 			this.machine2AvRandomVariate.put(machine, new LognormalGen(new MRG31k3p(), 7.957307, 2.116613));
 			this.machine2NaRandomVariate.put(machine, new LognormalGen(new MRG31k3p(), 7.242198, 1.034311));
