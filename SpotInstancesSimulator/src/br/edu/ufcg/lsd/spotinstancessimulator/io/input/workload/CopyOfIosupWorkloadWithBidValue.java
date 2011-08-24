@@ -6,7 +6,7 @@ import java.util.Map;
 import br.edu.ufcg.lsd.oursim.entities.Job;
 import br.edu.ufcg.lsd.oursim.entities.Peer;
 import br.edu.ufcg.lsd.oursim.entities.Task;
-import br.edu.ufcg.lsd.oursim.io.input.workload.MarcusWorkload2;
+import br.edu.ufcg.lsd.oursim.io.input.workload.IosupWorkload;
 
 /**
  * 
@@ -15,11 +15,11 @@ import br.edu.ufcg.lsd.oursim.io.input.workload.MarcusWorkload2;
  * @since 29/07/2010
  * 
  */
-public class IosupWorkloadWithBidValue extends MarcusWorkload2 {
+public class CopyOfIosupWorkloadWithBidValue extends IosupWorkload {
 
 	private double bidValue;
 
-	public IosupWorkloadWithBidValue(String workloadFilePath, Map<String, Peer> peers, long startingTime, double bidValue)
+	public CopyOfIosupWorkloadWithBidValue(String workloadFilePath, Map<String, Peer> peers, long startingTime, double bidValue)
 			throws FileNotFoundException {
 		super(workloadFilePath, peers, startingTime);
 		this.bidValue = bidValue;
