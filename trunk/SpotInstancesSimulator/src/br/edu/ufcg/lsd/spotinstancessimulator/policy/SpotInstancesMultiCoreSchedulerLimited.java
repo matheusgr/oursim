@@ -91,7 +91,7 @@ public class SpotInstancesMultiCoreSchedulerLimited extends SpotInstancesSchedul
 
 	@Override
 	public boolean isFinished() {
-		throw new RuntimeException();
+		return false;
 	}
 
 	public void setOnlyOneUserByPeer(boolean onlyOneUserByPeer) {

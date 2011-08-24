@@ -219,4 +219,8 @@ public class SpotInstancesScheduler extends SpotInstancesActiveEntity implements
 	public int compareTo(EventListener o) {
 		return this.hashCode() - o.hashCode();
 	}
+
+	@Override
+	public void stop() {
+	}
 }
