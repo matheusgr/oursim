@@ -1,11 +1,13 @@
-#Wed Aug 18 18:27:28 BRT 2010
+#Tue Aug 23 21:57:00 GMT 2011
 CLEAR_CONSOLE=true
-JAVACC_OPTIONS=-OUTPUT_DIRECTORY\=/home/edigley/workspace/SpotInstancesSimulator/src/br/edu/ufcg/lsd/spotinstancessimulator/parser
+JAVACC_OPTIONS=-OUTPUT_DIRECTORY\=../src/br/edu/ufcg/lsd/spotinstancessimulator/parser
 JJDOC_OPTIONS=
 JJTREE_OPTIONS=
 JJ_NATURE=true
-JTB_OPTIONS=
+JTB_OPTIONS=-ia -jd -tk
 RUNTIME_JAR=
+RUNTIME_JJJAR=/home/edigley/programs/eclipse/plugins/sf.eclipse.javacc_1.5.24/javacc.jar
+RUNTIME_JTBJAR=/home/edigley/programs/eclipse/plugins/sf.eclipse.javacc_1.5.24/jtb-1.4.4.jar
 SHOW_CONSOLE=true
 SUPPRESS_WARNINGS=false
 eclipse.preferences.version=1
