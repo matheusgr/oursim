@@ -2,7 +2,7 @@
 
 	<property file="build.properties" />
 
-	<!-- CLASSPATH -->
+	<!-- ant -buildfile build.xml -Dargs="150 2 oursim" CLASSPATH -->
 	<path id="classpath">
 		<fileset dir="${dist.dir}/${application.name}/lib">
 			<include name="**/*.jar" />
@@ -13,18 +13,51 @@
 		<antcall target="clean" />
 		<antcall target="prepare" />
 		<antcall target="compile" />
+
+		<property file="args.properties" />
+		<echo>"args: ${args}"</echo>
+
+		<java classname="br.edu.ufcg.lsd.oursim.ui.CreateCMD" failonerror="true" >
+			<classpath path="${build.classes.dir}" />
+			<classpath refid="classpath" />
+			<!-- time ( time ( sleep 1 & sleep 4 & ) &&  ( echo "chegou" && sleep 1 & sleep 1 &)  ) -->
+			<arg line="${args}"/>
+		</java>
+		
+	
+		<property file="rodadas.properties" />
+		
+		<echo>"rodada.id: ${rodada.id}"</echo>
+		
+		<!-- copy file="cmd.txt" todir="${dist.dir}/${application.name}" /-->
+		<!-- copy file="oursim.jdf" todir="${dist.dir}/${application.name}" /-->
+		
 		<antcall target="create-jar" />
-		<!--antcall target="javadoc" /--> 
+		<!--antcall target="javadoc" /-->
 		<!--copy file="./resources/exemplo-de-execucao.txt" todir="${dist.dir}/${application.name}" /-->
 		<copy todir="${dist.dir}/${application.name}/input-files">
 			<fileset dir="./input-files">
 				<include name="**/*.*" />
 			</fileset>
 		</copy>
-		<zip destfile="${dist.dir}/${jar.name}.zip" basedir="${dist.dir}/${application.name}" />
+		<copy file="${dist.dir}/${application.name}/${jar.name}.jar" todir="${dist.dir}/${application.name}/lib" />
+		<zip destfile="${dist.dir}/${jar.name}.zip" basedir="${dist.dir}/${application.name}">
+			<!-- fileset dir="../SpotInstancesSimulator/resources" -->
+			<fileset dir="../SpotInstancesSimulator/dist/SpotSim/">
+				<include name="*.jar" />
+			</fileset>
+		</zip>
+		<copy file="${dist.dir}/${jar.name}.zip" todir="rodadas/${rodada.id}" />
+		<copy file="cmd.txt" todir="rodadas/${rodada.id}" />
+		<copy file="oursim.jdf" todir="rodadas/${rodada.id}" />
 		<delete dir="${build.classes.dir}" />
-		
+
 		<antcall target="dist2clients" />
+		
+		<echo>cd /tmp;scp cororoca:/local/edigley/workspace/OurSim/rodadas/${rodada.id}/cmd.txt .; time sh cmd.txt</echo>
+		<echo>   -  </echo>
+
+		<zip destfile="rodadas/${rodada.id}.zip" basedir="rodadas/${rodada.id}" />
 		
 	</target>
 

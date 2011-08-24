@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -74,11 +73,10 @@ import br.edu.ufcg.lsd.oursim.simulationevents.ActiveEntityImp;
 import br.edu.ufcg.lsd.oursim.simulationevents.EventQueue;
 import br.edu.ufcg.lsd.oursim.util.AvailabilityTraceFormat;
 import br.edu.ufcg.lsd.oursim.util.GWAFormat;
+import br.edu.ufcg.lsd.oursim.util.Seed;
 import br.edu.ufcg.lsd.oursim.util.TimeUtil;
 
 public class CLI {
-
-	public static final Random RANDOM = new Random(9354269l);
 
 	public static final String NOF = "nof";
 
@@ -124,6 +122,12 @@ public class CLI {
 
 	public static final String HALT_SIMULATION = "h";
 
+	private static final String PEER_RANKING_SEED = "prs";
+
+	private static final String AVAILABILITY_CHARACTERIZATION_SEED = "acs";
+
+	private static final int AVAILABILITY_CHARACTERIZATION_NUNBER_OF_SEEDS = 6;
+
 	public static final String EXECUTION_LINE = "java -jar oursim.jar";
 
 	/**
@@ -147,6 +151,8 @@ public class CLI {
 		List<Closeable> closeables = new ArrayList<Closeable>();
 
 		CommandLine cmd = parseCommandLine(args, prepareOptions(), HELP, USAGE, EXECUTION_LINE);
+
+		prepareSeeds(cmd);
 
 		File outputFile = (File) cmd.getOptionObject(OUTPUT);
 		PrintOutput printOutput = new PrintOutput(outputFile, false);
@@ -198,13 +204,29 @@ public class CLI {
 		double realUtilization = grid.getTrueUtilization();
 
 		int numberOfResourcesByPeer = Integer.parseInt(cmd.getOptionValue(NUM_RESOURCES_BY_PEER, "0"));
-		fw.write(formatSummaryStatistics(computingElementEventCounter, "NA", "NA", false, grid.getPeers().size(), numberOfResourcesByPeer, utilization,
-				realUtilization, stopWatch.getTime())
+		fw.write(formatSummaryStatistics(computingElementEventCounter, "NA", "NA", "NA", false, grid.getPeers().size(), numberOfResourcesByPeer, utilization,
+				realUtilization, stopWatch.getTime(), stopWatch.toString())
 				+ "\n");
 		fw.close();
 
-		System.out.println(getSummaryStatistics(computingElementEventCounter, "NA", "NA", false, grid.getPeers().size(), numberOfResourcesByPeer, utilization,
-				realUtilization, stopWatch.getTime()));
+		System.out.println(getSummaryStatistics(computingElementEventCounter, "NA", "NA", "NA", false, grid.getPeers().size(), numberOfResourcesByPeer,
+				utilization, realUtilization, stopWatch.getTime(), stopWatch.toString()));
+
+	}
+
+	private static void prepareSeeds(CommandLine cmd) {
+
+		long prs = ((Number) cmd.getOptionObject(PEER_RANKING_SEED)).longValue();
+		if (cmd.getOptionValues(AVAILABILITY_CHARACTERIZATION_SEED).length == AVAILABILITY_CHARACTERIZATION_NUNBER_OF_SEEDS) {
+			int[] avSeeds = new int[AVAILABILITY_CHARACTERIZATION_NUNBER_OF_SEEDS];
+			for (int i = 0; i < avSeeds.length; i++) {
+				avSeeds[i] = Integer.parseInt(cmd.getOptionValues(AVAILABILITY_CHARACTERIZATION_SEED)[i]);
+			}
+			new Seed(prs, avSeeds);
+		} else {
+			System.err.println("Informe " + AVAILABILITY_CHARACTERIZATION_NUNBER_OF_SEEDS + " sementes para a caracterização da disponibilidade");
+			System.exit(1);
+		}
 
 	}
 
@@ -287,8 +309,11 @@ public class CLI {
 			long startingTime = AvailabilityTraceFormat.extractTimeFromFirstAvailabilityRecord(cmd.getOptionValue(AVAILABILITY), true);
 			availability = new AvailabilityCharacterization(cmd.getOptionValue(AVAILABILITY), startingTime, true);
 		} else if (cmd.hasOption(SYNTHETIC_AVAILABILITY)) {
-//			long availabilityThreshold = ((Number) cmd.getOptionObject(SYNTHETIC_AVAILABILITY)).longValue();
-//			String avType = cmd.getOptionValues(SYNTHETIC_AVAILABILITY).length == 2 ? cmd.getOptionValues(SYNTHETIC_AVAILABILITY)[1] : "";
+			// long availabilityThreshold = ((Number)
+			// cmd.getOptionObject(SYNTHETIC_AVAILABILITY)).longValue();
+			// String avType =
+			// cmd.getOptionValues(SYNTHETIC_AVAILABILITY).length == 2 ?
+			// cmd.getOptionValues(SYNTHETIC_AVAILABILITY)[1] : "";
 			long availabilityThreshold = cmd.hasOption(SYNTHETIC_AVAILABILITY_DURATION) ? ((Number) cmd.getOptionObject(SYNTHETIC_AVAILABILITY_DURATION))
 					.longValue() : Long.MAX_VALUE;
 			String avType = (String) cmd.getOptionObject(SYNTHETIC_AVAILABILITY);
@@ -340,7 +365,8 @@ public class CLI {
 		Option availability = new Option(AVAILABILITY, "availability", true, "Arquivo com a caracterização da disponibilidade para todos os recursos.");
 		Option dedicatedResources = new Option(DEDICATED_RESOURCES, "dedicated", false, "Indica que os recursos são todos dedicados.");
 		Option syntAvail = new Option(SYNTHETIC_AVAILABILITY, "synthetic_availability", true, "Disponibilidade dos recursos deve ser gerada sinteticamente.");
-		Option syntAvailDur = new Option(SYNTHETIC_AVAILABILITY_DURATION, "synthetic_availability_duration", true, "Até que momento gerar eventos de disponibilidade dos recursos.");
+		Option syntAvailDur = new Option(SYNTHETIC_AVAILABILITY_DURATION, "synthetic_availability_duration", true,
+				"Até que momento gerar eventos de disponibilidade dos recursos.");
 		Option workload = new Option(WORKLOAD, "workload", true, "Arquivo com o workload no format GWA (Grid Workload Archive).");
 		Option utilization = new Option(UTILIZATION, "utilization", true, "Arquivo em que será registrada a utilização da grade.");
 		Option workerEvents = new Option(WORKER_EVENTS, "worker_events", true, "Arquivo em que serão registrados os eventos de disponibilidade.");
@@ -348,6 +374,9 @@ public class CLI {
 		Option workloadType = new Option(WORKLOAD_TYPE, "workload_type", true, "The type of workload to read the workload file.");
 		Option machinesDescription = new Option(MACHINES_DESCRIPTION, "machinesdescription", true, "Descrição das máquinas presentes em cada peer.");
 		Option speedOption = new Option(NODE_MIPS_RATING, "speed", true, "A velocidade de cada máquina.");
+		Option prsOption = new Option(PEER_RANKING_SEED, "peer_ranking_seed", true, "Semente para o embaralhamento dos peers para alocação de tarefas).");
+		Option acsOption = new Option(AVAILABILITY_CHARACTERIZATION_SEED, "availability_characterization_seed", true,
+				"Semente para a geração dos eventos de disponibilidade.");
 		Option scheduler = new Option(SCHEDULER, "scheduler", true, "Indica qual scheduler deverá ser usado.");
 		Option peersDescription = new Option(PEERS_DESCRIPTION, "peers_description", true, "Arquivo descrevendo os peers.");
 		Option numResByPeer = new Option(NUM_RESOURCES_BY_PEER, "nresources", true, "O número de réplicas para cada task.");
@@ -361,6 +390,8 @@ public class CLI {
 		workload.setRequired(true);
 		peersDescription.setRequired(true);
 		output.setRequired(true);
+		prsOption.setRequired(true);
+		acsOption.setRequired(true);
 
 		workload.setType(File.class);
 		peersDescription.setType(File.class);
@@ -374,14 +405,17 @@ public class CLI {
 		numResByPeer.setType(Number.class);
 		numPeers.setType(Number.class);
 		speedOption.setType(Number.class);
-//		syntAvail.setType(Number.class);
+		// syntAvail.setType(Number.class);
 		syntAvailDur.setType(Number.class);
 		syntAvail.setType(String.class);
 		halt.setType(Number.class);
+		prsOption.setType(Number.class);
+		acsOption.setType(Number.class);
 
 		scheduler.setArgs(2);
 		availability.setArgs(2);
 		// syntAvail.setArgs(2);
+		acsOption.setArgs(AVAILABILITY_CHARACTERIZATION_NUNBER_OF_SEEDS);
 
 		OptionGroup availGroup = new OptionGroup();
 		availGroup.addOption(availability);
@@ -406,6 +440,8 @@ public class CLI {
 		options.addOption(workerEvents);
 		options.addOption(taskEvents);
 		options.addOption(halt);
+		options.addOption(prsOption);
+		options.addOption(acsOption);
 
 		options.addOption(VERBOSE, "verbose", false, "Informa todos os eventos importantes.");
 		options.addOption(HELP, false, "Comando de ajuda.");
