@@ -38,9 +38,10 @@ public class Job extends ComputableElement implements Comparable<Job> {
 	private final ResourceRankingPolicy resourceRankingPolicy;
 
 	/**
-	 * the level of replication of the Tasks that comprise this job. A <i>value</i>
-	 * less than or equal 1 means no replication. A <i>value</i> greater than 1
-	 * means that <i>value</i> replies will be created for each task.
+	 * the level of replication of the Tasks that comprise this job. A
+	 * <i>value</i> less than or equal 1 means no replication. A <i>value</i>
+	 * greater than 1 means that <i>value</i> replicas will be created for each
+	 * task.
 	 */
 	private int replicationLevel = 0;
 
@@ -110,7 +111,8 @@ public class Job extends ComputableElement implements Comparable<Job> {
 	public Job(long id, long submissionTime, long duration, Peer sourcePeer) {
 		this(id, submissionTime, sourcePeer);
 
-		this.Tasks.add(new Task(this.id, "executable.exe", duration, this.submissionTime, this));
+		this.Tasks.add(new Task(this.id, "executable.exe", duration,
+				this.submissionTime, this));
 
 	}
 
@@ -157,6 +159,41 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		return sum;
 	}
 
+	public long getGoodput() {
+		long goodput = 0;
+		if (this.isFinished()) {
+			for (Task task : this.getTasks()) {
+				goodput += task.getRunningTime();
+			}
+			return goodput;
+		} else {
+			return -1;
+		}
+	}
+
+	public long getBadput() {
+		long badput = 0;
+		if (this.isFinished()) {
+			for (Task task : this.getTasks()) {
+				badput += task.getWastedTime();
+			}
+			return badput;
+		} else {
+			return -1;
+		}
+	}
+
+	/**
+	 * 
+	 * The notion of total CPU time is the sum of CPU time consumed by all of
+	 * the CPUs utilized by this job, including cancelled and preempted tasks.
+	 * 
+	 * @return
+	 */
+	public long getTotalCPUTime() {
+		return getBadput() + getGoodput();
+	}
+
 	/**
 	 * Adds a task to this job by the information of its executing parameters.
 	 * 
@@ -167,7 +204,8 @@ public class Job extends ComputableElement implements Comparable<Job> {
 	 *            added, considered when executed in an reference machine.
 	 */
 	public void addTask(String executable, long duration) {
-		this.Tasks.add(new Task(nextTaskId, executable, duration, submissionTime, this));
+		this.Tasks.add(new Task(nextTaskId, executable, duration,
+				submissionTime, this));
 		nextTaskId++;
 	}
 
@@ -199,7 +237,8 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		// TODO: another possibility is the sum of all of its Tasks
 		long longestTaskDuration = Long.MIN_VALUE;
 		for (Task Task : Tasks) {
-			longestTaskDuration = Math.max(longestTaskDuration, Task.getDuration());
+			longestTaskDuration = Math.max(longestTaskDuration,
+					Task.getDuration());
 		}
 		return longestTaskDuration;
 	}
@@ -210,10 +249,12 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		long earliestTaskStartTime = Long.MAX_VALUE;
 		for (Task Task : Tasks) {
 			if (Task.isRunning() || Task.isFinished()) {
-				earliestTaskStartTime = Math.min(earliestTaskStartTime, Task.getStartTime());
+				earliestTaskStartTime = Math.min(earliestTaskStartTime,
+						Task.getStartTime());
 			}
 		}
-		return earliestTaskStartTime != Long.MAX_VALUE ? earliestTaskStartTime : null;
+		return earliestTaskStartTime != Long.MAX_VALUE ? earliestTaskStartTime
+				: null;
 	}
 
 	@Override
@@ -279,7 +320,9 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		boolean allTasksAreRunning = true;
 		for (Task Task : Tasks) {
 			if (allTasksAreRunning &= Task.isRunning()) {
-				lastTaskEstimatedFinishTime = Math.max(lastTaskEstimatedFinishTime, Task.getEstimatedFinishTime());
+				lastTaskEstimatedFinishTime = Math.max(
+						lastTaskEstimatedFinishTime,
+						Task.getEstimatedFinishTime());
 			} else {
 				return null;
 			}
@@ -293,7 +336,8 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		// TODO verificar se isFinished() antes
 		for (Task Task : Tasks) {
 			if (Task.isFinished() || Task.isAnyReplicaFinished()) {
-				lastFinishTime = Math.max(lastFinishTime, Task.getAnyReplicaFinishTime());
+				lastFinishTime = Math.max(lastFinishTime,
+						Task.getAnyReplicaFinishTime());
 			} else {
 				return null;
 			}
@@ -358,7 +402,8 @@ public class Job extends ComputableElement implements Comparable<Job> {
 				return 2;
 			} else if (id == j.getId()) {
 				assert false;
-				return this.hashCode() == j.hashCode() ? 0 : (this.hashCode() > j.hashCode() ? 1 : -1);
+				return this.hashCode() == j.hashCode() ? 0
+						: (this.hashCode() > j.hashCode() ? 1 : -1);
 			} else {
 				return -2;
 			}
@@ -404,8 +449,10 @@ public class Job extends ComputableElement implements Comparable<Job> {
 
 	@Override
 	public String toString() {
-		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("id", id).append("submissionTime", submissionTime).append("sourcePeer",
-				sourcePeer.getName()).append("#Tasks", Tasks.size()).toString();
+		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+				.append("id", id).append("submissionTime", submissionTime)
+				.append("sourcePeer", sourcePeer.getName())
+				.append("#Tasks", Tasks.size()).toString();
 	}
 
 	@Override
@@ -413,13 +460,18 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		if (!(other instanceof Job))
 			return false;
 		Job castOther = (Job) other;
-		return new EqualsBuilder().append(id, castOther.id).append(sourcePeer.getName(), castOther.sourcePeer.getName()).append(replicationLevel,
-				castOther.replicationLevel).append(userId, castOther.userId).append(thinkTime, castOther.thinkTime).isEquals();
+		return new EqualsBuilder().append(id, castOther.id)
+				.append(sourcePeer.getName(), castOther.sourcePeer.getName())
+				.append(replicationLevel, castOther.replicationLevel)
+				.append(userId, castOther.userId)
+				.append(thinkTime, castOther.thinkTime).isEquals();
 	}
 
 	@Override
 	public int hashCode() {
-		return new HashCodeBuilder().append(id).append(sourcePeer.getName()).append(replicationLevel).append(userId).append(thinkTime).toHashCode();
+		return new HashCodeBuilder().append(id).append(sourcePeer.getName())
+				.append(replicationLevel).append(userId).append(thinkTime)
+				.toHashCode();
 	}
 
 	public boolean isSingleJob() {

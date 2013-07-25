@@ -78,7 +78,15 @@ public class Grid {
 		double realUtilization = ((getAmountOfUsefulTime() + getAmountOfWastedTime()) / (getAmountOfAvailableTime() * 1.0));
 		return realUtilization;
 	}
+	
+	public long getBadput(){
+		return getAmountOfWastedTime();
+	}
 
+	public long getGoodput(){
+		return getAmountOfUsefulTime();
+	}
+	
 	public Map<String, Peer> getMapOfPeers() {
 		return peers;
 	}
