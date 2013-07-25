@@ -1,0 +1,8 @@
+cd /tmp  &&  \
+   mkdir -p playpen/oursim_npeers=[10]_nmacbypeer=[30]_scheduler=persistent_rodadas=[11]_oursim=true_spotsim=false  &&  \
+   scp cariri:/local/edigley/workspaces/simulacao//OurSim/rodadas/npeers=[10]_nmacbypeer=[30]_scheduler=persistent_rodadas=[11]_oursim=true_spotsim=false/oursim.zip .  &&  \
+   unzip -o oursim.zip -d playpen/oursim_npeers=[10]_nmacbypeer=[30]_scheduler=persistent_rodadas=[11]_oursim=true_spotsim=false  &&  \
+   cd playpen/oursim_npeers=[10]_nmacbypeer=[30]_scheduler=persistent_rodadas=[11]_oursim=true_spotsim=false  \
+  &&  \
+ cat args.txt | xargs -n25 -t -P2 java -Xms500M -Xmx4000M -XX:-UseGCOverheadLimit -jar oursim.jar &&  \
+ time sh outputs.txt

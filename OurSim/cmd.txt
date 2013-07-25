@@ -1,0 +1,13 @@
+cd /tmp  &&  \
+   mkdir -p playpen/oursim_npeers=[10]_nmacbypeer=[30]_scheduler=persistent_rodadas=[11]_oursim=true_spotsim=false  &&  \
+   scp cariri:/local/edigley/workspaces/simulacao//OurSim/rodadas/npeers=[10]_nmacbypeer=[30]_scheduler=persistent_rodadas=[11]_oursim=true_spotsim=false/oursim.zip .  &&  \
+   unzip -o oursim.zip -d playpen/oursim_npeers=[10]_nmacbypeer=[30]_scheduler=persistent_rodadas=[11]_oursim=true_spotsim=false  &&  \
+   cd playpen/oursim_npeers=[10]_nmacbypeer=[30]_scheduler=persistent_rodadas=[11]_oursim=true_spotsim=false  \
+  &&  \
+ JAVACALL='java  -Xms512M -Xmx2048M -XX:-UseGCOverheadLimit -jar'  &&  \
+  \
+ ISD=input-files/iosup_site_description_10_sites.txt && \
+ MD=input-files/machines_speeds_10_sites_30_machines_by_site_11.txt && \
+ AIT=input-files/ec2_instances.txt \
+ &&  $JAVACALL oursim.jar -w input-files/marcus_workload_7_dias_10_sites_11.txt -wt marcus -s persistent  -pd  $ISD  -nr 30 -synthetic_av ourgrid -o oursim-trace-persistent_30_machines_7_dias_10_sites_11.txt  -md  $MD  -prs 73465 -acs  992734 7885 44325  43589 346589 243612  &&  \
+ scp oursim-trace-persistent_30_machines_7_dias_10_sites_11.txt cariri:/local/edigley/mestrado/traces/24_07_2013_10upp/
