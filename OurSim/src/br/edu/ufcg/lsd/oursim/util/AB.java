@@ -13,6 +13,14 @@ public class AB {
 		return vector;
 	}
 
+	public static int[] cv(String... values) {
+		int[] vector = new int[values.length];
+		for (int i = 0; i < values.length; i++) {
+			vector[i] = Integer.parseInt(values[i]);
+		}
+		return vector;
+	}
+	
 	public static int[] cv(int value) {
 		return cv(value, value, value);
 	}
@@ -54,6 +62,14 @@ public class AB {
 	}
 
 	public static int[] cv(String seq) {
+		
+		//if (seq.startsWith("c(") && seq.endsWith(")")) {
+		if (seq.startsWith("[") && seq.endsWith("]")) {
+			String values = seq.substring(seq.indexOf("[")+1, seq.indexOf("]"));
+			String[] split = values.split(",");
+			return cv(split);
+		}
+		
 		String[] split = seq.split(":");
 		int[] retorno = null;
 		if (split.length == 1) {
@@ -63,10 +79,10 @@ public class AB {
 			int v1 = Integer.parseInt(split[0]);
 			int v2 = Integer.parseInt(split[1]);
 			retorno = cv(v1, v2);
-		} else if (split.length == 2) {
+		} else if (split.length == 3) {
 			int v1 = Integer.parseInt(split[0]);
 			int v2 = Integer.parseInt(split[1]);
-			int v3 = Integer.parseInt(split[1]);
+			int v3 = Integer.parseInt(split[2]);
 			retorno = cv(v1, v2, v3);
 		} else {
 			return null;

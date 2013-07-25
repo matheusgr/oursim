@@ -136,7 +136,7 @@ public class CreateCMD {
 
 	" 036 64967 8 3245 92 653 ",
 
-	" 932 2 3045 9 375 2 34 ",
+	" 932 2 3045 9 375 234 ",
 
 	" 8943 78 543 6582 3 54 ",
 
@@ -177,19 +177,28 @@ public class CreateCMD {
 	static int[] allSpotLimits = new int[] { 100, Integer.MAX_VALUE, 500, 400, 300, 200 };
 
 	// cd /tmp;scp ourico:~/workspace/OurSim/cmd.txt .; time sh cmd.txt
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, InterruptedException {
 
 		String cmd = "";
 		String sep = "";
+//		String host = "150.165.85.109";
+		String host = "cariri";
 
 		String workloadType = "marcus";
 		String workloadPattern = "%s_workload_7_dias_%s_sites_%s.txt";
 
-		String resultDir = "/local/edigley/traces/oursim/13_03_2011";
-		String jobResultDir = "/local/edigley/traces/oursim/13_03_2011_job";
+		String nupp = "10upp";
+		
+		String resultDir =                  "/local/edigley/mestrado/traces/24_07_2013_"+nupp+"/";
+		String jobResultDir = resultDir;
+		String workloadsDir =               "/local/edigley/mestrado/workloads/"+nupp+"/";
+		String peerCapacityDescriptionDir = "/local/edigley/mestrado/grid_capacity/";
+		String spotInstancesPricesDir =     "/local/edigley/mestrado/spot_instances_prices/23_11_2010/";
+		String workspaceDir = "/local/edigley/workspaces/simulacao/";
+		String execDir = "/tmp";
 
 		String scheduler;
-		scheduler = "replication";
+		//scheduler = "replication";
 		scheduler = "persistent";
 		String nReplicas = scheduler.equals("replication") ? "2" : "";
 
@@ -234,7 +243,8 @@ public class CreateCMD {
 
 		int[] spotLimits = runSpotSim ? new int[] { allSpotLimits[0] } : new int[] {};
 
-		int[] nSitesV = AB.cv(Integer.parseInt(args[0]));
+		//int[] nSitesV = AB.cv(Integer.parseInt(args[0]));
+		int[] nSitesV = AB.cv(args[0]);
 
 		int[] nResV = AB.cv(30);
 
@@ -368,7 +378,7 @@ public class CreateCMD {
 					for (int i = 1; i <= nSites; i++) {
 						sb.append(i).append(" ").append(nRes).append("\n");
 					}
-					FileUtils.writeStringToFile(new File("/local/edigley/traces/oursim/sites_description/" + isdFilePath), sb.toString());
+					FileUtils.writeStringToFile(new File(peerCapacityDescriptionDir + isdFilePath), sb.toString());
 
 					String tearDown = "scp";
 					String tearDownSep = " ";
@@ -376,7 +386,7 @@ public class CreateCMD {
 						tearDown += tearDownSep + output;
 						tearDownSep = NL;
 					}
-					tearDown += " ourico:" + resultDir;
+					tearDown += " "+host+":" + resultDir;
 					outputs.clear();
 
 					String shellVarDef = String.format("ISD=%s && \\\n MD=%s && \\\n AIT=%s \\\n", inputDir + isdFilePath, inputDir + mdFilePath, inputDir
@@ -410,7 +420,7 @@ public class CreateCMD {
 
 		(new File(inputDir)).mkdir();
 
-		FileUtils.copyFileToDirectory(new File("/home/edigley/local/resources_BKP/exemplo-de-execucao.txt"), new File(inputDir));
+//		FileUtils.copyFileToDirectory(new File("/home/edigley/local/resources_BKP/exemplo-de-execucao.txt"), new File(inputDir));
 
 		for (String inputFile : inputs) {
 			String sourceDir = null;
@@ -418,13 +428,13 @@ public class CreateCMD {
 			if (inputFile.endsWith(".txt_spot_workload_sorted.txt")) {
 				sourceDir = "/local/edigley/traces/oursim/03_12_2010/";
 			} else if (inputFile.startsWith(workloadType + "_workload")) {
-				sourceDir = "/local/edigley/traces/oursim/workloads/";
+				sourceDir = workloadsDir;
 			} else if (inputFile.endsWith("ec2_instances.txt")) {
 				sourceDir = "../SpotInstancesSimulator/resources/";
 			} else if (inputFile.startsWith("machines_speeds_") || inputFile.startsWith("iosup_site_description_")) {
-				sourceDir = "/local/edigley/traces/oursim/sites_description/";
+				sourceDir = peerCapacityDescriptionDir;
 			} else if (inputFile.endsWith(".csv")) {
-				sourceDir = "/local/edigley/traces/spot_instances/spot-instances-prices-23-11-2010/";
+				sourceDir = spotInstancesPricesDir;
 			}
 			File iFile = new File(sourceDir + inputFile);
 			if (iFile.exists()) {
@@ -436,10 +446,10 @@ public class CreateCMD {
 		}
 
 		String setUp = "";
-		setUp += "cd /tmp " + NC;
+		setUp += "cd "+execDir+" " + NC;
 		// setUp += " rm -rf playpen " + NC;
 		setUp += "  mkdir -p playpen/oursim_" + rodadaID + " " + NC;
-		setUp += "  scp ourico:~/workspace/OurSim/rodadas/" + rodadaID + "/oursim.zip . " + NC;
+		setUp += "  scp "+host+":"+workspaceDir+"/OurSim/rodadas/" + rodadaID + "/oursim.zip . " + NC;
 		setUp += "  unzip -o oursim.zip -d playpen/oursim_" + rodadaID + " " + NC;
 		// setUp += " scp
 		// ourico:~/workspace/SpotInstancesSimulator/dist/spotsim.zip . " +
@@ -488,7 +498,39 @@ public class CreateCMD {
 
 		FileUtils.writeStringToFile(new File("oursim.jdf"), jobSB.toString());
 
+		StringBuilder xargsSB = new StringBuilder();
+		StringBuilder outputSB = new StringBuilder();
+
+		for (WraperTask task : tasks) {
+
+			for (Entry<String, String> entry : task.labels.entrySet()) {
+				task.cmd = task.cmd.replace(entry.getKey(), entry.getValue());
+			}
+
+			outputSB.append("scp "+task.outputs.get(0)+" "+host+":"+resultDir + "\n");
+			
+			String onlyTheArgs = task.cmd.replace("unzip oursim.zip ; java -Xms500M -Xmx1500M -XX:-UseGCOverheadLimit -jar  oursim.jar", "")
+										 .replace("unzip oursim.zip ; java -Xms500M -Xmx1500M -XX:-UseGCOverheadLimit -jar  spotsim.jar", "");
+			xargsSB.append(onlyTheArgs + "\n");
+
+		}
+
+		FileUtils.writeStringToFile(new File("args.txt"), xargsSB.toString());
+		FileUtils.writeStringToFile(new File("outputs.txt"), outputSB.toString());
+		
+		StringBuilder cmdXargsSB = new StringBuilder();
+		if (runOurSim) {
+			//cmdXargsSB.append("cat args.txt | xargs -n25 -t -P5 java -Xms500M -Xmx1500M -XX:-UseGCOverheadLimit -jar oursim.jar");
+			cmdXargsSB.append("cat args.txt | xargs -n25 -t -P2 java -Xms500M -Xmx4000M -XX:-UseGCOverheadLimit -jar oursim.jar");
+		}else{
+			//cmdXargsSB.append("cat args.txt | xargs -n17 -t -P15 java -Xms250M -Xmx1000M -XX:-UseGCOverheadLimit -jar spotsim.jar");
+			cmdXargsSB.append("cat args.txt | xargs -n17 -t -P2 java -Xms500M -Xmx4000M -XX:-UseGCOverheadLimit -jar spotsim.jar");
+		}
+		FileUtils.writeStringToFile(new File("cmdXargs.txt"), setUp + NC + cmdXargsSB + NC + "time sh outputs.txt");
+		
 		System.out.println("\n  Finished!!!!");
+		
+		Thread.sleep(2000);
 
 	}
 

@@ -51,6 +51,8 @@ public final class PrintOutput extends OutputAdapter {
 								.concat("remoteRate").concat(SEP)
 								.concat("nsl").concat(SEP)
 								.concat("cost").concat(SEP)
+								.concat("goodput").concat(SEP)
+								.concat("badput").concat(SEP)
 								.concat("userId").concat(SEP)
 								.concat("peerId");;
 
@@ -239,6 +241,8 @@ public final class PrintOutput extends OutputAdapter {
 		.append(job.numberOfRemoteResourcesUsed()/(job.getTasks().size()*1.0)).append(SEP)
 		.append(job.getNSL()).append(SEP)
 		.append(job.getCost()).append(SEP)
+		.append(job.getGoodput()).append(SEP)
+		.append(job.getBadput()).append(SEP)
 		.append(job.getUserId()).append(SEP)
 		.append(job.getSourcePeer().getName());
 		this.out.println(sb);

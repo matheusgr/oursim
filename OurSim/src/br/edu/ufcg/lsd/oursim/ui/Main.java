@@ -47,7 +47,9 @@ public class Main {
 
 		String argsString = String.format(argsPattern, workloadType, workload, schedulerOption, peersDescription, machinesDescription, avDuration, output,
 				optional);
-
+		
+		argsString = " -w input-files/workload_test.txt -wt marcus -s persistent  -pd  input-files/iosup_site_description_10_sites.txt  -nr 30 -synthetic_av ourgrid -o oursim-trace-persistent_30_machines_7_dias_10_sites_1.txt  -md  input-files/machines_speeds_10_sites_30_machines_by_site_1.txt  -prs 9354269 -acs  1234 13455 5566 6548 8764 5674 ";
+		
 		args = argsString.split("\\s+");
 		// System.out.println(argsString);
 		CLI.main(args);
