@@ -1,0 +1,1 @@
+  -w input-files/marcus_workload_7_dias_10_sites_11.txt -wt marcus -s persistent  -pd  input-files/iosup_site_description_10_sites.txt  -nr 30 -synthetic_av ourgrid -o oursim-trace-persistent_30_machines_7_dias_10_sites_11.txt  -md  input-files/machines_speeds_10_sites_30_machines_by_site_11.txt  -prs 73465 -acs  992734 7885 44325  43589 346589 243612 

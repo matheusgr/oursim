@@ -1,10 +1,16 @@
+<!-- ant -buildfile build.xml -Dargs="10 1:10 spotsim m1.small"; sed 's/unzip oursim.zip ; java -Xms500M -Xmx1500M -XX:-UseGCOverheadLimit -jar//g' xargs.txt > args.txt 
+sed 's/unzip oursim.zip ; java -Xms500M -Xmx1500M -XX:-UseGCOverheadLimit -jar  spotsim.jar//g' args.txt > xargs.txt
+-->
 <project name="OurSim" basedir="." default="dist">
 
 	<property file="build.properties" />
 
-	<!-- ant -buildfile build.xml -Dargs="150 2 oursim" CLASSPATH -->
+	<!-- CLASSPATH -->
 	<path id="classpath">
 		<fileset dir="${dist.dir}/${application.name}/lib">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="lib">
 			<include name="**/*.jar" />
 		</fileset>
 	</path>
@@ -17,24 +23,28 @@
 		<property file="args.properties" />
 		<echo>"args: ${args}"</echo>
 
-		<java classname="br.edu.ufcg.lsd.oursim.ui.CreateCMD" failonerror="true" >
+		<java classname="br.edu.ufcg.lsd.oursim.ui.CreateCMD" failonerror="true">
 			<classpath path="${build.classes.dir}" />
 			<classpath refid="classpath" />
 			<!-- time ( time ( sleep 1 & sleep 4 & ) &&  ( echo "chegou" && sleep 1 & sleep 1 &)  ) -->
-			<arg line="${args}"/>
+			<arg line="${args}" />
 		</java>
-		
-	
+
 		<property file="rodadas.properties" />
-		
+
 		<echo>"rodada.id: ${rodada.id}"</echo>
-		
+
 		<!-- copy file="cmd.txt" todir="${dist.dir}/${application.name}" /-->
 		<!-- copy file="oursim.jdf" todir="${dist.dir}/${application.name}" /-->
-		
+
 		<antcall target="create-jar" />
 		<!--antcall target="javadoc" /-->
 		<!--copy file="./resources/exemplo-de-execucao.txt" todir="${dist.dir}/${application.name}" /-->
+		<copy file="./args.txt" todir="${dist.dir}/${application.name}" />
+		<copy file="./cmdXargs.txt" todir="${dist.dir}/${application.name}" />
+		<copy file="./outputs.txt" todir="${dist.dir}/${application.name}" />
+		<copy file="./cmd.txt" todir="${dist.dir}/${application.name}" />
+		<copy file="./oursim.jdf" todir="${dist.dir}/${application.name}" />
 		<copy todir="${dist.dir}/${application.name}/input-files">
 			<fileset dir="./input-files">
 				<include name="**/*.*" />
@@ -47,30 +57,36 @@
 				<include name="*.jar" />
 			</fileset>
 		</zip>
+
 		<copy file="${dist.dir}/${jar.name}.zip" todir="rodadas/${rodada.id}" />
 		<copy file="cmd.txt" todir="rodadas/${rodada.id}" />
+		<copy file="cmdXargs.txt" todir="rodadas/${rodada.id}" />
+		<copy file="outputs.txt" todir="rodadas/${rodada.id}" />
 		<copy file="oursim.jdf" todir="rodadas/${rodada.id}" />
+
 		<delete dir="${build.classes.dir}" />
 
 		<antcall target="dist2clients" />
-		
-		<echo>cd /tmp;scp cororoca:/local/edigley/workspace/OurSim/rodadas/${rodada.id}/cmd.txt .; time sh cmd.txt</echo>
+
+		<echo>cd ${exec.dir};scp ${hostname}:${workspace.dir}/OurSim/rodadas/${rodada.id}/cmd.txt .; time sh cmd.txt</echo>
+		<echo>cd ${exec.dir};scp ${hostname}:${workspace.dir}/OurSim/rodadas/${rodada.id}/cmdXargs.txt .; time sh cmdXargs.txt</echo>
 		<echo>   -  </echo>
 
 		<zip destfile="rodadas/${rodada.id}.zip" basedir="rodadas/${rodada.id}" />
-		
+
 	</target>
 
 	<target name="dist2clients">
 		<echo>Copiando o jar para os projetos clientes...</echo>
 		<copy file="${jar.path}" todir="../SpotInstancesSimulator/lib" />
 	</target>
-	
+
 	<!-- compila -->
 	<target name="compile">
 		<echo>Compilando...</echo>
-		<javac destdir="${build.classes.dir}" target="1.5" debug="true" deprecation="false" optimize="false" failonerror="true" encoding="UTF-8">
+		<javac destdir="${build.classes.dir}" target="1.5" source="1.5" debug="true" deprecation="false" optimize="false" failonerror="true" encoding="UTF-8">
 			<src path="${src.dir}" />
+			<src path="${srctests.dir}" />
 			<classpath refid="classpath" />
 		</javac>
 	</target>
@@ -103,6 +119,11 @@
 		<delete dir="${build.classes.dir}" />
 		<delete dir="${jar.path}" />
 		<delete file="${dist.dir}/${jar.name}.zip" />
+		<!-- rm -rf oursim.jdf rodadas.properties rodadas.txt cmd.txt -->
+		<delete file="./oursim.jdf" />
+		<delete file="./rodadas.properties" />
+		<delete file="./rodadas.txt" />
+		<delete file="./cmd.txt" />
 		<delete dir="${dist.dir}/${application.name}" />
 	</target>
 

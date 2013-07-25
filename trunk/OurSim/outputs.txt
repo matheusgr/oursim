@@ -1,0 +1,1 @@
+scp oursim-trace-persistent_30_machines_7_dias_10_sites_11.txt cariri:/local/edigley/mestrado/traces/24_07_2013_10upp/
