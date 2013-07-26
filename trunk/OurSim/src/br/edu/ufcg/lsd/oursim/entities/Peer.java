@@ -62,9 +62,27 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 	private Machine referenceMachine;
 
 	// private long amountOfAvailableTime = 0;
+	
+	/**
+	 * Tempo total em que cada máquina ficou disponível para o grid. 
+	 */
 	private Map<String, Long> amountOfAvailableTime;
+	
+	/**
+	 * Tempo total em que a máquina foi utilizada para processar uma tarefa sem que está tenha se completado.
+	 * Trata-se do badput total ocorrido na máquina.
+	 */
 	private Map<String, Long> amountOfWastedTime;
+
+	/**
+	 * Tempo total em que a máquina foi utilizada para processar com sucesso as tarefas.
+	 * Trata-se do goodput total ocorrido na máquina.
+	 */
 	private Map<String, Long> amountOfUsefulTime;
+	
+	/**
+	 * Instante de tempo em que houve o último evento de disponibilidade na máquina.
+	 */
 	private Map<String, Long> timeOfLastWorkAvailableEvent;
 
 	/**
