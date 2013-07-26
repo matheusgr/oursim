@@ -107,6 +107,8 @@ public class OurGridPersistentSchedulerMultiplePeersTest extends AbstractOurSimA
 		assertEquals(2, this.jobEventCounter.getNumberOfPreemptionsForAllJobs());
 		assertEquals(2, this.taskEventCounter.getNumberOfFinishedTasks());
 		assertEquals(2, this.taskEventCounter.getNumberOfPreemptionsForAllTasks());
+		
+		System.out.println();
 
 	}
 }
