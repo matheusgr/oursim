@@ -30,6 +30,7 @@ import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.StartedTaskEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.taskevents.SubmitTaskEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.workerevents.WorkerAvailableEvent;
 import br.edu.ufcg.lsd.oursim.simulationevents.workerevents.WorkerUnavailableEvent;
+import br.edu.ufcg.lsd.oursim.util.Seed;
 
 public abstract class AbstractOurSimAPITest {
 
@@ -92,6 +93,12 @@ public abstract class AbstractOurSimAPITest {
 		for (int i = 0; i < NUMBER_OF_PEERS; i++) {
 			peers.add(new Peer("p_" + i, NUMBER_OF_RESOURCES_BY_PEER, RESOURCE_MIPS_RATING, FifoSharingPolicy.getInstance()));
 		}
+		
+		
+		long prs = 73465;
+		int[] avSeeds = {992734, 7885, 44325,  43589, 346589, 243612};
+		new Seed(prs, avSeeds);
+
 	}
 
 	@After
