@@ -19,7 +19,8 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * @see Job
  * @see Processor
  */
-public class Task extends ComputableElement implements Comparable<Task>, Cloneable {
+public class Task extends ComputableElement implements Comparable<Task>,
+		Cloneable {
 
 	private static final long SOURCE_TASK_REPLICA_ID = 0l;
 
@@ -103,11 +104,15 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 
 	private double cost;
 
+	/**
+	 * Happens due to failures on cancelled tasks.
+	 */
 	private double wastedTime;
 
 	private boolean wasRecentlyPreempted = false;
 
-	public Task(long id, String executable, long duration, long submissionTime, Job sourceJob) {
+	public Task(long id, String executable, long duration, long submissionTime,
+			Job sourceJob) {
 		super(id, submissionTime);
 		this.executable = new File(executable, -1);
 		this.duration = duration;
@@ -166,8 +171,8 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	 * <code>null</code>.
 	 * 
 	 * @return Gets the peer that holds the {@link Machine} in which this task
-	 *         is running or have been processed, otherwise <code>null</code>
-	 *         is returned.
+	 *         is running or have been processed, otherwise <code>null</code> is
+	 *         returned.
 	 */
 	public Peer getTargetPeer() {
 		return targetPeer;
@@ -220,7 +225,8 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 	public void finish(long time) {
 		assert this.finishTime == null || isAnyReplicaFinished();
 		assert this.startTime != null;
-		this.hasLocallyRunned = this.sourceJob.getSourcePeer().hasMachine(this.taskExecution.getMachine().getName());
+		this.hasLocallyRunned = this.sourceJob.getSourcePeer().hasMachine(
+				this.taskExecution.getMachine().getName());
 		this.taskExecution.finish();
 		this.finishTime = time;
 	}
@@ -237,7 +243,8 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 			// this.taskExecution = null;
 			this.wasRecentlyPreempted = true;
 		} else {
-			System.err.println("Tentou preemptar uma já concluída: " + time + " " + this);
+			System.err.println("Tentou preemptar uma já concluída: " + time
+					+ " " + this);
 		}
 	}
 
@@ -315,7 +322,8 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 				// assert false : "\n" + this + "\n" + t;
 				// return this.hashCode() == t.hashCode() ? 0 : (this.hashCode()
 				// > t.hashCode() ? 1 : -1);
-				return this.hashCode() == t.hashCode() ? 0 : (this.replicaId > t.getReplicaId() ? 1 : -1);
+				return this.hashCode() == t.hashCode() ? 0
+						: (this.replicaId > t.getReplicaId() ? 1 : -1);
 			} else {
 				return -2;
 			}
@@ -413,7 +421,9 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 
 	private boolean isActive() {
 		// TODO: hora de adicionar uma máquina de estados!
-		return this.isRunning() || (!this.isFinished() && !this.wasPreempted() && !this.isCancelled());
+		return this.isRunning()
+				|| (!this.isFinished() && !this.wasPreempted() && !this
+						.isCancelled());
 	}
 
 	public long getReplicaId() {
@@ -440,10 +450,20 @@ public class Task extends ComputableElement implements Comparable<Task>, Cloneab
 		// [id, duration, submissionTime, startTime, finishTime,
 		// numberOfpreemptions]
 		// return this.id+"";
-		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("id", id).append("sourceJob", sourceJob.getId()).append("sourcePeer",
-				getSourcePeer().getName()).append("duration", duration).append("submissionTime", submissionTime).append("startTime", startTime).append(
-				"finishTime", finishTime).append("targetPeer", targetPeer != null ? targetPeer.getName() : "").append("numberOfpreemptions",
-				numberOfpreemptions).append("executable", executable).append("replicaId", replicaId).append("cancelled", cancelled).toString();
+		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+				.append("id", id)
+				.append("sourceJob", sourceJob.getId())
+				.append("sourcePeer", getSourcePeer().getName())
+				.append("duration", duration)
+				.append("submissionTime", submissionTime)
+				.append("startTime", startTime)
+				.append("finishTime", finishTime)
+				.append("targetPeer",
+						targetPeer != null ? targetPeer.getName() : "")
+				.append("numberOfpreemptions", numberOfpreemptions)
+				.append("executable", executable)
+				.append("replicaId", replicaId).append("cancelled", cancelled)
+				.toString();
 	}
 
 	public double getBidValue() {
