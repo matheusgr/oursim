@@ -159,6 +159,12 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		return sum;
 	}
 
+	/**
+	 * Goodput is the alocation time when a remote executing application uses
+	 * the CPU to make forward progress.
+	 * 
+	 * @return
+	 */
 	public long getGoodput() {
 		long goodput = 0;
 		if (this.isFinished()) {
@@ -171,6 +177,13 @@ public class Job extends ComputableElement implements Comparable<Job> {
 		}
 	}
 
+	/**
+	 * 
+	 * Badput is the execution time being wasted. Badput happens due to failures
+	 * on cancelled tasks.
+	 * 
+	 * @return
+	 */
 	public long getBadput() {
 		long badput = 0;
 		if (this.isFinished()) {
