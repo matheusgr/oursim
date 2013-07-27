@@ -13,9 +13,10 @@ public class Main {
 	public static void main(String[] args) throws IOException {
 		//String workload = "resources/marcus_workload_1_dias_10_sites_1.txt";
 		//String workload = "/home/edigley/local/traces/oursim/marcus/new_workload/teste_geracao_de_workload/marcus_workload_7_dias_30_sites_1.txt";
-		String workload = "input-files/head_marcus_workload_7_dias_30_sites_1.txt";
-		String peersDescription = "input-files/iosup_site_description_30_sites.txt";
-		String machinesDescription = "input-files/machines_speeds_30_sites_30_machines_by_site_1.txt";
+//		String workload = "input-files/head_marcus_workload_7_dias_30_sites_1.txt";
+		String workload = "input-files/marcus_workload_7_dias_10_sites_11.txt";
+		String peersDescription = "input-files/iosup_site_description_10_sites.txt";
+		String machinesDescription = "input-files/machines_speeds_10_sites_30_machines_by_site_11.txt";
 		String scheduler;
 		scheduler = "replication";
 		scheduler = "persistent";
@@ -25,7 +26,7 @@ public class Main {
 		String workloadType = "marcus";
 		String avDuration = "ourgrid";//String.valueOf(TimeUtil.ONE_WEEK + TimeUtil.ONE_DAY);
 
-		String output = "oursim-trace-20_7_dias_30_sites.txt";
+		String output = "oursim-trace-20_7_dias_10_sites.txt";
 		String utilizationFile = "oursim_system_utilization.txt";
 		String workerEventsFile = "oursim_worker_events.txt";
 		String taskEventsFile = "oursim_task_events.txt";
@@ -48,7 +49,7 @@ public class Main {
 		String argsString = String.format(argsPattern, workloadType, workload, schedulerOption, peersDescription, machinesDescription, avDuration, output,
 				optional);
 		
-		argsString = " -w input-files/workload_test.txt -wt marcus -s persistent  -pd  input-files/iosup_site_description_10_sites.txt  -nr 30 -synthetic_av ourgrid -o oursim-trace-persistent_30_machines_7_dias_10_sites_1.txt  -md  input-files/machines_speeds_10_sites_30_machines_by_site_1.txt  -prs 9354269 -acs  1234 13455 5566 6548 8764 5674 ";
+//		argsString = " -w input-files/workload_test.txt -wt marcus -s persistent  -pd  input-files/iosup_site_description_10_sites.txt  -nr 30 -synthetic_av ourgrid -o oursim-trace-persistent_30_machines_7_dias_10_sites_1.txt  -md  input-files/machines_speeds_10_sites_30_machines_by_site_1.txt  -prs 9354269 -acs  1234 13455 5566 6548 8764 5674 ";
 		
 		args = argsString.split("\\s+");
 		// System.out.println(argsString);

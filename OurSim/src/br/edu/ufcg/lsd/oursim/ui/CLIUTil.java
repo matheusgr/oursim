@@ -54,7 +54,7 @@ public class CLIUTil {
 	}
 
 	public static String getSummaryStatistics(ComputingElementEventCounter c, String instance, String limit, String group, boolean groupedCloudUser,
-			int nPeers, int nMachines, double utilization, double realUtilization, long goodput, long badput, long simulationDuration, String simulationDurationF) {
+			int nPeers, int nMachines, double utilization, double realUtilization, long goodput, long badput, long avTime, double cost, long simulationDuration, String simulationDurationF) {
 
 		String hostName;
 		String ipAddress;
@@ -94,7 +94,7 @@ public class CLIUTil {
 		int notStarted = c.getNumberOfSubmittedJobs() - (c.getNumberOfFinishedJobs() + c.getNumberOfPreemptionsForAllJobs());
 
 		StringBuilder sb = new StringBuilder(
-				"# submitted finished preempted notStarted submittedTasks finishedTasks success sumOfJobsMakespan sumOfTasksMakespan finishedCost preemptedCost totalCost costByTask nPeers nMachines instance limit group groupedCloudUser utilization realUtilization goodput badput hostname ipaddress simulationDuration simulationDurationF"
+				"# submitted finished preempted notStarted submittedTasks finishedTasks success sumOfJobsMakespan sumOfTasksMakespan finishedCost preemptedCost totalCost costByTask nPeers nMachines instance limit group groupedCloudUser utilization realUtilization goodput badput avTime cost hostname ipaddress simulationDuration simulationDurationF"
 						+ "\n");
 		double totalCost = c.getTotalCostOfAllFinishedJobs() + c.getTotalCostOfAllPreemptedJobs();
 		sb.append("# " +
@@ -145,6 +145,10 @@ public class CLIUTil {
 
 		.append(badput).append(" ")
 		
+		.append(avTime).append(" ")
+		
+		.append(cost).append(" ")
+		
 		.append(hostName).append(" ")
 
 		.append(ipAddress).append(" ")
@@ -157,7 +161,7 @@ public class CLIUTil {
 	}
 
 	public static String formatSummaryStatistics(ComputingElementEventCounter c, String instance, String limit, String group, boolean groupedCloudUser,
-			int nPeers, int nMachines, double utilization, double realUtilization, long goodput, long badput, long simulationDuration, String simulationDurationF) {
+			int nPeers, int nMachines, double utilization, double realUtilization, long goodput, long badput, long avTime, double cost, long simulationDuration, String simulationDurationF) {
 
 		DecimalFormat dft = new DecimalFormat("000.00");
 
@@ -171,8 +175,12 @@ public class CLIUTil {
 		resume += "# Total cost of all finished    jobs: " + dft.format(c.getTotalCostOfAllFinishedJobs()) + ".\n";
 		resume += "# Total cost of all preempted   jobs: " + dft.format(c.getTotalCostOfAllPreemptedJobs()) + ".\n";
 		resume += "# Total cost of all             jobs: " + dft.format(c.getTotalCostOfAllFinishedJobs() + c.getTotalCostOfAllPreemptedJobs()) + ".\n";
+		resume += "# Goodput                           : " + goodput + ".\n";
+		resume += "# Badput                            : " + badput + ".\n";
+		resume += "# AV time                           : " + avTime + ".\n";		
+		resume += "# Total cost of                 grid: " + dft.format(cost) + ".\n";
 		resume += "# Total of                    events: " + EventQueue.totalNumberOfEvents + ".\n";
-		resume += getSummaryStatistics(c, instance, limit, group, groupedCloudUser, nPeers, nMachines, utilization, realUtilization, goodput, badput, simulationDuration,
+		resume += getSummaryStatistics(c, instance, limit, group, groupedCloudUser, nPeers, nMachines, utilization, realUtilization, goodput, badput, avTime, cost, simulationDuration,
 				simulationDurationF);
 		return resume;
 	}

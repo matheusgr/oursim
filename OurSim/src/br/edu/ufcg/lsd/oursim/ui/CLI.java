@@ -205,12 +205,12 @@ public class CLI {
 
 		int numberOfResourcesByPeer = Integer.parseInt(cmd.getOptionValue(NUM_RESOURCES_BY_PEER, "0"));
 		fw.write(formatSummaryStatistics(computingElementEventCounter, "NA", "NA", "NA", false, grid.getPeers().size(), numberOfResourcesByPeer, utilization,
-				realUtilization, grid.getGoodput(), grid.getBadput(), stopWatch.getTime(), stopWatch.toString())
+				realUtilization, grid.getGoodput(), grid.getBadput(), grid.getAVTime(), grid.getCost(), stopWatch.getTime(), stopWatch.toString())
 				+ "\n");
 		fw.close();
-
+		
 		System.out.println(getSummaryStatistics(computingElementEventCounter, "NA", "NA", "NA", false, grid.getPeers().size(), numberOfResourcesByPeer,
-				utilization, realUtilization, grid.getGoodput(), grid.getBadput(), stopWatch.getTime(), stopWatch.toString()));
+				utilization, realUtilization, grid.getGoodput(), grid.getBadput(), grid.getAVTime(), grid.getCost(), stopWatch.getTime(), stopWatch.toString()));
 
 	}
 

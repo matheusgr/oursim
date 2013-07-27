@@ -86,7 +86,31 @@ public class Grid {
 	public long getGoodput(){
 		return getAmountOfUsefulTime();
 	}
+
+	public long getCPUTime(){
+		return getBadput() + getGoodput();
+	}
+
+	public long getIdleTime(){
+		return getAVTime() - getCPUTime();
+	}	
 	
+	public long getAVTime() {
+		long avTime = 0l;
+		for (Peer peer : peers.values()) {
+			avTime += peer.getAmountOfAvailableTime();
+		}
+		return avTime;
+	}
+	
+	public double getCost(){
+		double kwh = 0.05;
+		double k = kwh/1000.0;
+		double ct = 198;
+		double co = 3.33;
+		return k * (getCPUTime() * ct + getAVTime() * co); 
+	}
+
 	public Map<String, Peer> getMapOfPeers() {
 		return peers;
 	}
