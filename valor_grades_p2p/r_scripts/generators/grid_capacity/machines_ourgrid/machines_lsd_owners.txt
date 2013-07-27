@@ -1,0 +1,35 @@
+machine 	speed		user
+pitu		3000000		heitor
+stuart		2800000		tarciso
+cororoca	2800000		edigley
+tucunare	3000000		tiagohsl
+celacanto	3000000		joseamvs
+papudinho	3000000		antonio,heitor     -- pede senha
+palmito		1862000		geraldo
+paru		2800000		iannasodre   -- nao conecta mais
+machineCluster	3000000		ssh: Could not resolve hostname machineCluster
+borboleta	3000000		ssh: connect to host borboleta port 22: No route to host
+mandarim	2333000		pmaciel
+tilapia		1998000		marcus	 "Intel(R) Core(TM)2 Duo CPU     E6550  @ 2.33GHz"
+espada		2333000		davidcmm
+quimera		2333000		ricardo
+gato		2200000		ssh: connect to host gato port 22: No route to host
+wahoo		2200000		ok
+tubarao		2333000		carla
+mulato		3000000		ssh: connect to host mulato port 22: No route to host
+pimpim		3000000		connect to host pimpim port 22: No route to host
+surubim		2333000		-
+nuvem		3000000		pryscila, ssh: connect to host nuvem port 22: Connection timed out
+dori		3000000		mellina
+jacare		1800000		-
+leao		1800000		dimascnf,ramon
+perola		2200000		ok
+beijador	2333000		vilar
+foca		3000000		matheus ssh: connect to host foca port 22: No route to host
+ostra		3000000		rafael
+barbado		2800000		root "Intel(R) Pentium(R) 4 CPU 2.80GHz"
+urutu		2333000		fabio, ssh: connect to host urutu port 22: Connection timed out
+sargento	3000000		antonio
+ciobinha	2799738		matheus	"Intel(R) Pentium(R) 4 CPU 2.80GHz"
+jurupoca	2992649		matheus	"Intel(R) Pentium(R) 4 CPU 3.00GHz"
+
