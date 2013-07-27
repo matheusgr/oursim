@@ -521,6 +521,10 @@ public class Peer extends ActiveEntityImp implements WorkerEventListener {
 		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).append("name", name).append("#machines", machines.size()).toString();
 	}
 
+	/**
+	 * Tempo total em que todas as máquinas ficaram disponíveis para o grid. 
+	 * @return
+	 */
 	public Long getAmountOfAvailableTime() {
 		long amount = 0;
 		for (Entry<String, Long> entry : amountOfAvailableTime.entrySet()) {
