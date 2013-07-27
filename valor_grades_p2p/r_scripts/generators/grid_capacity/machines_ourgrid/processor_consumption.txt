@@ -1,0 +1,14 @@
+http://www.computerbase.de/artikel/hardware/prozessoren/2004/bericht_energiever-brauch_prozessoren/
+
+		Athlon 64 2800+       & 115 & 77 \\
+		Athlon XP 2500+       & 138 & 84 \\
+		Pentium 4 2,40C GHz   & 144 & 86 \\
+		Athlon XP 3200+       & 154 & 87 \\
+		Pentium 4 3,40C GHz   & 178 & 92 \\
+		Pentium 4 EE 3,40 GHz & 180 & 93 \\
+		Athlon 64 3400+       & 150 & 94 \\
+		Athlon 64 FX-53       & 170 & 107 \\
+		Pentium 4 2,80 GHz    & 179 & 116 \\
+		Pentium 4 3,40E GHz   & 198 & 120 \\
+
+source("/local/edigley/traces/oursim/grade_cost.R")
